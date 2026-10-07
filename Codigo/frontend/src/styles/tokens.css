@@ -1,0 +1,64 @@
+/* Tokens de diseño NexuStock — ver docs/guia-de-estilo. Tema por data-theme en <html>. */
+
+:root[data-theme="oscuro"] {
+  color-scheme: dark;
+  --bg: #171614;
+  --bg-panel: #201e1a;
+  --surface: #1d1c19;
+  --border: #322f2a;
+  --border-strong: #4a443b;
+  --ink: #f2eee6;
+  --ink-muted: #a39b8c;
+  --accent: #dd8064;
+  --accent-ink: #1c1b19;
+  --accent-2: #86a992;
+  --quiebre: #e2908a;
+  --alerta: #e3b15a;
+  --saludable: #86a992;
+  --quiebre-bg: #e2908a26;
+  --alerta-bg: #e3b15a26;
+  --saludable-bg: #86a99226;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --scrim: rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="crema"] {
+  color-scheme: light;
+  --bg: #faf7f2;
+  --bg-panel: #f1ecdf;
+  --surface: #ffffff;
+  --border: #e4ded2;
+  --border-strong: #c9bfa8;
+  --ink: #1c1b19;
+  --ink-muted: #5f5748;
+  --accent: #a63a2c;
+  --accent-ink: #faf7f2;
+  --accent-2: #435a4b;
+  --quiebre: #b3261e;
+  --alerta: #8a5a12;
+  --saludable: #435a4b;
+  --quiebre-bg: #b3261e26;
+  --alerta-bg: #8a5a1226;
+  --saludable-bg: #435a4b26;
+  --shadow-card: 0 1px 3px rgba(28, 27, 25, 0.07), 0 1px 2px rgba(28, 27, 25, 0.04);
+  --shadow-pop: 0 12px 32px rgba(28, 27, 25, 0.15);
+  --scrim: rgba(28, 27, 25, 0.28);
+}
+
+:root {
+  /* Escala de spacing y radios (guía de estilo) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-body: "IBM Plex Sans", ui-sans-serif, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}

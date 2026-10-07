@@ -1,0 +1,172 @@
+/* Estructura de las pantallas autenticadas: barra lateral + área principal. */
+.app {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.side {
+  width: 212px;
+  flex: none;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  padding: 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand a {
+  display: flex;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.nav a.on {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.nav .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  flex: none;
+}
+
+.biz {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+.biz-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.biz-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--saludable);
+  display: inline-block;
+}
+.biz-dot.off {
+  background: var(--alerta);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 26px 32px;
+  overflow-x: hidden;
+}
+
+/* Aviso de conexión: en el flujo normal (no tapa contenido), pegado arriba al hacer scroll. */
+.net-aviso {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--alerta-bg);
+  border: 1px solid var(--alerta);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  font-size: 13px;
+  line-height: 1.5;
+  /* Fondo opaco debajo del tinte para que el contenido no se transparente al hacer scroll. */
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--alerta-bg), var(--alerta-bg));
+}
+.net-aviso.ok {
+  border-color: var(--saludable);
+  background-image: linear-gradient(var(--saludable-bg), var(--saludable-bg));
+}
+.net-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--saludable);
+}
+.net-dot.off {
+  background: var(--alerta);
+}
+.net-txt {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+}
+.net-acc {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.net-x {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.net-x:hover {
+  color: var(--ink);
+  background: var(--border);
+}
+.net-x:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .net-aviso {
+    flex-wrap: wrap;
+  }
+  .net-acc {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
