@@ -1,0 +1,32 @@
+.card {
+  max-width: 100%;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rules {
+  margin: 4px 0 18px;
+}
+.back {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 12.5px;
+}
+.back a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.back a:hover {
+  text-decoration: underline;
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+.actions a {
+  text-decoration: none;
+}
