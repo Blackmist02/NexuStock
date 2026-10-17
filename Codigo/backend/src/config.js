@@ -2,6 +2,8 @@
 const bool = (v, def) => (v === undefined || v === '' ? def : ['true', '1'].includes(String(v).toLowerCase()));
 const int = (v, def) => (Number.isFinite(Number(v)) && v !== undefined && v !== '' ? Number(v) : def);
 
+const path = require('node:path');
+
 const isProd = process.env.NODE_ENV === 'production';
 const DEV_SECRET = 'nexustock-dev-secret-cambiar-en-produccion';
 
@@ -38,5 +40,18 @@ module.exports = {
   allowPublicSignup: bool(process.env.ALLOW_PUBLIC_SIGNUP, false),
   smtpUrl: process.env.SMTP_URL || '',
   mailFrom: process.env.MAIL_FROM || 'NexuStock <no-reply@nexustock.local>',
-  demandaSemanasHistorial: int(process.env.DEMANDA_SEMANAS_HISTORIAL, 8)
+  demandaSemanasHistorial: int(process.env.DEMANDA_SEMANAS_HISTORIAL, 8),
+  // Carpeta para parámetros de la instalación (nombre del negocio, activación de alertas)
+  dataDir: process.env.DATA_DIR || path.resolve(__dirname, '../data'),
+  // Motor predictivo (ml-engine, Python). Sin modelo activo o sin script, el sistema usa el respaldo (RF-11).
+  ml: {
+    dir: process.env.ML_ENGINE_DIR || path.resolve(__dirname, '../../ml-engine'),
+    script: process.env.ML_PREDICT_SCRIPT || '',
+    python: process.env.PYTHON_BIN || 'python3',
+    timeoutMs: int(process.env.ML_TIMEOUT_MS, 2000),
+    // Tope de una proyección «viable» (RNF-15): capacidad máxima del local en kg por semana
+    capacidadKgSemana: int(process.env.CAPACIDAD_KG_SEMANA, 5000)
+  },
+  // Tareas periódicas: recalcular predicciones y alertas cada N minutos (0 = desactivado)
+  evaluacionCadaMin: int(process.env.EVALUACION_CADA_MIN, 60)
 };

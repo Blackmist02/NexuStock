@@ -4,16 +4,25 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { useAuth } from "@/lib/auth";
 import { useConexion } from "@/lib/conexion";
-import { ROL_LABEL } from "@/lib/permisos";
+import { puede, ROL_LABEL } from "@/lib/permisos";
+import { useApi } from "@/lib/useApi";
+import type { ConfigNegocio } from "@/lib/tipos";
 
-/** Vistas disponibles hoy. Las demás (inventario, predicción, historial…) se irán agregando aquí. */
-export const NAV_ITEMS = [{ key: "dashboard", href: "/dashboard", label: "Dashboard" }] as const;
+export const NAV_ITEMS = [
+  { key: "dashboard", href: "/dashboard", label: "Dashboard" },
+  { key: "inventario", href: "/inventario", label: "Inventario" },
+  { key: "prediccion", href: "/prediccion", label: "Predicción" },
+  { key: "historial", href: "/historial", label: "Historial" },
+  { key: "configuracion", href: "/configuracion", label: "Configuración" },
+] as const;
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];
 
 export function Sidebar({ active }: { active: NavKey }) {
   const { user, logout } = useAuth();
   const { enLinea } = useConexion();
+  const { data: cfg } = useApi<{ data: ConfigNegocio }>("/config", undefined, { resguardo: true });
+  const items = NAV_ITEMS.filter((i) => i.key !== "configuracion" || puede(user?.rol, "usuarios"));
   return (
     <aside className="side">
       <div className="brand">
@@ -22,7 +31,7 @@ export function Sidebar({ active }: { active: NavKey }) {
         </Link>
       </div>
       <nav className="nav" aria-label="Principal">
-        {NAV_ITEMS.map((item) => (
+        {items.map((item) => (
           <Link
             key={item.key}
             href={item.href}
@@ -35,6 +44,7 @@ export function Sidebar({ active }: { active: NavKey }) {
         ))}
       </nav>
       <div className="biz">
+        {cfg?.data.negocio.nombre ? <div className="who">{cfg.data.negocio.nombre}</div> : null}
         <span className="biz-status">
           <i className={enLinea ? "biz-dot" : "biz-dot off"} />
           {enLinea ? "Sistema en línea" : "Sin conexión · datos guardados"}

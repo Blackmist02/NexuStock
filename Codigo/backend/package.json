@@ -1,12 +1,13 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "API REST de NexuStock (Express + PostgreSQL)",
   "main": "index.js",
   "scripts": {
     "test": "node --test \"test/*.test.js\"",
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "seed:demo": "node scripts/seed-demo.js"
   },
   "keywords": [],
   "author": "",

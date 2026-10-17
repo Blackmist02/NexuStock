@@ -14,7 +14,7 @@ function subscribe(onChange: () => void) {
 const leerTema = (): Theme => (document.documentElement.dataset.theme === "crema" ? "crema" : "oscuro");
 const temaServidor = (): Theme => "oscuro";
 
-/** Alterna entre el tema Oscuro y el Crema y recuerda la elección. */
+/** Botón único (sol / luna) que alterna entre el tema oscuro y el crema y recuerda la elección. */
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, leerTema, temaServidor);
 
@@ -47,13 +47,19 @@ export function ThemeToggle() {
     window.setTimeout(() => root.classList.remove("theme-fade"), 500);
   }
 
+  const siguiente: Theme = theme === "oscuro" ? "crema" : "oscuro";
+  const etiqueta = siguiente === "crema" ? "Cambiar a tema crema" : "Cambiar a tema oscuro";
+
   return (
-    <div className="theme-toggle" role="group" aria-label="Tema de color" data-theme-toggle>
-      {(["oscuro", "crema"] as const).map((t) => (
-        <button key={t} type="button" aria-pressed={theme === t} className={theme === t ? "on" : undefined} onClick={() => choose(t)}>
-          {t === "oscuro" ? "Oscuro" : "Crema"}
-        </button>
-      ))}
-    </div>
+    <button type="button" className="theme-toggle" data-theme-toggle aria-label={etiqueta} title={etiqueta} onClick={() => choose(siguiente)}>
+      {/* En tema oscuro se muestra el sol (lleva a crema); en tema crema, la luna (lleva a oscuro). */}
+      <svg className="ico ico-sol" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+      </svg>
+      <svg className="ico ico-luna" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+      </svg>
+    </button>
   );
 }

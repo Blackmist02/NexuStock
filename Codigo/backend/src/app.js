@@ -8,11 +8,8 @@ const config = require('./config');
 const db = require('./db');
 const { authenticate, csrfGuard } = require('./middleware/auth');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
-const authRouter = require('./routes/auth');
-const dashboardRouter = require('./routes/dashboard');
 
 const app = express();
-const PORT = config.port;
 
 // Middlewares
 app.set('trust proxy', config.trustProxy);
@@ -40,81 +37,54 @@ app.get('/api/health', async (req, res) => {
   });
 });
 
-// Autenticación (login, crear cuenta, recuperar contraseña) y dashboard
-app.use('/api/auth', authRouter);
-app.use('/api/dashboard', authenticate, dashboardRouter);
+// Acceso público: login, crear cuenta (alta inicial) y recuperar contraseña
+app.use('/api/auth', require('./routes/auth'));
 
-// Productos activos con su categoría y proveedor
-app.get('/api/products', async (req, res) => {
-  const { rows } = await db.query(`
-    SELECT p.id_producto,
-           p.nombre,
-           p.unidad,
-           p.precio_venta_clp,
-           p.stock_actual,
-           p.stock_minimo,
-           p.vida_util_dias,
-           p.margen_seguridad_pct,
-           c.id_categoria,
-           c.nombre  AS categoria,
-           pr.id_proveedor,
-           pr.nombre AS proveedor
-    FROM productos p
-    JOIN categorias  c  ON c.id_categoria  = p.id_categoria
-    JOIN proveedores pr ON pr.id_proveedor = p.id_proveedor
-    WHERE p.activo
-    ORDER BY p.nombre
-  `);
-  res.json({ data: rows });
-});
-
-// Detalle de un producto
-app.get('/api/products/:id', async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id <= 0) {
-    return res.status(400).json({ error: 'ID de producto inválido' });
-  }
-
-  const { rows } = await db.query(`
-    SELECT p.*,
-           c.nombre  AS categoria,
-           pr.nombre AS proveedor
-    FROM productos p
-    JOIN categorias  c  ON c.id_categoria  = p.id_categoria
-    JOIN proveedores pr ON pr.id_proveedor = p.id_proveedor
-    WHERE p.id_producto = $1
-  `, [id]);
-
-  if (rows.length === 0) {
-    return res.status(404).json({ error: 'Producto no encontrado' });
-  }
-  res.json({ data: rows[0] });
-});
-
-// Categorías
-app.get('/api/categories', async (req, res) => {
-  const { rows } = await db.query(
-    'SELECT id_categoria, nombre FROM categorias ORDER BY nombre'
-  );
-  res.json({ data: rows });
-});
-
-// Proveedores activos
-app.get('/api/suppliers', async (req, res) => {
-  const { rows } = await db.query(`
-    SELECT id_proveedor, nombre, contacto, lead_time_dias, dias_habiles
-    FROM proveedores
-    WHERE activo
-    ORDER BY nombre
-  `);
-  res.json({ data: rows });
-});
+// Todo lo demás requiere sesión; el control por rol se aplica dentro de cada ruta (ver README)
+app.use('/api', authenticate);
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/categories', require('./routes/categories'));
+app.use('/api/suppliers', require('./routes/suppliers'));
+app.use('/api/sales', require('./routes/sales'));
+app.use('/api/purchases', require('./routes/purchases'));
+app.use('/api/alerts', require('./routes/alerts'));
+app.use('/api/predictions', require('./routes/predictions'));
+app.use('/api/models', require('./routes/models'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/history', require('./routes/history'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api/config', require('./routes/config'));
 
 // Manejo centralizado de errores (Express 5 captura los errores de handlers async)
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Inicialización del servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor NexuStock corriendo en http://localhost:${PORT}`);
-});
+/** Tareas al iniciar y periódicas: feriados iniciales y recálculo de proyecciones y alertas. */
+function iniciarTareas() {
+  const { sembrarSiVacio } = require('./services/eventos');
+  const { evaluar } = require('./services/alertas');
+  const evaluarTodo = () =>
+    evaluar().catch((e) => console.error('[tareas] no se pudo recalcular las alertas:', e.message));
+
+  setTimeout(async () => {
+    try {
+      const n = await sembrarSiVacio();
+      if (n) console.log(`[tareas] calendario inicial cargado: ${n} feriados`);
+    } catch (e) {
+      console.error('[tareas] no se pudo cargar el calendario:', e.message);
+    }
+    await evaluarTodo();
+  }, 3000).unref();
+  if (config.evaluacionCadaMin > 0) setInterval(evaluarTodo, config.evaluacionCadaMin * 60 * 1000).unref();
+}
+
+// Inicialización del servidor (solo al ejecutar `node src/app.js`; las pruebas importan `app` sin abrir el puerto)
+if (require.main === module) {
+  app.listen(config.port, () => {
+    console.log(`🚀 Servidor NexuStock corriendo en http://localhost:${config.port}`);
+    iniciarTareas();
+  });
+}
+
+module.exports = app;
