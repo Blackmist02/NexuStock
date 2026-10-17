@@ -9,6 +9,8 @@
  */
 const config = require('../config');
 const db = require('../db');
+const { hoy } = require('../lib/dates');
+const { fechaObjetivo, modeloDisponible, predecirConModelo } = require('./prediccion');
 
 const DIAS = { semana: 7, mes: 30 };
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -71,10 +73,70 @@ const promedioHistorico = {
   }
 };
 
-let proveedor = promedioHistorico;
+/** Ejecuta `tarea` sobre cada elemento con a lo más `n` en paralelo (el motor no debe saturar el servidor). */
+async function conConcurrencia(items, n, tarea) {
+  const cola = [...items];
+  await Promise.all(
+    Array.from({ length: Math.min(n, cola.length) }, async () => {
+      while (cola.length) await tarea(cola.shift());
+    })
+  );
+}
+
+/**
+ * Proveedor por defecto: usa el modelo activo (origen «modelo») cuando existe y responde; en cualquier otro caso
+ * —sin modelo, script caído, más de 2 s, valor inválido o producto sin historial— aplica el respaldo (RF-11).
+ *
+ * `ejecutar: false` (lecturas como el dashboard) solo reutiliza las predicciones del modelo ya registradas hoy;
+ * `ejecutar: true` (motor de alertas, «generar predicción») invoca el script para los productos que falten.
+ */
+const compuesto = {
+  async estimar(productoIds, horizonte = 'semana', { ejecutar = false } = {}) {
+    const out = await promedioHistorico.estimar(productoIds, horizonte);
+    let modelo = null;
+    try {
+      modelo = await modeloDisponible();
+    } catch (e) {
+      console.error('[demanda] no se pudo consultar el modelo activo:', e.message);
+    }
+    if (!modelo || out.size === 0) return out;
+
+    const ids = [...out.keys()];
+    const { rows } = await db.query(
+      `SELECT DISTINCT ON (id_producto) id_producto, demanda_pred::float AS demanda, id_modelo, latencia_ms
+         FROM predicciones
+        WHERE id_producto = ANY($1::bigint[]) AND horizonte = $2 AND fecha_objetivo = $3::date
+          AND origen = 'modelo' AND id_modelo = $4 AND (generada_en AT TIME ZONE $5)::date = $6::date
+        ORDER BY id_producto, generada_en DESC`,
+      [ids, horizonte, fechaObjetivo(horizonte), modelo.id_modelo, config.tz, hoy()]
+    );
+    for (const r of rows) out.set(r.id_producto, { demanda: r.demanda, origen: 'modelo', id_modelo: r.id_modelo, latencia_ms: r.latencia_ms });
+    if (!ejecutar) return out;
+
+    // Solo productos con historial propio (los nuevos se estiman por categoría) y sin predicción vigente de hoy
+    const reutilizados = new Set(rows.map((r) => r.id_producto));
+    const pendientes = ids.filter((id) => !reutilizados.has(id) && out.get(id).origen === 'promedio_historico');
+    if (!pendientes.length) return out;
+    const info = await db.query(
+      `SELECT p.id_producto, p.nombre, p.unidad, c.nombre AS categoria
+         FROM productos p JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.id_producto = ANY($1::bigint[])`,
+      [pendientes]
+    );
+    await conConcurrencia(info.rows, 3, async (prod) => {
+      try {
+        out.set(prod.id_producto, await predecirConModelo(prod, horizonte, modelo));
+      } catch (e) {
+        console.warn(`[demanda] respaldo para el producto ${prod.id_producto}: ${e.message}`);
+      }
+    });
+    return out;
+  }
+};
+
+let proveedor = compuesto;
 const getDemandProvider = () => proveedor;
 const setDemandProvider = (p) => {
   proveedor = p;
 };
 
-module.exports = { getDemandProvider, setDemandProvider, promedioHistorico };
+module.exports = { getDemandProvider, setDemandProvider, promedioHistorico, compuesto };

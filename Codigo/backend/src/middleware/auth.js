@@ -59,4 +59,11 @@ function csrfGuard(req, _res, next) {
   next();
 }
 
-module.exports = { COOKIE_NAME, signAccessToken, setAuthCookie, clearAuthCookie, authenticate, csrfGuard };
+/** Autoriza solo a los roles indicados (RF-07). Se usa después de `authenticate`. */
+const requireRole = (...roles) => (req, _res, next) => {
+  if (!req.user) return next(unauthorized());
+  if (!roles.includes(req.user.rol)) return next(forbidden('Tu rol no tiene permiso para esta acción'));
+  next();
+};
+
+module.exports = { requireRole, COOKIE_NAME, signAccessToken, setAuthCookie, clearAuthCookie, authenticate, csrfGuard };

@@ -1,6 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { MovimientoModal } from "@/components/modales/MovimientoModal";
+import { Button } from "@/components/ui/Field";
+import { useToast } from "@/components/ui/Toast";
+import { useAuth } from "@/lib/auth";
+import { api, errorMessage } from "@/lib/api";
+import { puede } from "@/lib/permisos";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
 import { cls } from "@/lib/cls";
 import { fmtCant, fmtCLP, fmtFechaCorta, hoyISO, NIVEL_BADGE, NIVEL_LABEL } from "@/lib/format";
@@ -69,6 +77,20 @@ function ventasHoyDetalle(k: Dashboard["kpis"]): string {
 
 export function DashboardView() {
   const { data, error, loading, obsoleto, sinConexion, reload } = useApi<Dashboard>("/dashboard", undefined, { resguardo: true });
+  const { user } = useAuth();
+  const toast = useToast();
+  const [q, setQ] = useState("");
+  const [movimiento, setMovimiento] = useState<null | { tipo: "venta" | "compra"; id?: number }>(null);
+  const puedeMover = puede(user?.rol, "movimientos");
+  const coincide = (nombre: string) => !q.trim() || nombre.toLowerCase().includes(q.trim().toLowerCase());
+
+  async function exportar() {
+    try {
+      await api.download("/alerts/recommendations", { format: "csv" }, `sugerencias-de-compra-${hoyISO()}.csv`);
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  }
 
   const hoy = hoyISO();
   const vacio = !!data && data.kpis.total_productos === 0;
@@ -110,6 +132,19 @@ export function DashboardView() {
             Resumen general · hoy, {fechaLarga(hoy)}
             {data && obsoleto ? ` · Datos guardados el ${fechaHoraLocal(data.generado_en)}` : ""}
           </div>
+        </div>
+        <div className="topbar-right">
+          <label className="searchbox">
+            <span className="sr-only">Buscar producto</span>
+            <input type="search" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} />
+          </label>
+          <Button size="sm" onClick={() => void exportar()} disabled={!data}>Exportar CSV</Button>
+          {puedeMover ? (
+            <>
+              <Button size="sm" onClick={() => setMovimiento({ tipo: "compra" })}>Registrar compra</Button>
+              <Button size="sm" variant="primary" onClick={() => setMovimiento({ tipo: "venta" })}>Registrar venta</Button>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -207,8 +242,8 @@ export function DashboardView() {
 
           <div className={c("card")} style={{ marginBottom: 16 }}>
             <div className={c("title")}>Sugerencias de compra</div>
-            {data.sugerencias.length === 0 ? (
-              <div className={c("vacio")}>No hay sugerencias de compra pendientes: el stock está acorde con la demanda proyectada.</div>
+            {data.sugerencias.filter((a) => coincide(a.producto)).length === 0 ? (
+              <div className={c("vacio")}>{q.trim() ? "Ninguna sugerencia coincide con la búsqueda." : "No hay sugerencias de compra pendientes: el stock está acorde con la demanda proyectada."}</div>
             ) : (
               <div className={c("scroll")}>
                 <table className={c("tbl")}>
@@ -220,15 +255,16 @@ export function DashboardView() {
                       <th scope="col">Cantidad sugerida</th>
                       <th scope="col">Proveedor</th>
                       <th scope="col">Fecha límite para pedir</th>
+                      {puedeMover ? <th scope="col"><span className="sr-only">Acción</span></th> : null}
                     </tr>
                   </thead>
                   <tbody>
-                    {data.sugerencias.map((a) => {
+                    {data.sugerencias.filter((a) => coincide(a.producto)).map((a) => {
                       const lim = fechaLimite(a.fecha_limite_pedido, hoy);
                       return (
                         <tr key={a.id_producto}>
                           <td>
-                            <span className={c("plink")}>{a.producto}</span>
+                            <Link href={`/inventario/${a.id_producto}`} className={c("plink")}>{a.producto}</Link>
                           </td>
                           <td>
                             <span className={NIVEL_BADGE[a.nivel]}>{NIVEL_LABEL[a.nivel]}</span>
@@ -237,6 +273,11 @@ export function DashboardView() {
                           <td className={c("mono")}>{fmtCant(a.cantidad_sugerida, a.unidad)}</td>
                           <td>{a.proveedor}</td>
                           <td style={lim.vencida ? { color: "var(--quiebre)" } : undefined}>{lim.texto}</td>
+                          {puedeMover ? (
+                            <td>
+                              <Button size="sm" onClick={() => setMovimiento({ tipo: "compra", id: a.id_producto })}>Registrar compra</Button>
+                            </td>
+                          ) : null}
                         </tr>
                       );
                     })}
@@ -248,8 +289,8 @@ export function DashboardView() {
 
           <div className={c("card")}>
             <div className={c("title")}>Productos críticos</div>
-            {data.productos_criticos.length === 0 ? (
-              <div className={c("vacio")}>Ningún producto en quiebre ni con stock bajo.</div>
+            {data.productos_criticos.filter((p) => coincide(p.producto)).length === 0 ? (
+              <div className={c("vacio")}>{q.trim() ? "Ningún producto crítico coincide con la búsqueda." : "Ningún producto en quiebre ni con stock bajo."}</div>
             ) : (
               <div className={c("scroll")}>
                 <table className={c("tbl")}>
@@ -265,10 +306,10 @@ export function DashboardView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.productos_criticos.map((p) => (
+                    {data.productos_criticos.filter((p) => coincide(p.producto)).map((p) => (
                       <tr key={p.id_producto}>
                         <td>
-                          <span className={c("plink")}>{p.producto}</span>
+                          <Link href={`/inventario/${p.id_producto}`} className={c("plink")}>{p.producto}</Link>
                           <div className={c("hint")}>{p.categoria}</div>
                         </td>
                         <td>
@@ -289,6 +330,17 @@ export function DashboardView() {
         </>
       ) : null}
 
+      {movimiento ? (
+        <MovimientoModal
+          tipo={movimiento.tipo}
+          idProducto={movimiento.id}
+          onClose={() => setMovimiento(null)}
+          onHecho={() => {
+            setMovimiento(null);
+            void reload();
+          }}
+        />
+      ) : null}
     </AppShell>
   );
 }

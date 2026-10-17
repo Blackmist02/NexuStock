@@ -1,14 +1,13 @@
 const { Router } = require('express');
 const config = require('../config');
 const db = require('../db');
-const { addDays, hoy, isoWeekday } = require('../lib/dates');
+const { addDays, hoy, inicioSemana } = require('../lib/dates');
 const { snapshotInventario } = require('../services/inventario');
-const { ORDEN, cantidadSugerida, fechaLimitePedido, fechaQuiebreEstimada } = require('../services/reglas');
+const { calcularRiesgos } = require('../services/alertas');
 
 const router = Router();
 
-/** Lunes de la semana de una fecha ISO. */
-const lunes = (iso) => addDays(iso, -(isoWeekday(iso) - 1));
+const lunes = inicioSemana;
 const redondear1 = (n) => Math.round(n * 10) / 10;
 
 /**
@@ -72,29 +71,7 @@ router.get('/', async (_req, res) => {
     });
   }
 
-  const enRiesgo = inventario
-    .filter((p) => p.nivel !== 'optimo')
-    .map((p) => {
-      const fechaQuiebre = fechaQuiebreEstimada(hoyIso, p.stock_actual, p.demanda_semana);
-      return {
-        id_producto: p.id_producto,
-        producto: p.nombre,
-        categoria: p.categoria,
-        unidad: p.unidad,
-        nivel: p.nivel,
-        stock_actual: p.stock_actual,
-        stock_minimo: p.stock_minimo,
-        demanda_semana: p.demanda_semana,
-        origen_demanda: p.origen_demanda,
-        dias_cobertura: p.dias_cobertura,
-        proveedor: p.proveedor,
-        lead_time_dias: p.lead_time_dias,
-        cantidad_sugerida: cantidadSugerida(p.stock_actual, p.demanda_semana, p.margen_seguridad_pct, p.unidad, p.stock_minimo),
-        fecha_quiebre_estimada: fechaQuiebre,
-        fecha_limite_pedido: fechaLimitePedido(fechaQuiebre, p.lead_time_dias, p.dias_habiles, hoyIso)
-      };
-    })
-    .sort((a, b) => ORDEN[b.nivel] - ORDEN[a.nivel] || a.fecha_limite_pedido.localeCompare(b.fecha_limite_pedido) || a.producto.localeCompare(b.producto));
+  const enRiesgo = calcularRiesgos(inventario, hoyIso);
 
   res.json({
     generado_en: new Date().toISOString(),

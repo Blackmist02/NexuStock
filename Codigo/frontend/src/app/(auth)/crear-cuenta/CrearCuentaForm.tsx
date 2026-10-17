@@ -18,6 +18,8 @@ export function CrearCuentaForm() {
   const { register } = useAuth();
   const estado = useApi<{ necesitaRegistro: boolean; registroAbierto: boolean }>("/auth/setup-status");
 
+  const [negocio, setNegocio] = useState("");
+  const [acepta, setAcepta] = useState(false);
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,15 +53,17 @@ export function CrearCuentaForm() {
     e.preventDefault();
     if (enviando) return;
     const c: Record<string, string> = {};
+    if (negocio.trim().length < 2) c.negocio = "Ingresa el nombre de tu carnicería";
     if (nombre.trim().length < 2) c.nombre = "Ingresa tu nombre completo";
     if (!EMAIL_RE.test(email.trim())) c.email = "Ingresa un correo válido";
     if (!passwordValida(password)) c.password = "La contraseña no cumple los requisitos";
+    if (!acepta) c.acepta_terminos = "Debes aceptar los términos y la política de privacidad";
     setCampos(c);
     setError(null);
     if (Object.keys(c).length) return;
     setEnviando(true);
     try {
-      await register(nombre.trim(), email.trim(), password);
+      await register({ nombre: nombre.trim(), email: email.trim(), password, negocio: negocio.trim(), acepta_terminos: acepta });
       router.replace("/dashboard");
     } catch (err) {
       setEnviando(false);
@@ -79,26 +83,33 @@ export function CrearCuentaForm() {
       <form onSubmit={enviar} noValidate>
         <div className={styles.stack}>
           <TextField
-            label="Nombre completo"
+            label="Nombre de tu carnicería" placeholder="Ej.: Carnicería El Sur"
+            name="negocio"
+            autoComplete="organization"
+            value={negocio}
+            onChange={(e) => setNegocio(e.target.value)}
+            error={campos.negocio}
+            autoFocus
+          />
+          <TextField
+            label="Nombre completo" placeholder="Ej.: María Pérez"
             name="nombre"
             autoComplete="name"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             error={campos.nombre}
-            autoFocus
           />
           <TextField
-            label="Correo electrónico"
+            label="Correo electrónico" placeholder="Correo electrónico"
             type="email"
             name="email"
             autoComplete="username"
-            placeholder="correo@carniceria.cl"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             error={campos.email}
           />
           <TextField
-            label="Contraseña"
+            label="Contraseña" placeholder="Crea una contraseña"
             type="password"
             name="password"
             autoComplete="new-password"
@@ -109,6 +120,17 @@ export function CrearCuentaForm() {
         </div>
         <div className={styles.rules}>
           <PasswordRules password={password} />
+        </div>
+        <div style={{ margin: "0 0 14px" }}>
+          <label className="checkrow">
+            <input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} />
+            <span>Acepto los términos de uso y la política de privacidad de NexuStock.</span>
+          </label>
+          {campos.acepta_terminos ? (
+            <span className="field-err" role="alert">
+              {campos.acepta_terminos}
+            </span>
+          ) : null}
         </div>
         {error ? (
           <div className="form-err" role="alert" style={{ marginTop: 0, marginBottom: 14 }}>

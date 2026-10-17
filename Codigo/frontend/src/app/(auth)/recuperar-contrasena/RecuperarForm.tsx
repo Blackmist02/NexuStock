@@ -82,11 +82,10 @@ function PasoCorreo() {
       <div className="asub">Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva.</div>
       <form onSubmit={enviar} noValidate>
         <TextField
-          label="Correo electrónico"
+          label="Correo electrónico" placeholder="Correo electrónico"
           type="email"
           name="email"
           autoComplete="username"
-          placeholder="correo@carniceria.cl"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={campo}
@@ -182,7 +181,7 @@ function PasoNuevaContrasena({ token }: { token: string }) {
       <form onSubmit={enviar} noValidate>
         <div className={styles.stack}>
           <TextField
-            label="Nueva contraseña"
+            label="Nueva contraseña" placeholder="Crea una contraseña nueva"
             type="password"
             name="password"
             autoComplete="new-password"
@@ -192,7 +191,7 @@ function PasoNuevaContrasena({ token }: { token: string }) {
             autoFocus
           />
           <TextField
-            label="Confirmar contraseña"
+            label="Confirmar contraseña" placeholder="Repite la contraseña nueva"
             type="password"
             name="confirmar"
             autoComplete="new-password"

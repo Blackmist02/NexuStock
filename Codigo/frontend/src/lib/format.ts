@@ -75,3 +75,24 @@ export const NIVEL_LABEL = { quiebre: "Quiebre", bajo: "Bajo", optimo: "Óptimo"
 export type Nivel = keyof typeof NIVEL_LABEL;
 /** Clase de .badge para cada nivel del semáforo */
 export const NIVEL_BADGE: Record<Nivel, string> = { quiebre: "badge quiebre", bajo: "badge alerta", optimo: "badge saludable" };
+
+/**
+ * Convierte el valor de un <input type="datetime-local"> (hora de la carnicería, sin zona) en un instante ISO (UTC).
+ * Así la hora registrada es la que la persona ve, sin depender de la zona horaria del navegador ni del servidor.
+ */
+export function localInputAISO(valor: string): string {
+  const [f, h = "00:00"] = valor.split("T");
+  const [y, m, d] = f.split("-").map(Number);
+  const [hh, mm] = h.split(":").map(Number);
+  const objetivo = Date.UTC(y, m - 1, d, hh, mm);
+  let t = objetivo;
+  for (let i = 0; i < 2; i++) {
+    const p = new Intl.DateTimeFormat("en-CA", {
+      timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    }).formatToParts(new Date(t));
+    const g = (k: string) => Number(p.find((x) => x.type === k)?.value);
+    const visto = Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute"));
+    t += objetivo - visto;
+  }
+  return new Date(t).toISOString();
+}

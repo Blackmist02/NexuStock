@@ -1,5 +1,6 @@
 const config = require('../config');
 const { ApiError } = require('../lib/errors');
+const { esTransitorio } = require('../lib/tx');
 
 function notFoundHandler(_req, res) {
   res.status(404).json({ error: { code: 'ruta_no_encontrada', message: 'Ruta no encontrada' } });
@@ -18,6 +19,10 @@ function errorHandler(err, req, res, _next) {
   }
   if (err && err.type === 'entity.too.large') {
     return res.status(413).json({ error: { code: 'demasiado_grande', message: 'El cuerpo excede el tamaño permitido' } });
+  }
+  if (esTransitorio(err)) {
+    console.error(`[error] base de datos no disponible en ${req.method} ${req.originalUrl}: ${err.message}`);
+    return res.status(503).json({ error: { code: 'bd_no_disponible', message: 'El servicio no está disponible por un momento. Intenta nuevamente en unos segundos.' } });
   }
   console.error(`[error] ${req.method} ${req.originalUrl}:`, err);
   res.status(500).json({

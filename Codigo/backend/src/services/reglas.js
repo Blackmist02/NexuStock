@@ -50,4 +50,17 @@ function fechaLimitePedido(fechaQuiebre, leadTimeDias, diasHabiles, hoy) {
   return diffDays(f, hoy) < 0 ? hoy : f;
 }
 
-module.exports = { ORDEN, peorNivel, nivelPorDemanda, nivelPorMinimo, cantidadSugerida, fechaQuiebreEstimada, fechaLimitePedido };
+/**
+ * Excepción 3a de RF-09: la sugerencia no puede superar lo que se alcanza a vender dentro de la vida útil
+ * de refrigeración (demanda diaria × vida útil en días). Sin demanda o sin vida útil no se acota.
+ */
+function acotarPorVidaUtil(cantidad, demandaSemana, vidaUtilDias, unidad) {
+  if (!vidaUtilDias || !(demandaSemana > 0) || cantidad <= 0) return { cantidad, acotada: false };
+  const tope = (demandaSemana / 7) * vidaUtilDias;
+  if (cantidad <= tope) return { cantidad, acotada: false };
+  const c = unidad === 'un' ? Math.floor(tope + 1e-9) : Math.floor(tope * 10 + 1e-9) / 10;
+  return { cantidad: c, acotada: true };
+}
+
+module.exports = {
+  acotarPorVidaUtil, ORDEN, peorNivel, nivelPorDemanda, nivelPorMinimo, cantidadSugerida, fechaQuiebreEstimada, fechaLimitePedido };
