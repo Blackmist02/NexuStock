@@ -9,6 +9,7 @@
  */
 const config = require('../config');
 const db = require('../db');
+const { hoy } = require('../lib/dates');
 
 const DIAS = { semana: 7, mes: 30 };
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -20,17 +21,20 @@ const promedioHistorico = {
    */
   async estimar(productoIds, horizonte = 'semana') {
     const semanas = config.demandaSemanasHistorial;
+    // «Ahora» = fin del día de hoy en la zona del negocio (respeta FECHA_REFERENCIA en la demo)
     const { rows } = await db.query(
-      `SELECT p.id_producto, p.id_categoria,
+      `WITH ref AS (SELECT (($2::date + 1)::timestamp AT TIME ZONE $3) AS ahora)
+       SELECT p.id_producto, p.id_categoria,
               (SELECT MIN(v.fecha_hora) FROM ventas v WHERE v.id_producto = p.id_producto) AS primera_venta,
               COALESCE((SELECT SUM(v.cantidad) FROM ventas v
                          WHERE v.id_producto = p.id_producto
-                           AND v.fecha_hora >= NOW() - make_interval(weeks => $1)), 0) AS total,
-              EXTRACT(EPOCH FROM (NOW() - (SELECT MIN(v.fecha_hora) FROM ventas v
-                                            WHERE v.id_producto = p.id_producto))) / 86400.0 AS dias_historial
-         FROM productos p
+                           AND v.fecha_hora >= ref.ahora - make_interval(weeks => $1)
+                           AND v.fecha_hora < ref.ahora), 0) AS total,
+              EXTRACT(EPOCH FROM (ref.ahora - (SELECT MIN(v.fecha_hora) FROM ventas v
+                                                WHERE v.id_producto = p.id_producto))) / 86400.0 AS dias_historial
+         FROM productos p, ref
         WHERE p.activo`,
-      [semanas]
+      [semanas, hoy(), config.tz]
     );
 
     const dias = DIAS[horizonte];

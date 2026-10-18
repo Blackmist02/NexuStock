@@ -1,6 +1,17 @@
 // Configuración leída de variables de entorno (ver ../.env.example). dotenv ya se carga en app.js.
+const path = require('node:path');
+
 const bool = (v, def) => (v === undefined || v === '' ? def : ['true', '1'].includes(String(v).toLowerCase()));
 const int = (v, def) => (Number.isFinite(Number(v)) && v !== undefined && v !== '' ? Number(v) : def);
+
+function fechaReferencia(v) {
+  if (!v) return '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v))) {
+    console.error(`Configuración inválida: FECHA_REFERENCIA debe tener el formato AAAA-MM-DD (recibido: ${v}).`);
+    process.exit(1);
+  }
+  return v;
+}
 
 const isProd = process.env.NODE_ENV === 'production';
 const DEV_SECRET = 'nexustock-dev-secret-cambiar-en-produccion';
@@ -38,5 +49,15 @@ module.exports = {
   allowPublicSignup: bool(process.env.ALLOW_PUBLIC_SIGNUP, false),
   smtpUrl: process.env.SMTP_URL || '',
   mailFrom: process.env.MAIL_FROM || 'NexuStock <no-reply@nexustock.local>',
-  demandaSemanasHistorial: int(process.env.DEMANDA_SEMANAS_HISTORIAL, 8)
+  demandaSemanasHistorial: int(process.env.DEMANDA_SEMANAS_HISTORIAL, 8),
+  // Fecha fija que el sistema usa como «hoy» (AAAA-MM-DD). Solo para la demostración con datos históricos:
+  // debe coincidir con la fecha hasta la que se cargaron los datos (ml-engine/cargar_bd.py --hasta).
+  fechaReferencia: fechaReferencia(process.env.FECHA_REFERENCIA),
+  // Motor de ML (PyPredictorAdapter): intérprete de Python, script y tiempo máximo por solicitud (RNF: 2,0 s)
+  ml: {
+    habilitado: bool(process.env.ML_HABILITADO, true),
+    python: process.env.ML_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
+    script: process.env.ML_SCRIPT || path.resolve(__dirname, '../../ml-engine/predict.py'),
+    timeoutMs: int(process.env.ML_TIMEOUT_MS, 2000)
+  }
 };

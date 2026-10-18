@@ -24,7 +24,9 @@ services:
 
   backend:
     build:
-      context: ./backend
+      # Contexto Codigo/ para incluir ml-engine (Python 3.12 + modelo) en la imagen; ver backend/Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
       target: dev
     container_name: nexustock-backend
     restart: unless-stopped
@@ -35,13 +37,18 @@ services:
       DB_NAME: ${POSTGRES_DB:-nexustock}
       DB_USER: ${POSTGRES_USER:-nexustock}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-nexustock_dev}
-      DATABASE_URL: postgres://${POSTGRES_USER:-nexustock}:${POSTGRES_PASSWORD:-nexustock_dev}@db:5432/${POSTGRES_DB:-nexustock}
+      # Base del backend: PostgreSQL local por defecto. Para usar Supabase, define BACKEND_DATABASE_URL y DB_SSL en .env
+      DATABASE_URL: ${BACKEND_DATABASE_URL:-postgres://${POSTGRES_USER:-nexustock}:${POSTGRES_PASSWORD:-nexustock_dev}@db:5432/${POSTGRES_DB:-nexustock}}
+      DB_SSL: ${DB_SSL:-}
+      DB_SSL_CA: ${DB_SSL_CA:-}
       # Autenticación (ver .env.example). Los valores por defecto son SOLO para desarrollo.
       JWT_SECRET: ${JWT_SECRET:-nexustock-dev-secret-cambiar-en-produccion}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${FRONTEND_PORT:-3001}}
       APP_URL: ${APP_URL:-http://localhost:${FRONTEND_PORT:-3001}}
       TZ_NEGOCIO: ${TZ_NEGOCIO:-America/Santiago}
       ALLOW_PUBLIC_SIGNUP: ${ALLOW_PUBLIC_SIGNUP:-true}
+      # Demo con datos históricos: «hoy» del sistema (ver .env.example). Vacío = fecha real.
+      FECHA_REFERENCIA: ${FECHA_REFERENCIA:-}
     # -L (legacy watch) para detectar cambios desde Windows en el volumen montado
     command: ["npx", "nodemon", "-L", "src/app.js"]
     ports:
@@ -49,6 +56,11 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+      # Motor ML: script y modelo serializado (solo lectura)
+      - ./ml-engine/predict.py:/ml-engine/predict.py:ro
+      - ./ml-engine/models:/ml-engine/models:ro
+      # Certificado público de la CA de Supabase (DB_SSL=verificado, DB_SSL_CA=/certs/prod-ca-2021.crt)
+      - ./certs:/certs:ro
     depends_on:
       db:
         condition: service_healthy

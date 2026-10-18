@@ -53,7 +53,7 @@ CREATE TABLE CATEGORIAS (
     nombre         VARCHAR(40) NOT NULL UNIQUE
 );
 
-COMMENT ON TABLE CATEGORIAS IS 'Grupos de productos (Vacuno, Cerdo, Pollo, Embutidos). Base para estimar demanda de productos nuevos sin historial.';
+COMMENT ON TABLE CATEGORIAS IS 'Grupos de productos (Vacuno, Cerdo, Pollo, Embutidos, Pescados). Base para estimar demanda de productos nuevos sin historial.';
 
 -- 3. PROVEEDORES
 CREATE TABLE PROVEEDORES (
@@ -293,6 +293,7 @@ INSERT INTO CATEGORIAS (nombre) VALUES
     ('Vacuno'),
     ('Cerdo'),
     ('Pollo'),
-    ('Embutidos');
+    ('Embutidos'),
+    ('Pescados');
 
 COMMIT;
