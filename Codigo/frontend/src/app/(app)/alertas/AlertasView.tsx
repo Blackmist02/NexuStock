@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ErrorState, Loading } from "@/components/ui/States";
 import { useToast } from "@/components/ui/Toast";
@@ -8,40 +8,22 @@ import { api, errorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { cls } from "@/lib/cls";
 import { fmtCant, fmtFecha, fmtFechaHora, NIVEL_BADGE, NIVEL_LABEL } from "@/lib/format";
+import { puede } from "@/lib/permisos";
+import type { Alerta } from "@/lib/tipos";
 import { useApi } from "@/lib/useApi";
 import styles from "../dashboard/page.module.css";
 
 const c = cls(styles);
 
-type Estado = "activa" | "atendida" | "descartada";
-
-interface Alerta {
-  id_alerta: number;
-  producto: string;
-  categoria: string;
-  unidad: "kg" | "un";
-  proveedor: string;
-  nivel: "quiebre" | "bajo";
-  estado: Estado;
-  stock_actual: number;
-  demanda_proyectada: number;
-  cantidad_sugerida: number;
-  lead_time_dias: number;
-  fecha_limite_pedido: string;
-  creada_en: string;
-  resuelta_en: string | null;
-  reemplazada: boolean;
-  causa: string;
-  causa_texto: string;
-}
-
-interface Respuesta {
-  resumen: Record<Estado, number>;
-  alertas: Alerta[];
-}
+type Estado = Alerta["estado"];
 
 const ESTADO_LABEL: Record<Estado, string> = { activa: "Activa", atendida: "Atendida", descartada: "Descartada" };
 const ESTADO_BADGE: Record<Estado, string> = { activa: "badge quiebre", atendida: "badge saludable", descartada: "badge neutral" };
+const ESTADO_DETALLE: Record<Estado, string> = {
+  activa: "Pendientes de reposición",
+  atendida: "Stock repuesto o pedido gestionado",
+  descartada: "Descartadas por el administrador",
+};
 
 const FILTROS_ESTADO: [Estado | "", string][] = [
   ["", "Todas"],
@@ -55,25 +37,30 @@ const FILTROS_NIVEL: ["" | "quiebre" | "bajo", string][] = [
   ["bajo", "Bajo"],
 ];
 
+/** Historial de alertas de inventario (RF-05, RF-09): fecha, causa y sugerencia de compra de cada alerta. */
 export function AlertasView() {
   const [estado, setEstado] = useState<Estado | "">("");
   const [nivel, setNivel] = useState<"" | "quiebre" | "bajo">("");
   const [enCurso, setEnCurso] = useState<number | null>(null);
-  const { data, error, loading, reload } = useApi<Respuesta>("/alertas", { estado, nivel });
+  const { data, error, loading, reload } = useApi<{ data: Alerta[] }>("/alerts", { estado: "todas" });
   const { user } = useAuth();
   const toast = useToast();
-  const puedeResolver = user?.rol === "administrador";
+  const puedeResolver = puede(user?.rol, "alertas");
+
+  const todas = useMemo(() => data?.data ?? [], [data]);
+  const visibles = todas.filter((a) => (!estado || a.estado === estado) && (!nivel || a.nivel === nivel));
+  const conteo = (e: Estado) => todas.filter((a) => a.estado === e).length;
 
   async function resolver(a: Alerta, nuevo: "atendida" | "descartada") {
     setEnCurso(a.id_alerta);
     try {
-      await api.patch(`/alertas/${a.id_alerta}`, { estado: nuevo });
+      await api.patch(`/alerts/${a.id_alerta}`, { estado: nuevo });
       toast.ok(`Alerta de ${a.producto} marcada como ${ESTADO_LABEL[nuevo].toLowerCase()}`);
-      await reload();
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
       setEnCurso(null);
+      await reload();
     }
   }
 
@@ -81,7 +68,7 @@ export function AlertasView() {
     <AppShell active="alertas">
       <div className={c("topbar")}>
         <div>
-          <h1 className={c("h1")}>Historial de alertas</h1>
+          <h1 className={c("h1")}>Alertas de inventario</h1>
           <div className={c("subtitle")}>Productos que entraron en quiebre o stock bajo, con la causa y la sugerencia de ese momento</div>
         </div>
       </div>
@@ -91,12 +78,10 @@ export function AlertasView() {
           {(["activa", "atendida", "descartada"] as Estado[]).map((e) => (
             <div className={c("card stat")} key={e}>
               <div className={c("lbl")}>Alertas {ESTADO_LABEL[e].toLowerCase()}s</div>
-              <div className={c("val")} style={e === "activa" && data.resumen.activa > 0 ? { color: "var(--quiebre)" } : undefined}>
-                {data.resumen[e]}
+              <div className={c("val")} style={e === "activa" && conteo(e) > 0 ? { color: "var(--quiebre)" } : undefined}>
+                {conteo(e)}
               </div>
-              <div className={c("delta")}>
-                {e === "activa" ? "Pendientes de reposición" : e === "atendida" ? "Stock repuesto o atendidas a mano" : "Descartadas o reemplazadas por otro nivel"}
-              </div>
+              <div className={c("delta")}>{ESTADO_DETALLE[e]}</div>
             </div>
           ))}
         </div>
@@ -120,10 +105,8 @@ export function AlertasView() {
 
         {!data && loading ? <Loading texto="Cargando alertas…" /> : null}
         {!data && error ? <ErrorState message={error} onRetry={() => void reload()} /> : null}
-        {data && data.alertas.length === 0 ? (
-          <div className={c("vacio")}>No hay alertas con estos filtros.</div>
-        ) : null}
-        {data && data.alertas.length > 0 ? (
+        {data && visibles.length === 0 ? <div className={c("vacio")}>No hay alertas con estos filtros.</div> : null}
+        {data && visibles.length > 0 ? (
           <div className={c("scroll")}>
             <table className={c("tbl")}>
               <thead>
@@ -141,12 +124,14 @@ export function AlertasView() {
                 </tr>
               </thead>
               <tbody>
-                {data.alertas.map((a) => (
+                {visibles.map((a) => (
                   <tr key={a.id_alerta}>
                     <td className={c("mono")}>{fmtFechaHora(a.creada_en)}</td>
                     <td>
                       <span className={c("plink")}>{a.producto}</span>
-                      <div className={c("hint")}>{a.categoria} · {a.proveedor}</div>
+                      <div className={c("hint")}>
+                        {a.categoria} · {a.proveedor}
+                      </div>
                     </td>
                     <td>
                       <span className={NIVEL_BADGE[a.nivel]}>{NIVEL_LABEL[a.nivel]}</span>
@@ -160,7 +145,7 @@ export function AlertasView() {
                     <td className={c("mono")}>{fmtCant(a.cantidad_sugerida, a.unidad)}</td>
                     <td>{fmtFecha(a.fecha_limite_pedido)}</td>
                     <td>
-                      <span className={ESTADO_BADGE[a.estado]}>{a.reemplazada ? "Cambió de nivel" : ESTADO_LABEL[a.estado]}</span>
+                      <span className={ESTADO_BADGE[a.estado]}>{ESTADO_LABEL[a.estado]}</span>
                       {a.resuelta_en ? <div className={c("hint")}>{fmtFechaHora(a.resuelta_en)}</div> : null}
                     </td>
                     {puedeResolver ? (

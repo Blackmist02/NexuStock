@@ -19,7 +19,7 @@ interface AuthCtx {
   /** true mientras se consulta /auth/me por primera vez */
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (nombre: string, email: string, password: string) => Promise<void>;
+  register: (datos: { nombre: string; email: string; password: string; negocio: string; acepta_terminos: boolean }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -79,8 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(r.user);
   }, []);
 
-  const register = useCallback(async (nombre: string, email: string, password: string) => {
-    const r = await api.post<{ user: Usuario }>("/auth/register", { nombre, email, password });
+  const register = useCallback(async (datos: { nombre: string; email: string; password: string; negocio: string; acepta_terminos: boolean }) => {
+    const r = await api.post<{ user: Usuario }>("/auth/register", datos);
     limpiarCacheLocal();
     guardarUsuarioLocal(r.user);
     setUser(r.user);

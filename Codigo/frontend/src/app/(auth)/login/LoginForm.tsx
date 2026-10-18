@@ -59,22 +59,20 @@ export function LoginForm() {
       <form onSubmit={enviar} noValidate>
         <div className={styles.stack}>
           <TextField
-            label="Correo electrónico"
+            label="Correo electrónico" placeholder="Correo electrónico"
             type="email"
             name="email"
             autoComplete="username"
-            placeholder="correo@carniceria.cl"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             error={campos.email}
             autoFocus
           />
           <TextField
-            label="Contraseña"
+            label="Contraseña" placeholder="Ingresa tu contraseña"
             type="password"
             name="password"
             autoComplete="current-password"
-            placeholder="Tu contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error={campos.password}

@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
+# Frontend NexuStock (Next.js 16 · React 19 · TypeScript)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3001 (el backend debe estar en el puerto 4000)
+npm run lint && npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`/api/*` se reenvía al backend (`API_URL`, por defecto `http://localhost:4000`; se lee al ejecutar, no al compilar), así la cookie de
+sesión viaja por el mismo origen. Para producción: `npm run build && API_URL=http://backend:4000 npm start -- -p 3001`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pantallas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Ruta | Contenido |
+| --- | --- |
+| `/login` · `/crear-cuenta` · `/recuperar-contrasena` | Acceso, primera cuenta (negocio + términos) y recuperación. |
+| `/dashboard` | KPIs, semáforo, tendencia real vs. proyectada, sugerencias de compra (buscar, exportar CSV, registrar venta/compra). |
+| `/inventario` · `/inventario/[id]` | Productos con filtros Quiebre/Bajo/Óptimo, alta y edición, detalle con movimientos y aviso de agotamiento. |
+| `/inventario/proveedores` | Proveedores (lead time, días hábiles) y categorías. |
+| `/prediccion` · `/prediccion/calendario` · `/prediccion/modelo` | Demanda proyectada y alertas (atender/descartar), calendario de eventos, precisión y versiones del modelo. |
+| `/historial` | Ventas y compras por período, totales, ventas por semana y exportación CSV. |
+| `/configuracion` | Negocio, alertas, equipo y permisos por rol (administrador y TI). |
 
-## Learn More
+Temas oscuro y crema, adaptado a móvil. Los botones se muestran según el rol (`src/lib/permisos.ts`, misma matriz que aplica la API).
+Sin conexión, las vistas de lectura muestran los últimos datos guardados en el dispositivo.
 
-To learn more about Next.js, take a look at the following resources:
+## Estructura
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`src/app` (rutas) · `src/components` (shell, modales en `modales/`, gráficos SVG propios en `charts/`, campos en `ui/`) · `src/lib` (cliente API, `useApi`, formato es-CL, permisos, tipos) · `src/styles` (tokens, UI global, vistas).

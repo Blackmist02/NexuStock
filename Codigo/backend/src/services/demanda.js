@@ -3,13 +3,13 @@
  *
  *   estimar(productoIds, horizonte) → Map<id_producto, { demanda, origen }>
  *
- * Hoy la única implementación es el respaldo estadístico del diseño (`promedio_historico` y, sin historial,
- * `categoria`). Cuando el motor de ML esté listo, se agrega otro proveedor con origen = 'modelo' y se registra
- * con setDemandProvider().
+ * El proveedor por defecto (`compuesto`) usa el modelo de ML activo (origen `modelo`) y, cuando no está disponible,
+ * el respaldo estadístico del diseño (`promedio_historico` y, sin historial, `categoria`).
  */
 const config = require('../config');
 const db = require('../db');
 const { hoy } = require('../lib/dates');
+const { fechaObjetivo, modeloDisponible, predecirLote } = require('./prediccion');
 
 const DIAS = { semana: 7, mes: 30 };
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -75,10 +75,61 @@ const promedioHistorico = {
   }
 };
 
-let proveedor = promedioHistorico;
+/**
+ * Proveedor por defecto: usa el modelo activo (origen «modelo») cuando existe y responde; en cualquier otro caso
+ * —sin modelo, script caído, más de 2 s, valor inválido o producto sin historial— aplica el respaldo (RF-11).
+ *
+ * `ejecutar: false` (lecturas como el dashboard) solo reutiliza las predicciones del modelo ya registradas hoy;
+ * `ejecutar: true` (motor de alertas, «generar predicción») invoca el motor para los productos que falten, en una
+ * sola solicitud. Con FECHA_REFERENCIA (demostración con datos históricos) se reutiliza la predicción de la semana
+ * objetivo aunque se haya generado otro día, porque la fecha de generación es la del reloj y no la de referencia.
+ */
+const compuesto = {
+  async estimar(productoIds, horizonte = 'semana', { ejecutar = false } = {}) {
+    const out = await promedioHistorico.estimar(productoIds, horizonte);
+    let modelo = null;
+    try {
+      modelo = await modeloDisponible();
+    } catch (e) {
+      console.error('[demanda] no se pudo consultar el modelo activo:', e.message);
+    }
+    if (!modelo || out.size === 0) return out;
+
+    const ids = [...out.keys()];
+    const { rows } = await db.query(
+      `SELECT DISTINCT ON (id_producto) id_producto, demanda_pred::float AS demanda, id_modelo, latencia_ms
+         FROM predicciones
+        WHERE id_producto = ANY($1::bigint[]) AND horizonte = $2 AND fecha_objetivo = $3::date
+          AND origen = 'modelo' AND id_modelo = $4
+          AND ($7::boolean OR (generada_en AT TIME ZONE $5)::date = $6::date)
+        ORDER BY id_producto, generada_en DESC`,
+      [ids, horizonte, fechaObjetivo(horizonte), modelo.id_modelo, config.tz, hoy(), Boolean(config.fechaReferencia)]
+    );
+    for (const r of rows) out.set(r.id_producto, { demanda: r.demanda, origen: 'modelo', id_modelo: r.id_modelo, latencia_ms: r.latencia_ms });
+    if (!ejecutar) return out;
+
+    // Solo productos con historial propio (los nuevos se estiman por categoría) y sin predicción vigente de hoy
+    const reutilizados = new Set(rows.map((r) => r.id_producto));
+    const pendientes = ids.filter((id) => !reutilizados.has(id) && out.get(id).origen === 'promedio_historico');
+    if (!pendientes.length) return out;
+    const info = await db.query(
+      `SELECT p.id_producto, p.nombre, p.unidad, c.nombre AS categoria
+         FROM productos p JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.id_producto = ANY($1::bigint[])`,
+      [pendientes]
+    );
+    try {
+      for (const [id, r] of await predecirLote(info.rows, horizonte, modelo)) out.set(id, r);
+    } catch (e) {
+      console.warn(`[demanda] respaldo para ${pendientes.length} productos: ${e.message}`);
+    }
+    return out;
+  }
+};
+
+let proveedor = compuesto;
 const getDemandProvider = () => proveedor;
 const setDemandProvider = (p) => {
   proveedor = p;
 };
 
-module.exports = { getDemandProvider, setDemandProvider, promedioHistorico };
+module.exports = { getDemandProvider, setDemandProvider, promedioHistorico, compuesto };

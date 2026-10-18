@@ -50,14 +50,20 @@ module.exports = {
   smtpUrl: process.env.SMTP_URL || '',
   mailFrom: process.env.MAIL_FROM || 'NexuStock <no-reply@nexustock.local>',
   demandaSemanasHistorial: int(process.env.DEMANDA_SEMANAS_HISTORIAL, 8),
-  // Fecha fija que el sistema usa como «hoy» (AAAA-MM-DD). Solo para la demostración con datos históricos:
-  // debe coincidir con la fecha hasta la que se cargaron los datos (ml-engine/cargar_bd.py --hasta).
+  // Fecha fija que el sistema usa como «hoy» (AAAA-MM-DD). Solo para mostrar datos históricos: los datos deben estar
+  // cargados hasta el día anterior (ml-engine/cargar_bd.py --hasta). Vacío = fecha del reloj.
   fechaReferencia: fechaReferencia(process.env.FECHA_REFERENCIA),
-  // Motor de ML (PyPredictorAdapter): intérprete de Python, script y tiempo máximo por solicitud (RNF: 2,0 s)
+  // Carpeta para parámetros de la instalación (nombre del negocio, activación de alertas)
+  dataDir: process.env.DATA_DIR || path.resolve(__dirname, '../data'),
+  // Motor predictivo (ml-engine, Python). Sin modelo activo o sin script, el sistema usa el respaldo (RF-11).
   ml: {
-    habilitado: bool(process.env.ML_HABILITADO, true),
-    python: process.env.ML_PYTHON || (process.platform === 'win32' ? 'python' : 'python3'),
-    script: process.env.ML_SCRIPT || path.resolve(__dirname, '../../ml-engine/predict.py'),
-    timeoutMs: int(process.env.ML_TIMEOUT_MS, 2000)
-  }
+    dir: process.env.ML_ENGINE_DIR || path.resolve(__dirname, '../../ml-engine'),
+    script: process.env.ML_PREDICT_SCRIPT || '',
+    python: process.env.PYTHON_BIN || 'python3',
+    timeoutMs: int(process.env.ML_TIMEOUT_MS, 2000),
+    // Tope de una proyección «viable» (RNF-15): capacidad máxima del local en kg por semana
+    capacidadKgSemana: int(process.env.CAPACIDAD_KG_SEMANA, 5000)
+  },
+  // Tareas periódicas: recalcular predicciones y alertas cada N minutos (0 = desactivado)
+  evaluacionCadaMin: int(process.env.EVALUACION_CADA_MIN, 60)
 };

@@ -5,6 +5,9 @@ const { z } = require('zod');
 const config = require('../config');
 const db = require('../db');
 const { ApiError, forbidden, parse, unauthorized } = require('../lib/errors');
+const { errorCampo } = require('../lib/http');
+const negocio = require('../lib/negocio');
+const { enlaceRestablecer } = require('../lib/reset');
 const { enviarCorreo } = require('../lib/mailer');
 const { DUMMY_HASH, fingerprint, hashPassword, passwordSchema, verifyPassword } = require('../lib/password');
 const { authenticate, clearAuthCookie, setAuthCookie, signAccessToken } = require('../middleware/auth');
@@ -37,7 +40,13 @@ router.get('/setup-status', async (_req, res) => {
  */
 router.post('/register', limiter, async (req, res) => {
   const body = parse(
-    z.object({ nombre: z.string().trim().min(2, 'Ingresa tu nombre').max(120), email: emailSchema, password: passwordSchema }),
+    z.object({
+      nombre: z.string().trim().min(2, 'Ingresa tu nombre').max(120),
+      email: emailSchema,
+      password: passwordSchema,
+      negocio: z.string().trim().min(2, 'Ingresa el nombre de tu carnicería').max(80, 'Máximo 80 caracteres').optional(),
+      acepta_terminos: z.boolean().optional()
+    }),
     req.body
   );
   const hash = await hashPassword(body.password);
@@ -50,6 +59,11 @@ router.post('/register', limiter, async (req, res) => {
     if (n > 0 && !config.allowPublicSignup) {
       throw forbidden('El registro está cerrado. Pide a un administrador que cree tu usuario.');
     }
+    // Alta inicial (RF-12): el nombre del negocio y la aceptación de los términos son obligatorios
+    if (n === 0) {
+      if (!body.negocio) throw errorCampo('negocio', 'Ingresa el nombre de tu carnicería');
+      if (body.acepta_terminos !== true) throw errorCampo('acepta_terminos', 'Debes aceptar los términos y la política de privacidad');
+    }
     const r = await client.query(
       `INSERT INTO usuarios (nombre, email, password_hash, rol)
        VALUES ($1, $2, $3, $4)
@@ -58,8 +72,10 @@ router.post('/register', limiter, async (req, res) => {
     );
     await client.query('COMMIT');
     user = r.rows[0];
+    if (n === 0) negocio.guardar({ nombre: body.negocio });
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});
+    if (e.code === '23505') throw errorCampo('email', 'Ese correo ya está registrado. Inicia sesión o recupera tu contraseña.');
     throw e;
   } finally {
     client.release();
@@ -106,11 +122,7 @@ router.post('/forgot', limiter, async (req, res) => {
   const { rows } = await db.query('SELECT id_usuario, nombre, password_hash, activo FROM usuarios WHERE email = $1', [email]);
   const u = rows[0];
   if (u && u.activo) {
-    const token = jwt.sign({ sub: String(u.id_usuario), typ: 'reset', fp: fingerprint(u.password_hash) }, config.jwtSecret, {
-      expiresIn: '30m',
-      algorithm: 'HS256'
-    });
-    const link = `${config.appUrl}/recuperar-contrasena?token=${encodeURIComponent(token)}`;
+    const link = enlaceRestablecer(u);
     try {
       await enviarCorreo(
         email,

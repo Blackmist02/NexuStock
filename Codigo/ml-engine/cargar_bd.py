@@ -3,9 +3,9 @@
 Uso (desde ml-engine, con el .venv activo):
 
     python cargar_bd.py --hasta 2023-12-31            # primera carga: catálogo, calendario, modelo e historia
-    python cargar_bd.py --hasta 2024-03-31            # avance de la demo: agrega ventas y compras hasta esa fecha
+    python cargar_bd.py --hasta 2024-03-31            # agrega las ventas y compras hasta esa fecha
     python cargar_bd.py --hasta 2024-03-31 --reemplazar   # borra catálogo y transacciones, y carga de nuevo
-    python cargar_bd.py --hasta 2024-04-07 --env-url SUPABASE_DB_URL   # en Supabase (URL leída de ../.env)
+    python cargar_bd.py --hasta 2024-09-07 --env-url SUPABASE_DB_URL   # en Supabase (URL leída de ../.env)
 
 Conexión: usa DATABASE_URL si está definida; si no, arma la URL local con los valores de ../.env
 (POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, DB_PORT). Con --url se indica otra base.
@@ -16,8 +16,9 @@ Requisitos de la base:
     Créalo antes desde «Crear cuenta» en la plataforma.
 
 Notas:
-  - --hasta es la fecha de referencia de la demo: no se carga nada posterior, y stock_actual queda como el
+  - --hasta es el último día cargado (conviene un domingo): no se carga nada posterior, y stock_actual queda como el
     stock reconstruido al cierre de ese día (inventario inicial + compras recibidas − ventas − mermas).
+    En el backend, FECHA_REFERENCIA debe ser el día siguiente (el lunes): el sistema proyecta la semana en curso.
   - EVENTOS_CALENDARIO guarda un día por fila: los eventos de varios días se expanden.
   - Los productos quedan con id_producto 1..24 en el orden P001..P024 solo en una base recién creada o con --reemplazar.
   - Para cada semana de 2024 ya iniciada al --hasta, registra en PREDICCIONES la predicción del modelo hecha con los
@@ -321,8 +322,9 @@ def main():
         if not args.sin_predicciones:
             generar_predicciones(cur, hasta)
 
+    # El backend proyecta la semana en curso (lunes de «hoy»): con datos hasta un domingo, «hoy» es el lunes siguiente
     print(f'Listo en {time.perf_counter() - inicio:.1f} s. Fecha de referencia para el backend: '
-          f'FECHA_REFERENCIA={hasta.date()}')
+          f'FECHA_REFERENCIA={(hasta + pd.Timedelta(days=1)).date()}')
 
 
 if __name__ == '__main__':

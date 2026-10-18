@@ -46,8 +46,14 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${FRONTEND_PORT:-3001}}
       APP_URL: ${APP_URL:-http://localhost:${FRONTEND_PORT:-3001}}
       TZ_NEGOCIO: ${TZ_NEGOCIO:-America/Santiago}
-      ALLOW_PUBLIC_SIGNUP: ${ALLOW_PUBLIC_SIGNUP:-true}
-      # Demo con datos históricos: «hoy» del sistema (ver .env.example). Vacío = fecha real.
+      # Tras crear la primera cuenta (administrador) el registro público queda cerrado; el resto del equipo se crea en Configuración.
+      ALLOW_PUBLIC_SIGNUP: ${ALLOW_PUBLIC_SIGNUP:-false}
+      # Parámetros del negocio (nombre, alertas) y motor predictivo (Python 3.12 incluido en la imagen)
+      DATA_DIR: /app/data
+      ML_ENGINE_DIR: /ml-engine
+      PYTHON_BIN: ${PYTHON_BIN:-python3}
+      EVALUACION_CADA_MIN: ${EVALUACION_CADA_MIN:-60}
+      # Datos históricos: «hoy» del sistema (ver .env.example). Vacío = fecha del reloj.
       FECHA_REFERENCIA: ${FECHA_REFERENCIA:-}
     # -L (legacy watch) para detectar cambios desde Windows en el volumen montado
     command: ["npx", "nodemon", "-L", "src/app.js"]
@@ -56,9 +62,10 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-      # Motor ML: script y modelo serializado (solo lectura)
-      - ./ml-engine/predict.py:/ml-engine/predict.py:ro
-      - ./ml-engine/models:/ml-engine/models:ro
+      # Parámetros del negocio: sobreviven a reconstruir el contenedor
+      - appdata:/app/data
+      # Motor predictivo del equipo de datos (solo lectura): predict.py y models/
+      - ./ml-engine:/ml-engine:ro
       # Certificado público de la CA de Supabase (DB_SSL=verificado, DB_SSL_CA=/certs/prod-ca-2021.crt)
       - ./certs:/certs:ro
     depends_on:
@@ -67,3 +74,4 @@ services:
 
 volumes:
   pgdata:
+  appdata:
