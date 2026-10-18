@@ -17,7 +17,7 @@ import psycopg
 
 CODIGO = Path(__file__).resolve().parent.parent
 TABLAS = ['usuarios', 'categorias', 'proveedores', 'productos', 'compras', 'ventas', 'eventos_calendario',
-          'modelos_ml', 'predicciones', 'alertas_inventario']
+          'modelos_ml', 'predicciones', 'alertas_inventario', 'configuracion', 'mermas']
 
 
 def leer_env(nombre):
