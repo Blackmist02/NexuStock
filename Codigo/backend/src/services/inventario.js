@@ -1,6 +1,7 @@
 const db = require('../db');
+const { hoy } = require('../lib/dates');
 const { getDemandProvider } = require('./demanda');
-const { demandaReposicion, nivelPorDemanda, nivelPorMinimo, peorNivel } = require('./reglas');
+const { demandaACubrir, nivelPorDemanda, nivelPorMinimo, peorNivel } = require('./reglas');
 
 /** Foto del inventario activo con la demanda semanal proyectada y el semáforo de cada producto (solo lectura). */
 async function snapshotInventario(ids = null, opciones = {}) {
@@ -17,12 +18,13 @@ async function snapshotInventario(ids = null, opciones = {}) {
     [ids]
   );
   const estimaciones = await getDemandProvider().estimar(rows.map((r) => r.id_producto), 'semana', opciones);
+  const hoyIso = hoy();
   return rows.map((r) => {
     const e = estimaciones.get(r.id_producto);
     const demanda = e ? e.demanda : 0;
-    const reposicion = demandaReposicion(demanda, r.lead_time_dias);
+    const { demanda: reposicion, tope, acotada } = demandaACubrir(demanda, r.lead_time_dias, r.dias_habiles, hoyIso, r.vida_util_dias, r.unidad);
     const nivel = peorNivel(
-      nivelPorDemanda(r.stock_actual, reposicion, r.margen_seguridad_pct),
+      nivelPorDemanda(r.stock_actual, reposicion, r.margen_seguridad_pct, tope),
       nivelPorMinimo(r.stock_actual, r.stock_minimo)
     );
     const diaria = demanda / 7;
@@ -30,6 +32,7 @@ async function snapshotInventario(ids = null, opciones = {}) {
       ...r,
       demanda_semana: demanda,
       demanda_reposicion: Math.round(reposicion * 100) / 100,
+      reposicion_acotada_vida_util: acotada,
       origen_demanda: e ? e.origen : 'categoria',
       id_modelo: e && e.id_modelo ? e.id_modelo : null,
       latencia_ms: e && e.latencia_ms !== undefined ? e.latencia_ms : null,

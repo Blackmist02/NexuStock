@@ -15,12 +15,12 @@ test('causa de la alerta según su fotografía', () => {
 });
 
 test('la causa es coherente con el nivel del semáforo', () => {
-  // 70 kg/semana, lead time 1 → reposición 20 kg; stock mínimo 30
-  const rep = demandaReposicion(70, 1);
+  // 70 kg/semana, proveedor lun-sáb, lead time 1, hoy lunes → reposición 24,76 kg (27,24 con margen 10 %); mínimo 30
+  const rep = demandaReposicion(70, 1, [1, 2, 3, 4, 5, 6], '2026-10-05');
   const casos = [
-    [15, 'quiebre', 'demanda_reposicion'],
-    [21, 'bajo', 'margen_seguridad'],
-    [25, 'bajo', 'stock_minimo']
+    [20, 'quiebre', 'demanda_reposicion'],
+    [26, 'bajo', 'margen_seguridad'],
+    [28, 'bajo', 'stock_minimo']
   ];
   for (const [stock, nivel, causa] of casos) {
     assert.equal(peorNivel(nivelPorDemanda(stock, rep, 10), nivelPorMinimo(stock, 30)), nivel);
