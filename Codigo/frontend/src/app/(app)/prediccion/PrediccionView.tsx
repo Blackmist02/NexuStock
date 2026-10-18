@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { SubNav } from "@/components/SubNav";
-import { LineaDemanda, type PuntoDia } from "@/components/charts/LineaDemanda";
+import { GraficoDemanda, type DiaSerie, type SemanaSerie } from "@/components/charts/GraficoDemanda";
 import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/lib/auth";
 import { api, errorMessage } from "@/lib/api";
-import { fmtCant, fmtFecha, fmtFechaCorta, NIVEL_BADGE, NIVEL_LABEL, type Nivel } from "@/lib/format";
+import { fmtCant, fmtFecha, fmtFechaCorta, fmtNum, NIVEL_BADGE, NIVEL_LABEL, type Nivel } from "@/lib/format";
 import { puede } from "@/lib/permisos";
 import { ORIGEN_LABEL, type Alerta, type Categoria, type Evento, type OrigenDemanda, type Unidad } from "@/lib/tipos";
 import { useApi } from "@/lib/useApi";
@@ -38,10 +38,20 @@ interface Serie {
   producto: string;
   unidad: Unidad;
   hoy: string;
-  historico: PuntoDia[];
-  prediccion: PuntoDia[];
+  desde: string;
+  hasta: string;
+  productos: number;
+  origen_proyeccion: OrigenDemanda | "mixto";
+  latencia_ms: number | null;
+  mae_modelo_semana: number | null;
+  precision_periodo: { semanas: number; mae_semana: number } | null;
+  dias: DiaSerie[];
+  semanas: SemanaSerie[];
   eventos: Evento[];
 }
+
+const OPCIONES_MESES = [1, 2, 3, 4];
+const mesesTxt = (n: number) => `${n} ${n === 1 ? "mes" : "meses"}`;
 
 export function PrediccionView() {
   const { user } = useAuth();
@@ -49,14 +59,22 @@ export function PrediccionView() {
   const [categoria, setCategoria] = useState("");
   const [sel, setSel] = useState<number | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
+  const [atras, setAtras] = useState(1);
+  const [adelante, setAdelante] = useState(1);
 
   const cats = useApi<{ data: Categoria[] }>("/categories");
   const res = useApi<Resumen>("/predictions/resumen", { categoria }, { resguardo: true });
   const alertas = useApi<{ data: Alerta[] }>("/alerts", { estado: "activa" }, { resguardo: true });
 
   const productos = res.data?.productos ?? [];
-  const idSerie = sel ?? productos[0]?.id_producto ?? null;
-  const serie = useApi<{ data: Serie }>(idSerie ? `/predictions/producto/${idSerie}/serie` : null, { dias: 30 });
+  // Sin producto elegido se muestra el total (de todos los productos o de la categoría filtrada)
+  const idSerie = sel != null && productos.some((p) => p.id_producto === sel) ? sel : null;
+  const nombreCategoria = (cats.data?.data ?? []).find((c) => String(c.id_categoria) === categoria)?.nombre;
+  const serie = useApi<{ data: Serie }>(
+    idSerie ? `/predictions/producto/${idSerie}/serie` : "/predictions/serie",
+    idSerie ? { atras, adelante } : { atras, adelante, categoria },
+  );
+  const sd = serie.data?.data;
 
   const puedeAlertas = puede(user?.rol, "alertas");
 
@@ -122,22 +140,73 @@ export function PrediccionView() {
       {res.data && productos.length > 0 ? (
         <>
           <div className="card" style={{ marginBottom: 16 }}>
-            <div className="title">
-              Demanda diaria
-              <select className="input surface" style={{ height: 30, width: "auto", maxWidth: 260 }} aria-label="Producto" value={idSerie ?? ""} onChange={(e) => setSel(Number(e.target.value))}>
-                {productos.map((p) => <option key={p.id_producto} value={p.id_producto}>{p.producto}</option>)}
-              </select>
+            <div className="title" style={{ flexWrap: "wrap", gap: 8 }}>
+              Demanda real y proyectada
+              <div className="row-actions" style={{ flexWrap: "wrap", alignItems: "center" }}>
+                <select className="input surface" style={{ height: 30, width: "auto", maxWidth: 260 }} aria-label="Producto" value={idSerie ?? ""} onChange={(e) => setSel(e.target.value ? Number(e.target.value) : null)}>
+                  <option value="">{nombreCategoria ? `Toda la categoría ${nombreCategoria} (total)` : "Todos los productos (total)"}</option>
+                  {productos.map((p) => <option key={p.id_producto} value={p.id_producto}>{p.producto}</option>)}
+                </select>
+                <label className="hint" htmlFor="pr-atras">Hacia atrás</label>
+                <select id="pr-atras" className="input surface" style={{ height: 30, width: "auto" }} value={atras} onChange={(e) => setAtras(Number(e.target.value))}>
+                  {OPCIONES_MESES.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
+                </select>
+                <label className="hint" htmlFor="pr-adelante">Hacia adelante</label>
+                <select id="pr-adelante" className="input surface" style={{ height: 30, width: "auto" }} value={adelante} onChange={(e) => setAdelante(Number(e.target.value))}>
+                  {OPCIONES_MESES.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
+                </select>
+              </div>
             </div>
             <div className="legend">
-              <span style={{ color: "var(--ink-muted)" }}><i />Ventas reales</span>
-              <span style={{ color: "var(--accent)" }}><i className="dash" />Proyección 7 días</span>
-              <span>Feriados y eventos marcados en el gráfico</span>
+              <span style={{ color: "var(--ink-muted)" }}><i />Venta real</span>
+              <span style={{ color: "var(--accent)", opacity: 0.6 }}><i className="dash" />Predicción registrada (semanas pasadas)</span>
+              <span style={{ color: "var(--accent)" }}><i className="dash" />Proyección desde esta semana</span>
+              <span style={{ color: "var(--alerta)" }}>★ Feriados y eventos</span>
             </div>
-            {!serie.data && serie.loading ? <Loading /> : null}
+            {!serie.data && serie.loading ? <Loading texto="Proyectando la demanda…" /> : null}
             {!serie.data && serie.error ? <ErrorState message={serie.error} onRetry={() => void serie.reload()} /> : null}
-            {serie.data ? (
-              <LineaDemanda historico={serie.data.data.historico} prediccion={serie.data.data.prediccion} eventos={serie.data.data.eventos} unidad={serie.data.data.unidad} hoy={serie.data.data.hoy} />
+            {sd ? (
+              <>
+                {sd.origen_proyeccion === "mixto" ? (
+                  <div className="callout" role="status" style={{ marginBottom: 10 }}>
+                    <span>Algunos productos no se pudieron proyectar con el modelo (por ejemplo, sin historial): para ellos se repite su demanda semanal vigente.</span>
+                  </div>
+                ) : sd.origen_proyeccion !== "modelo" ? (
+                  <div className="callout" role="status" style={{ marginBottom: 10 }}>
+                    <span>La proyección usa el <b>{ORIGEN_LABEL[sd.origen_proyeccion].toLowerCase()}</b> porque el modelo no está disponible: se repite la demanda semanal vigente.</span>
+                  </div>
+                ) : null}
+                {!idSerie ? (
+                  <div className="hint" style={{ marginBottom: 6 }}>
+                    Suma de {sd.productos} {sd.productos === 1 ? "producto" : "productos"} por kilo{nombreCategoria ? ` de ${nombreCategoria}` : ""}. Elige un producto para ver su detalle.
+                  </div>
+                ) : null}
+                <GraficoDemanda dias={sd.dias} semanas={sd.semanas} eventos={sd.eventos} unidad={sd.unidad} hoy={sd.hoy} />
+                <div className="gd-resumen">
+                  {sd.precision_periodo ? (
+                    <>
+                      En las <b>{sd.precision_periodo.semanas}</b> semanas pasadas del periodo, la predicción registrada se equivocó en promedio{" "}
+                      <b>{fmtNum(sd.precision_periodo.mae_semana)} {sd.unidad} por semana</b>
+                      {sd.mae_modelo_semana != null && idSerie ? <> (MAE por producto del modelo en la prueba 2024: {fmtNum(sd.mae_modelo_semana, 2)} kg)</> : null}.{" "}
+                    </>
+                  ) : (
+                    <>Aún no hay predicciones registradas para las semanas pasadas de este periodo. </>
+                  )}
+                  La proyección semanal se reparte entre los días según cuánto vende cada día de la semana.
+                  {sd.latencia_ms != null ? <> Calculada en {sd.latencia_ms} ms.</> : null}
+                </div>
+              </>
             ) : null}
+          </div>
+
+          <div className="card" style={{ marginBottom: 16 }}>
+            <div className="title">Cómo se calcula la sugerencia de compra</div>
+            <ul className="regla-lista">
+              <li><b>Demanda hasta el pedido siguiente:</b> la proyección de la semana, repartida por día, desde hoy hasta que llega el pedido siguiente al proveedor (según sus días de atención y su lead time), sin superar lo que se alcanza a vender antes de que venza el producto.</li>
+              <li><b>Semáforo:</b> <span className={NIVEL_BADGE.quiebre}>Quiebre</span> si el stock no alcanza esa demanda; <span className={NIVEL_BADGE.bajo}>Bajo</span> si no alcanza la demanda más el margen de seguridad o está bajo el stock mínimo; <span className={NIVEL_BADGE.optimo}>Óptimo</span> en otro caso.</li>
+              <li><b>Cantidad sugerida:</b> demanda × (1 + margen) − stock, sin superar lo que se alcanza a vender antes de que venza el producto.</li>
+              <li><b>Pedir antes del:</b> fecha estimada de quiebre menos el lead time; si cae en un día sin atención del proveedor, se adelanta al día hábil anterior.</li>
+            </ul>
           </div>
 
           <div className="card" style={{ marginBottom: 16 }}>

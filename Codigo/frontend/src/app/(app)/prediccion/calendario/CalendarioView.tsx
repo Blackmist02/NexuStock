@@ -31,9 +31,14 @@ const claseEv = (t: Evento["tipo"]) => (t === "quincena" || t === "fin_de_mes" ?
 export function CalendarioView() {
   const { user } = useAuth();
   const toast = useToast();
-  const hoy = hoyISO();
+  // «Hoy» es la fecha del sistema que informa la API (de referencia con datos históricos); el navegador es el respaldo
+  const [hoyApi, setHoyApi] = useState<string | null>(null);
+  const hoy = hoyApi ?? hoyISO();
   const [y0, m0] = hoy.split("-").map(Number);
-  const [ym, setYm] = useState({ y: y0, m: m0 - 1 });
+  const [ym, setYm] = useState(() => {
+    const [y, m] = hoyISO().split("-").map(Number);
+    return { y, m: m - 1 };
+  });
   const [nuevo, setNuevo] = useState(false);
   const edita = puede(user?.rol, "calendario");
 
@@ -49,7 +54,12 @@ export function CalendarioView() {
     return { celdas, desde: celdas[0].fecha, hasta: celdas[41].fecha, total };
   }, [ym]);
 
-  const { data, error, loading, reload } = useApi<{ data: Evento[] }>("/events", { desde: dias.desde, hasta: dias.hasta });
+  const { data, error, loading, reload } = useApi<{ hoy: string; data: Evento[] }>("/events", { desde: dias.desde, hasta: dias.hasta });
+  if (data?.hoy && hoyApi === null) {
+    setHoyApi(data.hoy);
+    const [y, m] = data.hoy.split("-").map(Number);
+    if (y !== ym.y || m - 1 !== ym.m) setYm({ y, m: m - 1 });
+  }
   const porDia = useMemo(() => {
     const m = new Map<string, Evento[]>();
     for (const e of data?.data ?? []) m.set(e.fecha, [...(m.get(e.fecha) ?? []), e]);

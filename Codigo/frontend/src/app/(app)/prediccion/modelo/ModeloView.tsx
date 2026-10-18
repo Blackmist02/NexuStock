@@ -22,7 +22,26 @@ interface Precision {
   motor: { disponible: boolean; limite_ms: number; latencia_promedio_ms: number | null; latencia_maxima_ms: number | null; predicciones_con_modelo: number };
   base: { mae_general: number; mae_festivos: number | null; observaciones: number; ventana: { desde: string; hasta: string; tipo: "prueba" | "reciente" } } | null;
   mejora_general_pct: number | null;
-  productos: { id_producto: number; producto: string; unidad: Unidad; origen: OrigenDemanda; mae_respaldo: number | null; sin_historial: boolean }[];
+  operacion: {
+    desde: string;
+    hasta: string;
+    semanas: number;
+    observaciones: number;
+    mae_general: number;
+    mae_festivos: number | null;
+    mae_respaldo: number | null;
+    mejora_pct: number | null;
+  } | null;
+  productos: {
+    id_producto: number;
+    producto: string;
+    unidad: Unidad;
+    origen: OrigenDemanda;
+    mae_respaldo: number | null;
+    mae_operacion: number | null;
+    semanas_operacion: number;
+    sin_historial: boolean;
+  }[];
 }
 
 export function ModeloView() {
@@ -105,6 +124,44 @@ export function ModeloView() {
           ) : null}
 
           <div className="card" style={{ marginBottom: 16 }}>
+            <div className="title">Precisión en operación · últimas {d.operacion ? d.operacion.semanas : 12} semanas</div>
+            {d.operacion ? (
+              <>
+                <div className="grid4" style={{ marginBottom: 10 }}>
+                  <div className="stat">
+                    <div className="lbl">MAE en operación</div>
+                    <div className="val">{fmtNum(d.operacion.mae_general, 2)} kg</div>
+                    <div className="sub">{d.operacion.observaciones} predicciones semanales comparadas</div>
+                  </div>
+                  <div className="stat">
+                    <div className="lbl">Promedio histórico, mismas semanas</div>
+                    <div className="val">{d.operacion.mae_respaldo != null ? `${fmtNum(d.operacion.mae_respaldo, 2)} kg` : "—"}</div>
+                    <div className="sub">
+                      {d.operacion.mejora_pct != null ? `El modelo es ${Math.abs(d.operacion.mejora_pct)} % ${d.operacion.mejora_pct >= 0 ? "más preciso" : "menos preciso"}` : "Sin comparación disponible"}
+                    </div>
+                  </div>
+                  <div className="stat">
+                    <div className="lbl">MAE en festivos</div>
+                    <div className="val">{d.operacion.mae_festivos != null ? `${fmtNum(d.operacion.mae_festivos, 2)} kg` : "—"}</div>
+                    <div className="sub">{d.operacion.mae_festivos != null ? "Semanas con feriados largos o fiestas" : "Sin semanas festivas en el periodo"}</div>
+                  </div>
+                  <div className="stat">
+                    <div className="lbl">Contra la prueba 2024</div>
+                    <div className="val">{d.activo ? `${fmtNum(d.activo.mae_general, 2)} kg` : "—"}</div>
+                    <div className="sub">MAE con el que se aprobó el modelo</div>
+                  </div>
+                </div>
+                <p className="hint" style={{ margin: 0 }}>
+                  Cada semana se compara la predicción que el sistema registró (hecha solo con las ventas anteriores a esa semana) con lo que realmente se vendió,
+                  del {fmtFecha(d.operacion.desde)} al {fmtFecha(d.operacion.hasta)}. Si el MAE en operación se aleja mucho del de la prueba, conviene reentrenar el modelo.
+                </p>
+              </>
+            ) : (
+              <EmptyState title="Aún no hay predicciones del modelo para comparar" text="Cuando el sistema registre predicciones semanales y pasen esas semanas, aquí verás su error frente a las ventas reales." />
+            )}
+          </div>
+
+          <div className="card" style={{ marginBottom: 16 }}>
             <div className="title">Versiones registradas</div>
             {d.modelos.length === 0 ? (
               <EmptyState title="Aún no hay versiones del modelo" text="Mientras tanto, la proyección usa el promedio histórico de cada producto." />
@@ -143,13 +200,14 @@ export function ModeloView() {
           </div>
 
           <div className="card">
-            <div className="title">Origen de la proyección por producto</div>
+            <div className="title">Origen y precisión de la proyección por producto</div>
             <div className="scrollx">
               <table className="tbl">
                 <thead>
                   <tr>
                     <th scope="col">Producto</th>
                     <th scope="col">Origen</th>
+                    <th scope="col">MAE del modelo en operación</th>
                     <th scope="col">MAE del respaldo (8 semanas)</th>
                   </tr>
                 </thead>
@@ -158,6 +216,10 @@ export function ModeloView() {
                     <tr key={p.id_producto}>
                       <td>{p.producto}</td>
                       <td><span className={p.origen === "modelo" ? "badge accent" : "badge neutral"}>{ORIGEN_LABEL[p.origen]}</span>{p.sin_historial ? <div className="mini">Producto sin historial de ventas</div> : null}</td>
+                      <td className="mono">
+                        {p.mae_operacion == null ? "—" : `${fmtNum(p.mae_operacion, 2)} ${p.unidad}`}
+                        {p.semanas_operacion ? <div className="mini">{p.semanas_operacion} {p.semanas_operacion === 1 ? "semana" : "semanas"}</div> : null}
+                      </td>
                       <td className="mono">{p.mae_respaldo == null ? "—" : `${fmtNum(p.mae_respaldo, 2)} ${p.unidad}`}</td>
                     </tr>
                   ))}

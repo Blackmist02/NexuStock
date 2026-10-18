@@ -6,6 +6,7 @@ import { Button, SelectField, TextField } from "@/components/ui/Field";
 import { Loading } from "@/components/ui/States";
 import { useToast } from "@/components/ui/Toast";
 import { ApiClientError, api, errorMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { ahoraLocalInput, fmtCant, fmtCLP, localInputAISO, parseNum } from "@/lib/format";
 import type { ListaProductos, Proveedor, Unidad } from "@/lib/tipos";
 import { useApi } from "@/lib/useApi";
@@ -25,6 +26,8 @@ interface Props {
   tipo: Tipo;
   /** Producto preseleccionado (desde el detalle o una fila de la tabla). */
   idProducto?: number;
+  /** Cantidad propuesta (por ejemplo, la sugerida por el motor de alertas); se puede corregir antes de guardar. */
+  cantidadSugerida?: number;
   onClose: () => void;
   onHecho: (r: ResultadoMovimiento) => void;
 }
@@ -33,13 +36,14 @@ interface Props {
  * RF-01 (venta) y RF-02 (compra): registran el movimiento y actualizan el stock en una sola operación.
  * Muestra el efecto sobre el stock antes de guardar y avisa si quedaría bajo el mínimo.
  */
-export function MovimientoModal({ tipo, idProducto, onClose, onHecho }: Props) {
+export function MovimientoModal({ tipo, idProducto, cantidadSugerida, onClose, onHecho }: Props) {
   const toast = useToast();
+  const { user } = useAuth();
   const lista = useApi<ListaProductos>("/products", { estado: "activos" });
   const provs = useApi<{ data: Proveedor[] }>(tipo === "compra" ? "/suppliers" : null);
 
   const [idSel, setIdSel] = useState<string>(idProducto ? String(idProducto) : "");
-  const [cantidad, setCantidad] = useState("");
+  const [cantidad, setCantidad] = useState(cantidadSugerida && cantidadSugerida > 0 ? String(cantidadSugerida).replace(".", ",") : "");
   const [precio, setPrecio] = useState<string | null>(null); // null = usar el del catálogo
   const [proveedor, setProveedor] = useState<string | null>(null); // null = proveedor habitual
   const [fecha, setFecha] = useState(ahoraLocalInput());
@@ -140,6 +144,7 @@ export function MovimientoModal({ tipo, idProducto, onClose, onHecho }: Props) {
             onChange={(e) => setCantidad(e.target.value)}
             error={campos.cantidad}
             placeholder={p?.unidad === "un" ? "Ej.: 3" : "Ej.: 2,5"}
+            hint={cantidadSugerida && cantidadSugerida > 0 ? "Precargada con la cantidad sugerida" : undefined}
           />
           <TextField
             label={esVenta ? "Precio unitario (CLP)" : "Precio unitario de compra (CLP)"}
@@ -172,7 +177,7 @@ export function MovimientoModal({ tipo, idProducto, onClose, onHecho }: Props) {
               setFechaCambiada(true);
             }}
             error={campos.fecha_hora}
-            hint="Por defecto, ahora. Cámbiala si registras un movimiento anterior."
+            hint={`Por defecto, ahora. Cámbiala si registras un movimiento anterior.${user ? ` Registra: ${user.nombre}.` : ""}`}
           />
           {p && stockNuevo != null ? (
             <div className={`summary full${bajoMinimo || stockNuevo < 0 ? " warn" : ""}`} style={{ gridColumn: "1 / -1", marginTop: 0 }}>

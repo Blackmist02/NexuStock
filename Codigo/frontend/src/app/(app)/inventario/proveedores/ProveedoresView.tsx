@@ -117,6 +117,10 @@ export function ProveedoresView() {
             </table>
           </div>
         ) : null}
+        <p className="hint" style={{ margin: "10px 0 0" }}>
+          El lead time y los días hábiles definen cuánto debe cubrir el stock (hasta que llega el pedido siguiente). Si la fecha límite para pedir cae en un
+          día sin atención del proveedor, se adelanta al día hábil anterior.
+        </p>
       </div>
 
       <div className="card">

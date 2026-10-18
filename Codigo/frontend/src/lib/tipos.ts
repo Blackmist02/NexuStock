@@ -42,7 +42,7 @@ export interface ListaProductos {
 
 export interface Movimiento {
   fecha_hora: string;
-  tipo: "venta" | "compra";
+  tipo: "venta" | "compra" | "merma";
   id_producto?: number;
   producto?: string;
   unidad?: Unidad;
@@ -53,6 +53,8 @@ export interface Movimiento {
 }
 
 export interface DetalleProducto extends ProductoFila {
+  /** Fecha del sistema (AAAA-MM-DD) con la que se calculó la sugerencia. */
+  hoy?: string;
   valor_stock_clp: number;
   sugerencia: { cantidad_sugerida: number; fecha_quiebre_estimada: string; fecha_limite_pedido: string } | null;
   serie_30d: { fecha: string; compras: number; ventas: number }[];
@@ -133,7 +135,17 @@ export interface Modelo {
   creado_en: string;
 }
 
+export interface ConfigFecha {
+  hoy: string;
+  referencia: string | null;
+  origen: "real" | "base" | "entorno";
+  real: string;
+  ultimos_movimientos: { venta: string | null; compra: string | null; merma: string | null };
+  minima: string | null;
+}
+
 export interface ConfigNegocio {
   negocio: { nombre: string };
   alertas: { quiebre: boolean; bajo: boolean };
+  fecha: ConfigFecha;
 }
