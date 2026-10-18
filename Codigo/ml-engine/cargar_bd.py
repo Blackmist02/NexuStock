@@ -346,7 +346,7 @@ def main():
 
     # El backend proyecta la semana en curso (lunes de «hoy»): con datos hasta un domingo, «hoy» es el lunes siguiente
     print(f'Listo en {time.perf_counter() - inicio:.1f} s. Fecha del sistema sugerida: '
-          f'{(hasta + pd.Timedelta(days=1)).date()} (Configuración → Fecha del sistema, o FECHA_REFERENCIA en ../.env)')
+          f'{(hasta + pd.Timedelta(days=1)).date()} (Configuración > Fecha del sistema, o FECHA_REFERENCIA en ../.env)')
 
 
 if __name__ == '__main__':
