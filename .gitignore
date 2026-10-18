@@ -49,6 +49,8 @@ yarn-error.log*
 # --- Modelos de ML entrenados (artefactos pesados, se regeneran) ---
 *.pkl
 *.joblib
+# Excepción (H-08): el modelo de producción se versiona porque va dentro de la imagen del backend (~3 MB)
+!Codigo/ml-engine/models/demanda_rf_v*.joblib
 __pycache__/
 *.pyc
 .venv/

@@ -1,0 +1,100 @@
+﻿evento,tipo,fecha_inicio,fecha_fin,efecto_esperado,fuente
+Año Nuevo,feriado,2022-01-01,2022-01-01,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Cuaresma 2022,semana_santa,2022-03-02,2022-04-09,"Alza de pescados y mariscos, sobre todo los viernes",Calendario litúrgico
+Semana Santa 2022,semana_santa,2022-04-10,2022-04-17,Peak de pescados jueves y viernes santo; baja de carnes rojas,Calendario litúrgico
+Fin de semana largo,feriado_largo,2022-04-14,2022-04-14,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Viernes Santo,semana_santa,2022-04-15,2022-04-15,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Sábado Santo,semana_santa,2022-04-16,2022-04-16,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cierre Paso Los Libertadores por nevadas,otro,2022-04-22,2022-04-29,Pedidos a proveedores argentinos se retrasan hasta la reapertura,Paso fronterizo Los Libertadores
+Día del Trabajo,feriado,2022-05-01,2022-05-01,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Día de las Glorias Navales,feriado,2022-05-21,2022-05-21,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Día del Padre 2022,otro,2022-06-17,2022-06-19,Alza de cortes para asado,Tercer domingo de junio
+Día de los Pueblos Indígenas,feriado,2022-06-21,2022-06-21,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2022-06-24,2022-06-24,Alza de compras para asado el día hábil previo,Derivado de los feriados
+San Pedro y San Pablo,feriado,2022-06-27,2022-06-27,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cierre Paso Los Libertadores invierno 2022,otro,2022-07-08,2022-07-24,Pedidos a proveedores argentinos se retrasan hasta la reapertura,Paso fronterizo Los Libertadores
+Virgen del Carmen,feriado,2022-07-16,2022-07-16,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2022-08-12,2022-08-12,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Asunción de la Virgen,feriado,2022-08-15,2022-08-15,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Plebiscito Constitucional,feriado,2022-09-04,2022-09-04,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Fiestas Patrias 2022,fiestas_patrias,2022-09-10,2022-09-20,"Alza fuerte de cortes para asado, embutidos y costillar; baja de pescados",Calendario de Fiestas Patrias
+Fin de semana largo,feriado_largo,2022-09-15,2022-09-15,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Feriado adicional Fiestas Patrias,fiestas_patrias,2022-09-16,2022-09-16,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Independencia Nacional,fiestas_patrias,2022-09-18,2022-09-18,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Glorias del Ejército,fiestas_patrias,2022-09-19,2022-09-19,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2022-10-07,2022-10-07,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Encuentro de Dos Mundos,feriado,2022-10-10,2022-10-10,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2022-10-28,2022-10-28,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Día de las Iglesias Evangélicas,feriado,2022-10-31,2022-10-31,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Día de Todos los Santos,semana_santa,2022-11-01,2022-11-01,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Inmaculada Concepción,feriado,2022-12-08,2022-12-08,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Navidad 2022,otro,2022-12-20,2022-12-24,"Alza de pollo entero, pierna de cerdo, lomo y filete",Calendario comercial
+Navidad,feriado,2022-12-25,2022-12-25,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Año Nuevo 2022,otro,2022-12-30,2022-12-31,Alza de cortes para asado,Calendario comercial
+Fin de semana largo,feriado_largo,2022-12-30,2022-12-30,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Año Nuevo,feriado,2023-01-01,2023-01-01,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Feriado adicional Año Nuevo,feriado,2023-01-02,2023-01-02,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cuaresma 2023,semana_santa,2023-02-22,2023-04-01,"Alza de pescados y mariscos, sobre todo los viernes",Calendario litúrgico
+Semana Santa 2023,semana_santa,2023-04-02,2023-04-09,Peak de pescados jueves y viernes santo; baja de carnes rojas,Calendario litúrgico
+Fin de semana largo,feriado_largo,2023-04-06,2023-04-06,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Viernes Santo,semana_santa,2023-04-07,2023-04-07,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Sábado Santo,semana_santa,2023-04-08,2023-04-08,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2023-04-28,2023-04-28,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Día del Trabajo,feriado,2023-05-01,2023-05-01,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Elección de Consejeros Constitucionales,feriado,2023-05-07,2023-05-07,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Día de las Glorias Navales,feriado,2023-05-21,2023-05-21,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Día del Padre 2023,otro,2023-06-16,2023-06-18,Alza de cortes para asado,Tercer domingo de junio
+Día de los Pueblos Indígenas,feriado,2023-06-21,2023-06-21,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cierre Paso Los Libertadores invierno 2023,otro,2023-06-23,2023-06-28,Pedidos a proveedores argentinos se retrasan hasta la reapertura,Paso fronterizo Los Libertadores
+Fin de semana largo,feriado_largo,2023-06-23,2023-06-23,Alza de compras para asado el día hábil previo,Derivado de los feriados
+San Pedro y San Pablo,feriado,2023-06-26,2023-06-26,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Virgen del Carmen,feriado,2023-07-16,2023-07-16,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cierre Paso Los Libertadores invierno 2023,otro,2023-08-08,2023-08-12,Pedidos a proveedores argentinos se retrasan hasta la reapertura,Paso fronterizo Los Libertadores
+Asunción de la Virgen,feriado,2023-08-15,2023-08-15,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fiestas Patrias 2023,fiestas_patrias,2023-09-10,2023-09-20,"Alza fuerte de cortes para asado, embutidos y costillar; baja de pescados",Calendario de Fiestas Patrias
+Fin de semana largo,feriado_largo,2023-09-15,2023-09-15,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Independencia Nacional,fiestas_patrias,2023-09-18,2023-09-18,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Glorias del Ejército,fiestas_patrias,2023-09-19,2023-09-19,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2023-10-06,2023-10-06,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Encuentro de Dos Mundos,feriado,2023-10-09,2023-10-09,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2023-10-26,2023-10-26,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Día de las Iglesias Evangélicas,feriado,2023-10-27,2023-10-27,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Día de Todos los Santos,semana_santa,2023-11-01,2023-11-01,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2023-12-07,2023-12-07,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Inmaculada Concepción,feriado,2023-12-08,2023-12-08,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Plebiscito Constitucional,feriado,2023-12-17,2023-12-17,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Navidad 2023,otro,2023-12-20,2023-12-24,"Alza de pollo entero, pierna de cerdo, lomo y filete",Calendario comercial
+Fin de semana largo,feriado_largo,2023-12-22,2023-12-22,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Navidad,feriado,2023-12-25,2023-12-25,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2023-12-29,2023-12-29,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Año Nuevo 2023,otro,2023-12-30,2023-12-31,Alza de cortes para asado,Calendario comercial
+Año Nuevo,feriado,2024-01-01,2024-01-01,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Cuaresma 2024,semana_santa,2024-02-14,2024-03-23,"Alza de pescados y mariscos, sobre todo los viernes",Calendario litúrgico
+Semana Santa 2024,semana_santa,2024-03-24,2024-03-31,Peak de pescados jueves y viernes santo; baja de carnes rojas,Calendario litúrgico
+Fin de semana largo,feriado_largo,2024-03-28,2024-03-28,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Viernes Santo,semana_santa,2024-03-29,2024-03-29,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Sábado Santo,semana_santa,2024-03-30,2024-03-30,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Día del Trabajo,feriado,2024-05-01,2024-05-01,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Día de las Glorias Navales,feriado,2024-05-21,2024-05-21,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cierre Paso Los Libertadores invierno 2024,otro,2024-06-12,2024-06-16,Pedidos a proveedores argentinos se retrasan hasta la reapertura,Paso fronterizo Los Libertadores
+Día del Padre 2024,otro,2024-06-14,2024-06-16,Alza de cortes para asado,Tercer domingo de junio
+Día de los Pueblos Indígenas,feriado,2024-06-20,2024-06-20,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+San Pedro y San Pablo,feriado,2024-06-29,2024-06-29,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Cierre Paso Los Libertadores invierno 2024,otro,2024-07-15,2024-07-20,Pedidos a proveedores argentinos se retrasan hasta la reapertura,Paso fronterizo Los Libertadores
+Virgen del Carmen,feriado,2024-07-16,2024-07-16,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Asunción de la Virgen,feriado,2024-08-15,2024-08-15,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Fiestas Patrias 2024,fiestas_patrias,2024-09-10,2024-09-20,"Alza fuerte de cortes para asado, embutidos y costillar; baja de pescados",Calendario de Fiestas Patrias
+Fin de semana largo,feriado_largo,2024-09-17,2024-09-17,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Independencia Nacional,fiestas_patrias,2024-09-18,2024-09-18,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Glorias del Ejército,fiestas_patrias,2024-09-19,2024-09-19,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Feriado adicional Fiestas Patrias,fiestas_patrias,2024-09-20,2024-09-20,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Encuentro de Dos Mundos,feriado,2024-10-12,2024-10-12,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Elecciones Municipales y Regionales,feriado,2024-10-26,2024-10-26,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Elecciones Municipales y Regionales,feriado,2024-10-27,2024-10-27,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Fin de semana largo,feriado_largo,2024-10-30,2024-10-30,Alza de compras para asado el día hábil previo,Derivado de los feriados
+Día de las Iglesias Evangélicas,feriado,2024-10-31,2024-10-31,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Día de Todos los Santos,semana_santa,2024-11-01,2024-11-01,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Inmaculada Concepción,feriado,2024-12-08,2024-12-08,Atención reducida,Feriados legales de Chile (verificar en feriados.cl)
+Navidad 2024,otro,2024-12-20,2024-12-24,"Alza de pollo entero, pierna de cerdo, lomo y filete",Calendario comercial
+Navidad,feriado,2024-12-25,2024-12-25,Local cerrado (feriado irrenunciable),Feriados legales de Chile (verificar en feriados.cl)
+Año Nuevo 2024,otro,2024-12-30,2024-12-31,Alza de cortes para asado,Calendario comercial
