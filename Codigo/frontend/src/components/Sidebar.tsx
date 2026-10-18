@@ -7,7 +7,10 @@ import { useConexion } from "@/lib/conexion";
 import { ROL_LABEL } from "@/lib/permisos";
 
 /** Vistas disponibles hoy. Las demás (inventario, predicción, historial…) se irán agregando aquí. */
-export const NAV_ITEMS = [{ key: "dashboard", href: "/dashboard", label: "Dashboard" }] as const;
+export const NAV_ITEMS = [
+  { key: "dashboard", href: "/dashboard", label: "Dashboard" },
+  { key: "alertas", href: "/alertas", label: "Alertas" },
+] as const;
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];
 

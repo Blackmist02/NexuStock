@@ -3,7 +3,14 @@ const config = require('../config');
 const db = require('../db');
 const { addDays, hoy, isoWeekday } = require('../lib/dates');
 const { snapshotInventario } = require('../services/inventario');
-const { ORDEN, cantidadSugerida, fechaLimitePedido, fechaQuiebreEstimada } = require('../services/reglas');
+const { sincronizarAlertas } = require('../services/alertas');
+const {
+  ORDEN,
+  cantidadSugerida,
+  fechaLimitePedido,
+  fechaQuiebreEstimada,
+  stockMaximoPorVidaUtil
+} = require('../services/reglas');
 
 const router = Router();
 
@@ -72,33 +79,56 @@ router.get('/', async (_req, res) => {
     });
   }
 
-  const enRiesgo = inventario
+  const evaluados = inventario.map((p) => {
+    const fechaQuiebre = fechaQuiebreEstimada(hoyIso, p.stock_actual, p.demanda_semana);
+    return {
+      id_producto: p.id_producto,
+      id_proveedor: p.id_proveedor,
+      margen_seguridad_pct: p.margen_seguridad_pct,
+      producto: p.nombre,
+      categoria: p.categoria,
+      unidad: p.unidad,
+      nivel: p.nivel,
+      stock_actual: p.stock_actual,
+      stock_minimo: p.stock_minimo,
+      demanda_semana: p.demanda_semana,
+      origen_demanda: p.origen_demanda,
+      dias_cobertura: p.dias_cobertura,
+      proveedor: p.proveedor,
+      lead_time_dias: p.lead_time_dias,
+      demanda_reposicion: p.demanda_reposicion,
+      cantidad_sugerida: cantidadSugerida(
+        p.stock_actual,
+        p.demanda_reposicion,
+        p.margen_seguridad_pct,
+        p.unidad,
+        p.stock_minimo,
+        stockMaximoPorVidaUtil(p.demanda_semana, p.vida_util_dias)
+      ),
+      fecha_quiebre_estimada: fechaQuiebre,
+      fecha_limite_pedido: fechaLimitePedido(fechaQuiebre, p.lead_time_dias, p.dias_habiles, hoyIso)
+    };
+  });
+
+  // Registro de alertas (CU-09). Un fallo aquí no impide mostrar el dashboard.
+  try {
+    await sincronizarAlertas(evaluados, hoyIso);
+  } catch (err) {
+    console.error('[alertas] no se pudieron registrar:', err.message);
+  }
+
+  const enRiesgo = evaluados
     .filter((p) => p.nivel !== 'optimo')
-    .map((p) => {
-      const fechaQuiebre = fechaQuiebreEstimada(hoyIso, p.stock_actual, p.demanda_semana);
-      return {
-        id_producto: p.id_producto,
-        producto: p.nombre,
-        categoria: p.categoria,
-        unidad: p.unidad,
-        nivel: p.nivel,
-        stock_actual: p.stock_actual,
-        stock_minimo: p.stock_minimo,
-        demanda_semana: p.demanda_semana,
-        origen_demanda: p.origen_demanda,
-        dias_cobertura: p.dias_cobertura,
-        proveedor: p.proveedor,
-        lead_time_dias: p.lead_time_dias,
-        cantidad_sugerida: cantidadSugerida(p.stock_actual, p.demanda_semana, p.margen_seguridad_pct, p.unidad, p.stock_minimo),
-        fecha_quiebre_estimada: fechaQuiebre,
-        fecha_limite_pedido: fechaLimitePedido(fechaQuiebre, p.lead_time_dias, p.dias_habiles, hoyIso)
-      };
-    })
+    .map(({ id_proveedor, margen_seguridad_pct, ...p }) => p)
     .sort((a, b) => ORDEN[b.nivel] - ORDEN[a.nivel] || a.fecha_limite_pedido.localeCompare(b.fecha_limite_pedido) || a.producto.localeCompare(b.producto));
 
   res.json({
     generado_en: new Date().toISOString(),
     hoy: hoyIso,
+    // true cuando «hoy» es FECHA_REFERENCIA (demostración con datos históricos)
+    fecha_demo: Boolean(config.fechaReferencia),
+    // Origen de la proyección: el modelo si al menos un producto se proyectó con él
+    origen_proyeccion: inventario.some((p) => p.origen_demanda === 'modelo') ? 'modelo' : 'promedio_historico',
     kpis: {
       valor_inventario_clp: Math.round(valorInventario),
       productos_quiebre: semaforo.quiebre,

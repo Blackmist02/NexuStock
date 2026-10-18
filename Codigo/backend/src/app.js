@@ -10,6 +10,13 @@ const { authenticate, csrfGuard } = require('./middleware/auth');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
 const authRouter = require('./routes/auth');
 const dashboardRouter = require('./routes/dashboard');
+const alertasRouter = require('./routes/alertas');
+const { setDemandProvider } = require('./services/demanda');
+const { crearPyPredictor } = require('./services/pyPredictorAdapter');
+
+// Motor de ML: si está disponible reemplaza al respaldo por promedio como proveedor de demanda
+const pyPredictor = crearPyPredictor();
+if (pyPredictor) setDemandProvider(pyPredictor);
 
 const app = express();
 const PORT = config.port;
@@ -43,6 +50,7 @@ app.get('/api/health', async (req, res) => {
 // Autenticación (login, crear cuenta, recuperar contraseña) y dashboard
 app.use('/api/auth', authRouter);
 app.use('/api/dashboard', authenticate, dashboardRouter);
+app.use('/api/alertas', authenticate, alertasRouter);
 
 // Productos activos con su categoría y proveedor
 app.get('/api/products', async (req, res) => {
@@ -117,4 +125,12 @@ app.use(errorHandler);
 // Inicialización del servidor
 app.listen(PORT, () => {
   console.log(`🚀 Servidor NexuStock corriendo en http://localhost:${PORT}`);
+  if (config.fechaReferencia) console.log(`📅 Fecha de referencia (demo): ${config.fechaReferencia}`);
 });
+
+for (const senal of ['SIGINT', 'SIGTERM']) {
+  process.on(senal, () => {
+    if (pyPredictor) pyPredictor.detener();
+    process.exit(0);
+  });
+}

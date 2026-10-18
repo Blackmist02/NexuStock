@@ -16,6 +16,21 @@ function nivelPorDemanda(stock, demanda, margenPct) {
   return 'optimo';
 }
 
+/**
+ * Demanda del horizonte de reposición: lo que se venderá hasta que pueda llegar un pedido emitido hoy
+ * (lead time del proveedor + 1 día). Es la demanda contra la que se compara el stock en el semáforo.
+ * Control de cambios ERS v02: reemplaza a la demanda de la semana completa, que dejaba en quiebre a casi
+ * todo el catálogo porque una carnicería mantiene de 1 a 5 días de stock (vida útil corta, entrega diaria).
+ */
+function demandaReposicion(demandaSemana, leadTimeDias) {
+  return (demandaSemana / 7) * (leadTimeDias + 1);
+}
+
+/** Stock máximo sin merma: lo que se vende durante la vida útil del producto (sin vida útil, sin tope). */
+function stockMaximoPorVidaUtil(demandaSemana, vidaUtilDias) {
+  return vidaUtilDias ? (demandaSemana / 7) * vidaUtilDias : Infinity;
+}
+
 /** Umbral local (stock_minimo): sin stock = quiebre; bajo el mínimo = bajo. */
 function nivelPorMinimo(stock, stockMinimo) {
   if (stock <= 0) return 'quiebre';
@@ -23,9 +38,16 @@ function nivelPorMinimo(stock, stockMinimo) {
   return 'optimo';
 }
 
-/** Cantidad a pedir = demanda·(1+margen) − stock, redondeada hacia arriba (kg a 0,1; un enteras). */
-function cantidadSugerida(stock, demanda, margenPct, unidad, stockMinimo = 0) {
-  const objetivo = Math.max(demanda * (1 + margenPct / 100), stockMinimo * (1 + margenPct / 100));
+/**
+ * Cantidad a pedir = demanda·(1+margen) − stock, redondeada hacia arriba (kg a 0,1; un enteras).
+ * `demanda` es la del horizonte de reposición. `stockMaximo` acota el stock resultante a lo que se alcanza a
+ * vender antes de que venza el producto (tope por vida útil del ERS; ver stockMaximoPorVidaUtil).
+ */
+function cantidadSugerida(stock, demanda, margenPct, unidad, stockMinimo = 0, stockMaximo = Infinity) {
+  const objetivo = Math.min(
+    Math.max(demanda * (1 + margenPct / 100), stockMinimo * (1 + margenPct / 100)),
+    stockMaximo
+  );
   const falta = Math.max(0, objetivo - stock);
   return (unidad === 'un' ? Math.ceil(falta - 1e-9) : Math.ceil(falta * 10 - 1e-9) / 10) || 0;
 }
@@ -50,4 +72,14 @@ function fechaLimitePedido(fechaQuiebre, leadTimeDias, diasHabiles, hoy) {
   return diffDays(f, hoy) < 0 ? hoy : f;
 }
 
-module.exports = { ORDEN, peorNivel, nivelPorDemanda, nivelPorMinimo, cantidadSugerida, fechaQuiebreEstimada, fechaLimitePedido };
+module.exports = {
+  ORDEN,
+  peorNivel,
+  nivelPorDemanda,
+  demandaReposicion,
+  stockMaximoPorVidaUtil,
+  nivelPorMinimo,
+  cantidadSugerida,
+  fechaQuiebreEstimada,
+  fechaLimitePedido
+};
