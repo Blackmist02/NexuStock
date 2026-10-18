@@ -8,6 +8,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { ConfirmarModal } from "@/components/modales/ConfirmarModal";
 import { UsuarioModal } from "@/components/modales/UsuarioModal";
+import { CargaDatosCard, FechaSistemaCard } from "@/components/config/DatosYFecha";
 import { useAuth } from "@/lib/auth";
 import { ApiClientError, api, errorMessage } from "@/lib/api";
 import { fmtFecha } from "@/lib/format";
@@ -110,7 +111,7 @@ export function ConfiguracionView() {
       <div className="topbar">
         <div>
           <h1 className="h1">Configuración</h1>
-          <div className="subtitle">Negocio, alertas, equipo y permisos</div>
+          <div className="subtitle">Negocio, alertas, fecha del sistema, carga de datos, equipo y permisos</div>
         </div>
       </div>
 
@@ -153,6 +154,13 @@ export function ConfiguracionView() {
           <div className="hint" style={{ marginTop: 10 }}>Los cambios se aplican en la próxima evaluación de alertas.</div>
         </div>
       </div>
+
+      {actual?.fecha && puede(user?.rol, "fecha_sistema") ? (
+        <div className={puede(user?.rol, "importar") ? "pgrid c2e cfg-datos" : ""} style={{ marginBottom: 16 }}>
+          <FechaSistemaCard fecha={actual.fecha} onCambio={() => void cfg.reload()} />
+          {puede(user?.rol, "importar") ? <CargaDatosCard key={actual.fecha.hoy} fecha={actual.fecha} onCambio={() => void cfg.reload()} /> : null}
+        </div>
+      ) : null}
 
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="title">

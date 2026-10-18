@@ -20,8 +20,12 @@
 }
 .row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   margin: 10px 0 14px;
+  font-size: 12.5px;
 }
 .row a,
 .foot a {

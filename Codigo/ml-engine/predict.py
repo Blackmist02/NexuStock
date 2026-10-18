@@ -2,7 +2,7 @@
 
 Modos de uso:
 
-    python predict.py <producto_id|todos> <semana|mes> < solicitud.json
+    python predict.py <producto_id|todos> <semana|mes|serie> < solicitud.json
         Una predicción por invocación. Responde un JSON por la salida estándar.
 
     python predict.py --servidor
@@ -27,6 +27,9 @@ Solicitud (entrada estándar):
       sin venta pueden omitirse y cuentan como 0.
     - dias_quiebre_semana_anterior: opcional, 0 por defecto.
     - En modo --servidor, cada línea agrega "producto" y "horizonte" a la solicitud.
+    - Horizonte "serie": agrega "semanas" (1 a 26) y responde, por producto, la proyección de cada
+      semana desde fecha_objetivo ({"semanas": [{"semana", "demanda_kg"}], "demanda_kg": total}).
+      Los eventos deben cubrir todas esas semanas.
 """
 import json
 import os
@@ -46,6 +49,7 @@ RUTA_MODELO = Path(os.environ.get('NEXUSTOCK_MODELO',
 INICIO_SERIE = date(2022, 1, 3)   # lunes de la semana t = 0 en el entrenamiento
 SEMANAS_HISTORIAL = 8
 SEMANAS_MES = 4
+SEMANAS_SERIE_MAX = 26
 DIAS_MES = 30
 FERIADOS_IRRENUNCIABLES = {(1, 1), (5, 1), (9, 18), (9, 19), (12, 25)}
 
@@ -119,13 +123,16 @@ def leer_eventos(eventos):
 
 def predecir(solicitud, artefacto, horizonte='semana', producto='todos'):
     """Devuelve una lista de {producto_id, demanda_kg} o {producto_id, error}."""
-    if horizonte not in ('semana', 'mes'):
-        raise ErrorSolicitud(f"horizonte debe ser 'semana' o 'mes', no '{horizonte}'")
+    if horizonte not in ('semana', 'mes', 'serie'):
+        raise ErrorSolicitud(f"horizonte debe ser 'semana', 'mes' o 'serie', no '{horizonte}'")
     try:
         semana = lunes(date.fromisoformat(solicitud['fecha_objetivo']))
         productos = solicitud['productos']
+        n_semanas = {'semana': 1, 'mes': SEMANAS_MES}.get(horizonte) or int(solicitud['semanas'])
     except (KeyError, TypeError, ValueError) as e:
         raise ErrorSolicitud(f'solicitud inválida: {e}') from e
+    if not 1 <= n_semanas <= SEMANAS_SERIE_MAX:
+        raise ErrorSolicitud(f'semanas debe estar entre 1 y {SEMANAS_SERIE_MAX}')
 
     if producto != 'todos':
         productos = [p for p in productos if str(p.get('producto_id')) == str(producto)]
@@ -134,7 +141,6 @@ def predecir(solicitud, artefacto, horizonte='semana', producto='todos'):
 
     eventos_por_dia = leer_eventos(solicitud.get('eventos', []))
     modelo, variables = artefacto['modelo'], artefacto['variables']
-    n_semanas = 1 if horizonte == 'semana' else SEMANAS_MES
 
     resultados, estados = [], []
     for p in productos:
@@ -144,12 +150,12 @@ def predecir(solicitud, artefacto, horizonte='semana', producto='todos'):
             resultados.append({'producto_id': p.get('producto_id'), 'error': 'historial_insuficiente'})
             continue
         tope = artefacto['topes_kg'].get(str(p['producto_id']), 1.5 * max(kg.values()))
-        estado = {'p': p, 'kg': kg, 'tope': tope, 'total': 0.0,
+        estado = {'p': p, 'kg': kg, 'tope': tope, 'total': 0.0, 'serie': [],
                   'quiebre': p.get('dias_quiebre_semana_anterior', 0) or 0}
         estados.append(estado)
         resultados.append(estado)
 
-    # Predicción recursiva: para el horizonte mensual, cada semana usa las predicciones anteriores como lags
+    # Predicción recursiva: en los horizontes mes y serie, cada semana usa las predicciones anteriores como lags
     for k in range(n_semanas):
         objetivo = semana + timedelta(weeks=k)
         filas = [fila(e['p']['categoria'], objetivo, e['kg'], e['quiebre'], eventos_por_dia) for e in estados]
@@ -160,7 +166,13 @@ def predecir(solicitud, artefacto, horizonte='semana', producto='todos'):
             pred = min(max(float(pred), 0.0), e['tope'])
             e['kg'][objetivo] = pred
             e['total'] += pred
+            e['serie'].append({'semana': objetivo.isoformat(), 'demanda_kg': round(pred, 2)})
             e['quiebre'] = 0
+
+    if horizonte == 'serie':
+        return [r if 'error' in r else {'producto_id': r['p']['producto_id'], 'semanas': r['serie'],
+                                        'demanda_kg': round(r['total'], 2)}
+                for r in resultados]
 
     factor = 1 if horizonte == 'semana' else DIAS_MES / (7 * SEMANAS_MES)
     return [r if 'error' in r else {'producto_id': r['p']['producto_id'],
@@ -175,9 +187,9 @@ def cargar_modelo(ruta=RUTA_MODELO):
 
 
 def mae_horizonte(artefacto, horizonte):
-    """MAE semanal del modelo; para el mes se informa la cota superior (suma de 30 días de error)."""
+    """MAE semanal del modelo (también por semana en la serie); para el mes, la cota superior de 30 días."""
     mae = artefacto['mae_general']
-    return round(mae if horizonte == 'semana' else mae * DIAS_MES / 7, 3)
+    return round(mae * DIAS_MES / 7 if horizonte == 'mes' else mae, 3)
 
 
 def responder(solicitud, artefacto, producto, horizonte, inicio):
@@ -189,6 +201,8 @@ def responder(solicitud, artefacto, producto, horizonte, inicio):
         raise ErrorSolicitud(resultados[0]['error'])
     else:
         respuesta['demanda_kg'] = resultados[0]['demanda_kg']
+        if horizonte == 'serie':
+            respuesta['semanas'] = resultados[0]['semanas']
     respuesta['latencia_ms'] = round((time.perf_counter() - inicio) * 1000)
     return respuesta
 
@@ -217,7 +231,7 @@ def main(argv):
         modo_servidor(cargar_modelo())
         return 0
     if len(argv) != 2:
-        escribir({'error': 'uso: predict.py <producto_id|todos> <semana|mes>  |  predict.py --servidor'})
+        escribir({'error': 'uso: predict.py <producto_id|todos> <semana|mes|serie>  |  predict.py --servidor'})
         return 2
     try:
         solicitud = json.load(sys.stdin)

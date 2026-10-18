@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading, Pagination } from "@/components/ui/States";
 import { useToast } from "@/components/ui/Toast";
 import { api, errorMessage } from "@/lib/api";
-import { fmtCant, fmtCLP, fmtFechaHora, fmtNum, hoyISO } from "@/lib/format";
+import { fmtCant, fmtCLP, fmtFechaHora, fmtNum } from "@/lib/format";
 import type { Movimiento } from "@/lib/tipos";
 import { useApi } from "@/lib/useApi";
 
 interface Historial {
   desde: string;
   hasta: string;
-  tipo: "todos" | "ventas" | "compras";
-  totales: { compras_clp: number; compras_n: number; ventas_clp: number; ventas_n: number; ventas_kg: number; productos_con_ventas: number; productos_activos: number };
+  tipo: "todos" | "ventas" | "compras" | "mermas";
+  totales: { compras_clp: number; compras_n: number; ventas_clp: number; ventas_n: number; ventas_kg: number; productos_con_ventas: number; productos_activos: number; mermas_kg: number; mermas_clp: number };
   movimientos: Movimiento[];
   total: number;
   page: number;
@@ -24,21 +24,26 @@ interface Historial {
 }
 
 const PAGE = 25;
-const primeroDeMes = () => `${hoyISO().slice(0, 8)}01`;
-const ultimoDeMes = () => {
-  const [y, m] = hoyISO().split("-").map(Number);
-  return `${y}-${String(m).padStart(2, "0")}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
-};
 
 export function HistorialView() {
   const toast = useToast();
-  const [desde, setDesde] = useState(primeroDeMes());
-  const [hasta, setHasta] = useState(ultimoDeMes());
-  const [tipo, setTipo] = useState<"todos" | "ventas" | "compras">("todos");
+  // Sin rango elegido, la API usa el mes de la fecha del sistema (FECHA de referencia con datos históricos)
+  const [desdeSel, setDesde] = useState<string | null>(null);
+  const [hastaSel, setHasta] = useState<string | null>(null);
+  const [tipo, setTipo] = useState<"todos" | "ventas" | "compras" | "mermas">("todos");
   const [page, setPage] = useState(1);
+  const [rangoApi, setRangoApi] = useState<{ desde: string; hasta: string } | null>(null);
 
-  const rangoOk = !!desde && !!hasta && desde <= hasta;
-  const { data, error, loading, obsoleto, reload } = useApi<Historial>(rangoOk ? "/history" : null, { desde, hasta, tipo, page, pageSize: PAGE }, { resguardo: true });
+  const desde = desdeSel ?? rangoApi?.desde ?? "";
+  const hasta = hastaSel ?? rangoApi?.hasta ?? "";
+  const elegido = desdeSel !== null || hastaSel !== null;
+  const rangoOk = !elegido || (!!desde && !!hasta && desde <= hasta);
+  const { data, error, loading, obsoleto, reload } = useApi<Historial>(
+    rangoOk ? "/history" : null,
+    elegido ? { desde, hasta, tipo, page, pageSize: PAGE } : { tipo, page, pageSize: PAGE },
+    { resguardo: true },
+  );
+  if (data && !elegido && (rangoApi?.desde !== data.desde || rangoApi?.hasta !== data.hasta)) setRangoApi({ desde: data.desde, hasta: data.hasta });
 
   async function exportar() {
     try {
@@ -56,7 +61,7 @@ export function HistorialView() {
       <div className="topbar">
         <div>
           <h1 className="h1">Historial y reportes</h1>
-          <div className="subtitle">Ventas y compras del período{obsoleto ? " · datos guardados en este dispositivo" : ""}</div>
+          <div className="subtitle">Ventas, compras y mermas del período{obsoleto ? " · datos guardados en este dispositivo" : ""}</div>
         </div>
         <div className="topbar-right">
           <Button size="sm" onClick={() => void exportar()} disabled={!rangoOk}>Exportar CSV</Button>
@@ -65,7 +70,7 @@ export function HistorialView() {
 
       <div className="filters">
         <div className="chips" role="group" aria-label="Tipo de movimiento">
-          {([["todos", "Todos"], ["ventas", "Ventas"], ["compras", "Compras"]] as const).map(([k, l]) => (
+          {([["todos", "Todos"], ["ventas", "Ventas"], ["compras", "Compras"], ["mermas", "Mermas"]] as const).map(([k, l]) => (
             <button key={k} type="button" className={`chip${tipo === k ? " on" : ""}`} aria-pressed={tipo === k} onClick={() => { setTipo(k); setPage(1); }}>{l}</button>
           ))}
         </div>
@@ -86,8 +91,8 @@ export function HistorialView() {
           <div className="grid4">
             <div className="card stat"><div className="lbl">Ventas</div><div className="val">{fmtCLP(t.ventas_clp)}</div><div className="sub">{t.ventas_n} {t.ventas_n === 1 ? "venta" : "ventas"}{ticket ? ` · ticket medio ${fmtCLP(ticket)}` : ""}</div></div>
             <div className="card stat"><div className="lbl">Compras</div><div className="val">{fmtCLP(t.compras_clp)}</div><div className="sub">{t.compras_n} {t.compras_n === 1 ? "compra" : "compras"}</div></div>
-            <div className="card stat"><div className="lbl">Kilos vendidos</div><div className="val">{fmtNum(t.ventas_kg, 1)} kg</div><div className="sub">Solo productos por kilo</div></div>
-            <div className="card stat"><div className="lbl">Productos con ventas</div><div className="val">{t.productos_con_ventas}</div><div className="sub">de {t.productos_activos} activos</div></div>
+            <div className="card stat"><div className="lbl">Kilos vendidos</div><div className="val">{fmtNum(t.ventas_kg, 1)} kg</div><div className="sub">{t.productos_con_ventas} de {t.productos_activos} productos con ventas</div></div>
+            <div className="card stat"><div className="lbl">Mermas</div><div className="val">{fmtNum(t.mermas_kg ?? 0, 1)} kg</div><div className="sub">Costo {fmtCLP(t.mermas_clp ?? 0)}</div></div>
           </div>
 
           <div className="card" style={{ marginBottom: 16 }}>
@@ -110,7 +115,7 @@ export function HistorialView() {
                         <th scope="col">Producto</th>
                         <th scope="col">Cantidad</th>
                         <th scope="col">Monto</th>
-                        <th scope="col">Proveedor</th>
+                        <th scope="col">Proveedor o motivo</th>
                         <th scope="col">Registrado por</th>
                       </tr>
                     </thead>
@@ -118,7 +123,7 @@ export function HistorialView() {
                       {data.movimientos.map((m, i) => (
                         <tr key={`${m.fecha_hora}-${m.id_producto}-${i}`}>
                           <td>{fmtFechaHora(m.fecha_hora)}</td>
-                          <td><span className={m.tipo === "venta" ? "badge accent" : "badge neutral"}>{m.tipo === "venta" ? "Venta" : "Compra"}</span></td>
+                          <td><span className={m.tipo === "venta" ? "badge accent" : m.tipo === "merma" ? "badge alerta" : "badge neutral"}>{{ venta: "Venta", compra: "Compra", merma: "Merma" }[m.tipo]}</span></td>
                           <td>{m.producto}</td>
                           <td className="mono">{fmtCant(m.cantidad, m.unidad ?? "kg")}</td>
                           <td className="mono">{fmtCLP(m.monto_clp)}</td>

@@ -27,7 +27,7 @@ export function DetalleProductoView({ id }: { id: string }) {
   const [ocupado, setOcupado] = useState(false);
   const [errAccion, setErrAccion] = useState<string | null>(null);
   const prod = p?.data;
-  const hoy = hoyISO();
+  const hoy = p?.data.hoy ?? hoyISO(); // fecha del sistema (de referencia con datos históricos)
 
   function cerrar() {
     setModal(null);
@@ -183,7 +183,7 @@ export function DetalleProductoView({ id }: { id: string }) {
           </div>
 
           {modal === "venta" || modal === "compra" ? (
-            <MovimientoModal tipo={modal} idProducto={prod.id_producto} onClose={cerrar} onHecho={() => { cerrar(); void reload(); }} />
+            <MovimientoModal tipo={modal} idProducto={prod.id_producto} cantidadSugerida={modal === "compra" ? prod.sugerencia?.cantidad_sugerida : undefined} onClose={cerrar} onHecho={() => { cerrar(); void reload(); }} />
           ) : null}
           {modal === "editar" ? <ProductoModal producto={prod} onClose={cerrar} onHecho={() => { cerrar(); void reload(); }} /> : null}
           {modal === "estado" ? (

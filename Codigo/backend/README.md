@@ -1,6 +1,7 @@
 # Backend NexuStock (Node.js + Express 5 + PostgreSQL)
 
-Puerto 4000. La base de datos es la de `../init.sql` (no se modifica: el backend solo lee y escribe en las tablas existentes).
+Puerto 4000. La base de datos es la de `../init.sql` (modelo v5, 12 tablas). Una base creada con el modelo v4 se actualiza
+con `../migracion_v5.sql` (agrega CONFIGURACION y MERMAS; idempotente, no toca los datos).
 
 ## Arranque
 
@@ -24,6 +25,8 @@ público se cierra y el equipo se crea en *Configuración* (`ALLOW_PUBLIC_SIGNUP
 | Recalcular predicciones y alertas | ✓ | — | ✓ |
 | Ver precisión del modelo | ✓ | — | ✓ |
 | Registrar y activar versiones del modelo (RF-06), enlaces de restablecimiento (RF-13) | — | — | ✓ |
+| Cargar ventas, compras y mermas desde CSV | ✓ | — | — |
+| Cambiar la fecha del sistema | ✓ | — | ✓ |
 
 ## Endpoints
 
@@ -43,12 +46,13 @@ las peticiones que modifican datos con cookie llevan `x-nx-csrf: 1`. Errores: `{
 | `GET/POST /suppliers` · `PUT/DELETE /suppliers/:id` · `PATCH /suppliers/:id/estado` | Proveedores con lead time y días hábiles. |
 | `GET/POST /sales` · `GET/POST /purchases` | Ventas y compras (RF-01/02): actualizan el stock en una transacción y reevalúan la alerta del producto. |
 | `GET /alerts?estado` · `PATCH /alerts/:id` · `POST /alerts/evaluate` · `GET /alerts/recommendations[?format=csv]` | Alertas (RF-05, 09, 10). |
-| `GET /predictions/resumen` · `GET /predictions/producto/:id/serie` · `POST /predictions/generar` | Demanda proyectada (RF-08). |
+| `GET /predictions/resumen` · `GET /predictions/serie?categoria&atras&adelante` · `GET /predictions/producto/:id/serie` · `POST /predictions/generar` | Demanda proyectada (RF-08); serie de 1 a 4 meses atrás y adelante (total, categoría o producto). |
 | `GET /models` · `POST /models` · `PATCH /models/:id/activar` | Precisión y versiones del modelo (RF-06, RF-07). |
 | `GET /history` · `GET /history/export.csv` | Historial de movimientos, totales y ventas por semana. |
 | `GET/POST /events` · `DELETE /events/:id` | Calendario de eventos (feriados de Chile, Fiestas Patrias, Semana Santa, propios). |
 | `GET/POST /users` · `PATCH /users/:id` · `POST /users/:id/reset-link` | Equipo (RF-12, RF-13). |
-| `GET/PUT /config` | Nombre del negocio y activación de alertas de quiebre / bajo. |
+| `GET/PUT /config` · `PUT /config/fecha` | Nombre del negocio, alertas de quiebre / bajo y fecha del sistema (`{ fecha: AAAA-MM-DD | null }`; recalcula alertas). |
+| `GET /import/plantilla/:tipo` · `POST /import/validar` · `POST /import` | Carga de ventas, compras y mermas desde CSV: `{ ventas?, compras?, mermas?, hasta?, avanzar? }` con el texto de cada archivo. Ver abajo. |
 
 ## Cómo se calcula
 
@@ -57,7 +61,9 @@ las peticiones que modifican datos con cookie llevan `x-nx-csrf: 1`. Errores: `{
 - **Fecha límite de pedido** = fecha estimada de quiebre − lead time del proveedor, ajustada al día hábil anterior y nunca anterior a hoy.
 - **Demanda** (`services/demanda.js`): modelo activo del motor predictivo con límite de 2 s; si no está disponible, promedio histórico del producto y, sin ventas, de su categoría (RF-11). Ver `../ml-engine/README.md`.
 - **Alertas** (`services/alertas.js`): se evalúan al registrar una venta o compra, al cambiar el catálogo, cada `EVALUACION_CADA_MIN` minutos y con *Recalcular*. Una alerta se cierra sola como «atendida» cuando el producto vuelve a óptimo; una descartada no se vuelve a crear durante 24 h salvo que empeore.
-- **Parámetros del negocio** (nombre, alertas activas) viven en `data/negocio.json` (`DATA_DIR`), porque el esquema de la base no tiene tabla de configuración. El calendario de feriados 2022–2027 se carga solo la primera vez.
+- **Parámetros de la instalación** (nombre, alertas activas y fecha del sistema) viven en la tabla CONFIGURACION y se leen al iniciar. Sin la migración v5 se usa `data/negocio.json` como antes; al migrar, ese archivo se copia a la tabla. El calendario de feriados 2022–2027 se carga solo la primera vez.
+- **Fecha del sistema**: «hoy» es la fecha guardada en Configuración; si nunca se guardó, `FECHA_REFERENCIA`; si ninguna, la fecha real. Cambia sin reiniciar. Lo registrado a mano queda en esa fecha (con la hora actual).
+- **Carga por CSV** (`services/importacion.js`): importa solo lo posterior al último movimiento registrado de cada tipo y hasta la fecha límite (subir el mismo archivo no duplica). Aplica las filas en orden cronológico (a la misma hora: compra, venta, merma) en una transacción: todo o nada. Un faltante de stock de hasta 0,5 kg (redondeo del pesaje) deja el stock en 0 con advertencia; uno mayor es error. Con `avanzar`, la fecha del sistema pasa al día siguiente de la fecha límite y se recalculan las alertas. Las plantillas de los datos 2024 se generan con `../ml-engine/exportar_plantillas.py`.
 
 ## Variables de entorno
 

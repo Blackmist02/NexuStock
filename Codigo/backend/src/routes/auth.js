@@ -72,7 +72,7 @@ router.post('/register', limiter, async (req, res) => {
     );
     await client.query('COMMIT');
     user = r.rows[0];
-    if (n === 0) negocio.guardar({ nombre: body.negocio });
+    if (n === 0) await negocio.guardar({ nombre: body.negocio }, user.id_usuario);
   } catch (e) {
     await client.query('ROLLBACK').catch(() => {});
     if (e.code === '23505') throw errorCampo('email', 'Ese correo ya está registrado. Inicia sesión o recupera tu contraseña.');
@@ -86,7 +86,10 @@ router.post('/register', limiter, async (req, res) => {
 });
 
 router.post('/login', limiter, async (req, res) => {
-  const body = parse(z.object({ email: emailSchema, password: z.string().min(1).max(128) }), req.body);
+  const body = parse(
+    z.object({ email: emailSchema, password: z.string().min(1).max(128), recordar: z.boolean().optional().default(false) }),
+    req.body
+  );
   const { rows } = await db.query(
     'SELECT id_usuario, nombre, email, rol, activo, password_hash FROM usuarios WHERE email = $1',
     [body.email]
@@ -94,8 +97,8 @@ router.post('/login', limiter, async (req, res) => {
   const u = rows[0];
   const ok = await verifyPassword(body.password, u ? u.password_hash : DUMMY_HASH);
   if (!u || !ok || !u.activo) throw unauthorized('Correo o contraseña incorrectos');
-  const token = signAccessToken(u);
-  setAuthCookie(res, token);
+  const token = signAccessToken(u, body.recordar);
+  setAuthCookie(res, token, body.recordar);
   res.json({ user: publicUser(u), token });
 });
 

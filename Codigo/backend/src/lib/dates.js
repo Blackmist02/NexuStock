@@ -1,4 +1,5 @@
 const config = require('../config');
+const fechaSistema = require('./fechaSistema');
 
 const fmt = new Intl.DateTimeFormat('en-CA', {
   timeZone: config.tz,
@@ -7,8 +8,8 @@ const fmt = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit'
 });
 
-/** Fecha de hoy (AAAA-MM-DD) en la zona horaria del negocio, o FECHA_REFERENCIA si está definida (demo). */
-const hoy = (now) => (now === undefined && config.fechaReferencia ? config.fechaReferencia : fmt.format(now ?? new Date()));
+/** Fecha de hoy (AAAA-MM-DD) en la zona horaria del negocio, o la fecha de referencia vigente si está definida (demo). */
+const hoy = (now) => (now === undefined && fechaSistema.referencia() ? fechaSistema.referencia() : fmt.format(now ?? new Date()));
 
 function addDays(iso, days) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -32,6 +33,12 @@ function diffDays(a, b) {
 const inicioSemana = (iso) => addDays(iso, -(isoWeekday(iso) - 1));
 /** Primer día del mes de una fecha ISO. */
 const inicioMes = (iso) => `${iso.slice(0, 7)}-01`;
+/** Suma meses a una fecha ISO; si el día no existe en el mes de destino, usa su último día (31-01 + 1 = 28/29-02). */
+function addMonths(iso, meses) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const ultimo = new Date(Date.UTC(y, m - 1 + meses + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m - 1 + meses, Math.min(d, ultimo))).toISOString().slice(0, 10);
+}
 /** Último día del mes de una fecha ISO. */
 const finMes = (iso) => {
   const [y, m] = iso.split('-').map(Number);
@@ -63,5 +70,5 @@ const momentoSql = (pRef, pTz) =>
   `ELSE ((${pRef}::date + (now() AT TIME ZONE ${pTz})::time) AT TIME ZONE ${pTz}) END`;
 
 module.exports = {
-  fechaHoraLocal, hoy, addDays, isoWeekday, diffDays, inicioSemana, inicioMes, finMes, esFechaIso, momentoSql
+  fechaHoraLocal, hoy, addDays, addMonths, isoWeekday, diffDays, inicioSemana, inicioMes, finMes, esFechaIso, momentoSql
 };

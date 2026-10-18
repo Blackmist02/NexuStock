@@ -1,9 +1,11 @@
 const { Router } = require('express');
 const config = require('../config');
 const db = require('../db');
+const fechaSistema = require('../lib/fechaSistema');
 const { addDays, hoy, inicioSemana } = require('../lib/dates');
 const { snapshotInventario } = require('../services/inventario');
 const { calcularRiesgos } = require('../services/alertas');
+const { proyeccionSemanal } = require('../services/serieDemanda');
 
 const router = Router();
 
@@ -49,24 +51,30 @@ router.get('/', async (_req, res) => {
 
   const semaforo = { quiebre: 0, bajo: 0, optimo: 0, total: inventario.length };
   let valorInventario = 0;
-  let demandaSemanaTotal = 0;
   for (const p of inventario) {
     semaforo[p.nivel]++;
     valorInventario += p.stock_actual * p.precio_venta_clp;
-    demandaSemanaTotal += p.demanda_semana;
   }
 
   const real = new Map(semanal.rows.map((r) => [r.semana, r.real]));
   const proy = new Map(proyectadas.rows.map((r) => [r.semana, r.proyectada]));
   const lunesActual = lunes(hoyIso);
+  // Semana en curso (si aún no hay predicción registrada) y las 2 siguientes: proyección semana a semana del modelo
+  const futuras = await proyeccionSemanal(inventario, 3);
+  const sumaFutura = new Map();
+  for (const serie of futuras.porProducto.values()) {
+    for (const f of serie) sumaFutura.set(f.semana, (sumaFutura.get(f.semana) ?? 0) + f.demanda);
+  }
+  for (const [semana, kg] of sumaFutura) if (semana > lunesActual || !proy.has(semana)) proy.set(semana, kg);
   const tendencia = [];
   for (let i = -(semanas - 1); i <= 2; i++) {
     const semana = addDays(lunesActual, 7 * i);
     const futuro = i > 0;
     tendencia.push({
       semana,
-      real: futuro ? null : redondear1(real.get(semana) || 0),
-      proyectada: proy.has(semana) ? redondear1(proy.get(semana)) : futuro ? redondear1(demandaSemanaTotal) : null,
+      // La semana en curso sin ventas aún no se dibuja en 0 (caería a cero sin que haya pasado nada)
+      real: futuro || (i === 0 && !real.has(semana)) ? null : redondear1(real.get(semana) || 0),
+      proyectada: proy.has(semana) ? redondear1(proy.get(semana)) : null,
       es_futuro: futuro
     });
   }
@@ -77,7 +85,7 @@ router.get('/', async (_req, res) => {
     generado_en: new Date().toISOString(),
     hoy: hoyIso,
     // true cuando «hoy» es FECHA_REFERENCIA (datos históricos)
-    fecha_demo: Boolean(config.fechaReferencia),
+    fecha_demo: Boolean(fechaSistema.referencia()),
     // Origen de la proyección: el modelo si al menos un producto se proyectó con él
     origen_proyeccion: inventario.some((p) => p.origen_demanda === 'modelo') ? 'modelo' : 'promedio_historico',
     kpis: {

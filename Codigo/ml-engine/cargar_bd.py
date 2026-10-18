@@ -178,9 +178,16 @@ def mapas(cur):
     return por_nombre, prov_nombre
 
 
-def cargar_transacciones(cur, d, prod_ids, prov_ids, id_usuario, desde_ventas, desde_compras):
+def tiene_mermas(cur):
+    """La tabla MERMAS existe desde el modelo v5 (migracion_v5.sql)."""
+    cur.execute("SELECT to_regclass('public.mermas') IS NOT NULL")
+    return cur.fetchone()[0]
+
+
+def cargar_transacciones(cur, d, prod_ids, prov_ids, id_usuario, desde_ventas, desde_compras, desde_mermas=None):
     ventas = d['ventas'][d['ventas']['fecha'] > desde_ventas]
     compras = d['compras'][d['compras']['fecha_recepcion'] > desde_compras]
+    mermas = d['mermas'][d['mermas']['fecha'] > desde_mermas] if desde_mermas is not None else d['mermas'].iloc[0:0]
     with cur.copy('COPY ventas (id_producto, id_usuario, fecha_hora, cantidad, precio_unitario_clp, total_clp) '
                   'FROM STDIN') as copia:
         for v in ventas.itertuples(index=False):
@@ -192,7 +199,14 @@ def cargar_transacciones(cur, d, prod_ids, prov_ids, id_usuario, desde_ventas, d
             copia.write_row((prod_ids[c.producto_id], prov_ids[c.proveedor_id], id_usuario,
                              f'{c.fecha_recepcion.date()} 08:00', c.cantidad_kg,
                              c.precio_unitario_compra_clp, c.costo_total_clp))
-    return len(ventas), len(compras)
+    if len(mermas):
+        with cur.copy('COPY mermas (id_producto, id_usuario, fecha_hora, cantidad, motivo, costo_unitario_clp, '
+                      'costo_total_clp) FROM STDIN') as copia:
+            for m in mermas.itertuples(index=False):
+                copia.write_row((prod_ids[m.producto_id], id_usuario, f'{m.fecha.date()} 20:00', m.cantidad_kg,
+                                 m.motivo if m.motivo in ('vencimiento', 'deterioro') else 'otro',
+                                 m.costo_unitario_clp, m.costo_total_clp))
+    return len(ventas), len(compras), len(mermas)
 
 
 def generar_predicciones(cur, hasta):
@@ -276,9 +290,10 @@ def main():
         cur.execute(f"SET LOCAL TIME ZONE '{TZ}'")
         id_usuario = id_administrador(cur)
 
+        con_mermas = tiene_mermas(cur)
         if args.reemplazar:
             cur.execute('TRUNCATE alertas_inventario, predicciones, modelos_ml, eventos_calendario, ventas, compras, '
-                        'productos, proveedores RESTART IDENTITY CASCADE')
+                        + ('mermas, ' if con_mermas else '') + 'productos, proveedores RESTART IDENTITY CASCADE')
             print('Datos anteriores eliminados (usuarios y categorías se conservan)')
 
         cur.execute('SELECT COUNT(*) FROM productos')
@@ -290,7 +305,7 @@ def main():
             print(f'  PROVEEDORES: {len(prov_ids)} · PRODUCTOS: {len(prod_ids)}')
             print(f'  EVENTOS_CALENDARIO: {cargar_calendario(cur, d)} días con evento')
             registrar_modelo(cur)
-            desde_ventas = desde_compras = INICIO_DATOS - pd.Timedelta(days=1)
+            desde_ventas = desde_compras = desde_mermas = INICIO_DATOS - pd.Timedelta(days=1)
         else:
             por_nombre, prov_nombre = mapas(cur)
             prod_ids = {p: por_nombre[n] for p, n in zip(d['productos']['producto_id'],
@@ -305,12 +320,19 @@ def main():
                 sys.exit(f'La base ya tiene ventas hasta {ultima_venta}. Usa una fecha posterior o --reemplazar.')
             desde_ventas = pd.Timestamp(ultima_venta) if ultima_venta else INICIO_DATOS - pd.Timedelta(days=1)
             desde_compras = pd.Timestamp(ultima_compra) if ultima_compra else INICIO_DATOS - pd.Timedelta(days=1)
+            desde_mermas = INICIO_DATOS - pd.Timedelta(days=1)
+            if con_mermas:
+                cur.execute('SELECT MAX(fecha_hora)::date FROM mermas')
+                ultima_merma = cur.fetchone()[0]
+                # Base cargada antes del modelo v5: las mermas faltan desde el inicio, pero el stock ya las descuenta
+                desde_mermas = pd.Timestamp(ultima_merma) if ultima_merma else INICIO_DATOS - pd.Timedelta(days=1)
             print(f'Carga incremental: ventas desde {(desde_ventas + pd.Timedelta(days=1)).date()} '
                   f'hasta {hasta.date()}')
 
-        n_ventas, n_compras = cargar_transacciones(cur, d, prod_ids, prov_ids, id_usuario,
-                                                   desde_ventas, desde_compras)
-        print(f'  VENTAS: {n_ventas:,} · COMPRAS: {n_compras:,}')
+        n_ventas, n_compras, n_mermas = cargar_transacciones(cur, d, prod_ids, prov_ids, id_usuario, desde_ventas,
+                                                             desde_compras, desde_mermas if con_mermas else None)
+        print(f'  VENTAS: {n_ventas:,} · COMPRAS: {n_compras:,} · MERMAS: {n_mermas:,}'
+              + ('' if con_mermas else ' (la base no tiene MERMAS: aplica migracion_v5.sql)'))
 
         if not primera_carga:
             stock = stock_al_cierre(d, hasta)
@@ -323,8 +345,8 @@ def main():
             generar_predicciones(cur, hasta)
 
     # El backend proyecta la semana en curso (lunes de «hoy»): con datos hasta un domingo, «hoy» es el lunes siguiente
-    print(f'Listo en {time.perf_counter() - inicio:.1f} s. Fecha de referencia para el backend: '
-          f'FECHA_REFERENCIA={(hasta + pd.Timedelta(days=1)).date()}')
+    print(f'Listo en {time.perf_counter() - inicio:.1f} s. Fecha del sistema sugerida: '
+          f'{(hasta + pd.Timedelta(days=1)).date()} (Configuración → Fecha del sistema, o FECHA_REFERENCIA en ../.env)')
 
 
 if __name__ == '__main__':

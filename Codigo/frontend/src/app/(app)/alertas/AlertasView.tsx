@@ -140,7 +140,7 @@ export function AlertasView() {
                     <td className={c("mono")}>{fmtCant(a.stock_actual, a.unidad)}</td>
                     <td className={c("mono")}>
                       {fmtCant(a.demanda_proyectada, a.unidad)}
-                      <div className={c("hint")}>lead time {a.lead_time_dias} d + 1</div>
+                      <div className={c("hint")}>hasta el pedido siguiente · lead time {a.lead_time_dias} d</div>
                     </td>
                     <td className={c("mono")}>{fmtCant(a.cantidad_sugerida, a.unidad)}</td>
                     <td>{fmtFecha(a.fecha_limite_pedido)}</td>

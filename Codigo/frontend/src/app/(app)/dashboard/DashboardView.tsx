@@ -31,6 +31,8 @@ interface Sugerencia {
   proveedor: string;
   lead_time_dias: number;
   cantidad_sugerida: number;
+  cantidad_acotada_vida_util?: boolean;
+  reposicion_acotada_vida_util?: boolean;
   fecha_quiebre_estimada: string;
   fecha_limite_pedido: string;
 }
@@ -89,7 +91,7 @@ export function DashboardView() {
   const { user } = useAuth();
   const toast = useToast();
   const [q, setQ] = useState("");
-  const [movimiento, setMovimiento] = useState<null | { tipo: "venta" | "compra"; id?: number }>(null);
+  const [movimiento, setMovimiento] = useState<null | { tipo: "venta" | "compra"; id?: number; cantidad?: number }>(null);
   const puedeMover = puede(user?.rol, "movimientos");
   const coincide = (nombre: string) => !q.trim() || nombre.toLowerCase().includes(q.trim().toLowerCase());
 
@@ -282,12 +284,17 @@ export function DashboardView() {
                             <span className={NIVEL_BADGE[a.nivel]}>{NIVEL_LABEL[a.nivel]}</span>
                           </td>
                           <td className={c("mono")}>{fmtCant(a.stock_actual, a.unidad)}</td>
-                          <td className={c("mono")}>{fmtCant(a.cantidad_sugerida, a.unidad)}</td>
+                          <td className={c("mono")}>
+                            {fmtCant(a.cantidad_sugerida, a.unidad)}
+                            {a.cantidad_acotada_vida_util || a.reposicion_acotada_vida_util ? (
+                              <div className={c("hint")} title="Comprar más vencería antes de venderse; el pedido siguiente llega después del vencimiento">Limitada por vida útil</div>
+                            ) : null}
+                          </td>
                           <td>{a.proveedor}</td>
                           <td style={lim.vencida ? { color: "var(--quiebre)" } : undefined}>{lim.texto}</td>
                           {puedeMover ? (
                             <td>
-                              <Button size="sm" onClick={() => setMovimiento({ tipo: "compra", id: a.id_producto })}>Registrar compra</Button>
+                              <Button size="sm" onClick={() => setMovimiento({ tipo: "compra", id: a.id_producto, cantidad: a.cantidad_sugerida })}>Registrar compra</Button>
                             </td>
                           ) : null}
                         </tr>
@@ -346,6 +353,7 @@ export function DashboardView() {
         <MovimientoModal
           tipo={movimiento.tipo}
           idProducto={movimiento.id}
+          cantidadSugerida={movimiento.cantidad}
           onClose={() => setMovimiento(null)}
           onHecho={() => {
             setMovimiento(null);

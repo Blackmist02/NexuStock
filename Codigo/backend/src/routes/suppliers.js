@@ -1,6 +1,8 @@
 const { Router } = require('express');
 const { z } = require('zod');
+const config = require('../config');
 const db = require('../db');
+const { addDays, hoy } = require('../lib/dates');
 const { ApiError, parse } = require('../lib/errors');
 const { entero, errorCampo, idParam, validarNombreUnico } = require('../lib/http');
 const { requireRole } = require('../middleware/auth');
@@ -21,16 +23,22 @@ const schema = z.object({
 
 const duplicado = (e) => (e.code === '23505' ? errorCampo('nombre', 'Ya existe un proveedor con ese nombre') : e);
 
-const SELECT = `
+/**
+ * Proveedores con productos activos y compras de los últimos 30 días hasta «hoy» (respeta FECHA_REFERENCIA).
+ * `n` es el número del primer parámetro SQL libre: se agregan dos (primer día de la ventana y zona horaria).
+ */
+const SELECT_DESDE = (n) => `
   SELECT pr.id_proveedor, pr.nombre, pr.contacto, pr.lead_time_dias, pr.dias_habiles, pr.activo,
          (SELECT COUNT(*)::int FROM productos p WHERE p.id_proveedor = pr.id_proveedor AND p.activo) AS productos,
          COALESCE((SELECT SUM(c.costo_total_clp) FROM compras c
-                    WHERE c.id_proveedor = pr.id_proveedor AND c.fecha_hora >= NOW() - interval '30 days'), 0)::bigint AS compras_30d_clp
+                    WHERE c.id_proveedor = pr.id_proveedor AND c.fecha_hora >= ($${n}::date::timestamp AT TIME ZONE $${n + 1})
+                      AND c.fecha_hora < (($${n}::date + 30)::timestamp AT TIME ZONE $${n + 1})), 0)::bigint AS compras_30d_clp
     FROM proveedores pr`;
+const ventana = () => [addDays(hoy(), -29), config.tz];
 
 /** Proveedores con su lead time, días hábiles, productos y compras de los últimos 30 días. ?todos=1 incluye inactivos. */
 router.get('/', async (req, res) => {
-  const { rows } = await db.query(`${SELECT} WHERE ($1::boolean OR pr.activo) ORDER BY pr.activo DESC, pr.nombre`, [req.query.todos === '1']);
+  const { rows } = await db.query(`${SELECT_DESDE(2)} WHERE ($1::boolean OR pr.activo) ORDER BY pr.activo DESC, pr.nombre`, [req.query.todos === '1', ...ventana()]);
   res.json({ data: rows });
 });
 
@@ -42,7 +50,7 @@ router.post('/', catalogo, async (req, res) => {
       'INSERT INTO proveedores (nombre, contacto, lead_time_dias, dias_habiles) VALUES ($1, $2, $3, $4) RETURNING id_proveedor',
       [b.nombre, b.contacto, b.lead_time_dias, b.dias_habiles]
     );
-    res.status(201).json({ data: (await db.query(`${SELECT} WHERE pr.id_proveedor = $1`, [rows[0].id_proveedor])).rows[0] });
+    res.status(201).json({ data: (await db.query(`${SELECT_DESDE(2)} WHERE pr.id_proveedor = $1`, [rows[0].id_proveedor, ...ventana()])).rows[0] });
   } catch (e) {
     throw duplicado(e);
   }
@@ -64,7 +72,7 @@ router.put('/:id', catalogo, async (req, res) => {
   // el lead time y los días hábiles cambian las fechas límite de pedido de sus productos
   const prods = await db.query('SELECT id_producto FROM productos WHERE id_proveedor = $1 AND activo', [id]);
   if (prods.rowCount) void evaluarSinFallar(prods.rows.map((p) => p.id_producto));
-  res.json({ data: (await db.query(`${SELECT} WHERE pr.id_proveedor = $1`, [id])).rows[0] });
+  res.json({ data: (await db.query(`${SELECT_DESDE(2)} WHERE pr.id_proveedor = $1`, [id, ...ventana()])).rows[0] });
 });
 
 /** Baja lógica: un proveedor con productos activos no puede desactivarse hasta reasignarlos. */
@@ -77,7 +85,7 @@ router.patch('/:id/estado', catalogo, async (req, res) => {
   }
   const r = await db.query('UPDATE proveedores SET activo = $2 WHERE id_proveedor = $1', [id, activo]);
   if (!r.rowCount) throw new ApiError(404, 'no_encontrado', 'El proveedor no existe');
-  res.json({ data: (await db.query(`${SELECT} WHERE pr.id_proveedor = $1`, [id])).rows[0] });
+  res.json({ data: (await db.query(`${SELECT_DESDE(2)} WHERE pr.id_proveedor = $1`, [id, ...ventana()])).rows[0] });
 });
 
 /** RNF-10: con compras o productos históricos no se elimina; se ofrece la baja lógica. */

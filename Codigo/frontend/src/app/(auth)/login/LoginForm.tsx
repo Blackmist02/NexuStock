@@ -18,6 +18,7 @@ export function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [recordar, setRecordar] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [campos, setCampos] = useState<Record<string, string>>({});
@@ -38,7 +39,7 @@ export function LoginForm() {
     if (Object.keys(c).length) return;
     setEnviando(true);
     try {
-      await login(email.trim(), password);
+      await login(email.trim(), password, recordar);
       // la redirección la hace el efecto de arriba al quedar la sesión cargada
     } catch (err) {
       setEnviando(false);
@@ -79,6 +80,10 @@ export function LoginForm() {
           />
         </div>
         <div className={styles.row}>
+          <label className="checkrow">
+            <input type="checkbox" checked={recordar} onChange={(e) => setRecordar(e.target.checked)} />
+            <span>Recordarme</span>
+          </label>
           <Link href="/recuperar-contrasena">¿Olvidaste tu contraseña?</Link>
         </div>
         {error ? (

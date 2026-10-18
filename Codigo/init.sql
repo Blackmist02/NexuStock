@@ -1,7 +1,8 @@
 -- =====================================================================
 -- NexuStock — init.sql
 -- Sistema Web Predictivo de Gestión de Inventario para Carnicerías
--- Modelo Entidad-Relación v4: 10 tablas, 12 relaciones (1:N)
+-- Modelo Entidad-Relación v5: 12 tablas, 15 relaciones (1:N)
+-- v5 agrega CONFIGURACION y MERMAS (migración para bases existentes: migracion_v5.sql)
 -- Motor: PostgreSQL 15+
 -- Fuente: 05 Documento de Diseño (Modelo E-R v4)
 -- Dominios: Acceso | Catálogo | Transaccional | Predicción/Alertas
@@ -12,6 +13,8 @@ BEGIN;
 -- ---------------------------------------------------------------------
 -- Limpieza (re-ejecución segura en desarrollo)
 -- ---------------------------------------------------------------------
+DROP TABLE IF EXISTS MERMAS               CASCADE;
+DROP TABLE IF EXISTS CONFIGURACION        CASCADE;
 DROP TABLE IF EXISTS ALERTAS_INVENTARIO   CASCADE;
 DROP TABLE IF EXISTS PREDICCIONES         CASCADE;
 DROP TABLE IF EXISTS MODELOS_ML           CASCADE;
@@ -87,7 +90,7 @@ CREATE TABLE PRODUCTOS (
     stock_actual          NUMERIC(10,2) NOT NULL DEFAULT 0,
     stock_minimo          NUMERIC(10,2) NOT NULL DEFAULT 0,
     vida_util_dias        SMALLINT,
-    margen_seguridad_pct  NUMERIC(5,2)  NOT NULL DEFAULT 10.00,
+    margen_seguridad_pct  NUMERIC(5,2)  NOT NULL DEFAULT 20.00,
     activo                BOOLEAN       NOT NULL DEFAULT TRUE,
     creado_en             TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_productos_unidad          CHECK (unidad IN ('kg', 'un')),
@@ -101,7 +104,7 @@ CREATE TABLE PRODUCTOS (
 COMMENT ON COLUMN PRODUCTOS.unidad               IS 'Dominio: kg | un.';
 COMMENT ON COLUMN PRODUCTOS.stock_actual         IS 'Existencia física en tiempo real.';
 COMMENT ON COLUMN PRODUCTOS.stock_minimo         IS 'Umbral base para alertas locales.';
-COMMENT ON COLUMN PRODUCTOS.margen_seguridad_pct IS 'Porcentaje de colchón de seguridad (por defecto 10.00).';
+COMMENT ON COLUMN PRODUCTOS.margen_seguridad_pct IS 'Porcentaje de colchón de seguridad (por defecto 20.00).';
 
 -- =====================================================================
 -- DOMINIO TRANSACCIONAL
@@ -256,6 +259,48 @@ COMMENT ON COLUMN ALERTAS_INVENTARIO.lead_time_dias         IS 'Lead time del pr
 COMMENT ON COLUMN ALERTAS_INVENTARIO.fecha_limite_pedido    IS 'Fecha máxima para emitir el pedido, ajustada al día hábil anterior según dias_habiles del proveedor.';
 COMMENT ON COLUMN ALERTAS_INVENTARIO.estado                 IS 'activa | atendida | descartada.';
 COMMENT ON COLUMN ALERTAS_INVENTARIO.resuelta_en            IS 'Momento en que el administrador la atendió o descartó.';
+
+-- =====================================================================
+-- CONFIGURACIÓN Y MERMAS (modelo v5)
+-- =====================================================================
+
+-- 11. CONFIGURACION (parámetros de la instalación: negocio, alertas y fecha de referencia)
+CREATE TABLE IF NOT EXISTS CONFIGURACION (
+    clave           VARCHAR(40)   PRIMARY KEY,
+    valor           JSONB         NOT NULL,
+    id_usuario      BIGINT
+        REFERENCES USUARIOS (id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
+    actualizado_en  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE  CONFIGURACION       IS 'Parámetros de la instalación (una por carnicería), clave/valor.';
+COMMENT ON COLUMN CONFIGURACION.clave IS 'negocio = { nombre, alertas: { quiebre, bajo } } | fecha_referencia = { fecha: AAAA-MM-DD o null }.';
+COMMENT ON COLUMN CONFIGURACION.valor IS 'Valor en JSON. fecha_referencia.fecha = null: el sistema usa la fecha real.';
+
+-- 12. MERMAS (producto dado de baja: vencimiento, deterioro u otro)
+CREATE TABLE IF NOT EXISTS MERMAS (
+    id_merma            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_producto         BIGINT        NOT NULL
+        REFERENCES PRODUCTOS (id_producto) ON UPDATE CASCADE ON DELETE RESTRICT,
+    id_usuario          BIGINT        NOT NULL
+        REFERENCES USUARIOS (id_usuario) ON UPDATE CASCADE ON DELETE RESTRICT,
+    fecha_hora          TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+    cantidad            NUMERIC(10,2) NOT NULL,
+    motivo              VARCHAR(12)   NOT NULL DEFAULT 'vencimiento',
+    costo_unitario_clp  INTEGER,
+    costo_total_clp     INTEGER,
+    CONSTRAINT chk_mermas_cantidad CHECK (cantidad > 0),
+    CONSTRAINT chk_mermas_motivo   CHECK (motivo IN ('vencimiento', 'deterioro', 'otro')),
+    CONSTRAINT chk_mermas_costo_u  CHECK (costo_unitario_clp IS NULL OR costo_unitario_clp >= 0),
+    CONSTRAINT chk_mermas_costo_t  CHECK (costo_total_clp IS NULL OR costo_total_clp >= 0)
+);
+
+COMMENT ON TABLE  MERMAS                    IS 'Bajas de stock por vencimiento, deterioro u otro motivo (descuentan stock_actual).';
+COMMENT ON COLUMN MERMAS.costo_unitario_clp IS 'Costo por unidad del producto dado de baja (opcional).';
+
+CREATE INDEX IF NOT EXISTS idx_mermas_producto_fecha ON MERMAS (id_producto, fecha_hora);
+CREATE INDEX IF NOT EXISTS idx_mermas_fecha          ON MERMAS (fecha_hora);
+CREATE INDEX IF NOT EXISTS idx_mermas_usuario        ON MERMAS (id_usuario);
 
 -- =====================================================================
 -- ÍNDICES (consultas del dashboard, series de tiempo y motor de alertas)

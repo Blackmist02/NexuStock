@@ -9,26 +9,75 @@ const peorNivel = (a, b) => (ORDEN[a] >= ORDEN[b] ? a : b);
  *  - quiebre: stock < demanda proyectada
  *  - bajo:    stock < demanda proyectada + margen de seguridad
  *  - optimo:  en otro caso
+ * `maximo` (stock máximo sin merma) acota ambos umbrales: no se exige tener más de lo que se vende antes de vencer.
  */
-function nivelPorDemanda(stock, demanda, margenPct) {
-  if (stock < demanda) return 'quiebre';
-  if (stock < demanda * (1 + margenPct / 100)) return 'bajo';
+function nivelPorDemanda(stock, demanda, margenPct, maximo = Infinity) {
+  if (stock < Math.min(demanda, maximo)) return 'quiebre';
+  if (stock < Math.min(demanda * (1 + margenPct / 100), maximo)) return 'bajo';
   return 'optimo';
 }
 
 /**
- * Demanda del horizonte de reposición: lo que se venderá hasta que pueda llegar un pedido emitido hoy
- * (lead time del proveedor + 1 día). Es la demanda contra la que se compara el stock en el semáforo.
- * Control de cambios ERS v02: reemplaza a la demanda de la semana completa, que dejaba en quiebre a casi
- * todo el catálogo porque una carnicería mantiene de 1 a 5 días de stock (vida útil corta, entrega diaria).
+ * Peso de cada día en la venta semanal, lunes a domingo (EDA 2022-2023), normalizado para sumar 1.
+ * Reparte la demanda semanal proyectada entre los días del horizonte de reposición.
  */
-function demandaReposicion(demandaSemana, leadTimeDias) {
-  return (demandaSemana / 7) * (leadTimeDias + 1);
+const PESOS_DIA = (() => {
+  const pct = [10.7, 11.8, 12.9, 14.4, 19.5, 23.0, 7.8];
+  const total = pct.reduce((a, b) => a + b, 0);
+  return pct.map((p) => p / total);
+})();
+
+const proximoHabil = (iso, habiles) => {
+  let f = iso;
+  for (let i = 0; i < 7 && !habiles.has(isoWeekday(f)); i++) f = addDays(f, 1);
+  return f;
+};
+
+/**
+ * Días que el stock de hoy debe cubrir: desde hoy hasta el día de llegada del pedido siguiente, inclusive.
+ * h0 = primer día de atención del proveedor ≥ hoy (cuando puede emitirse el pedido); h1 = siguiente día de
+ * atención > h0 (el pedido siguiente); ese pedido llega en h1 + lead time. Devuelve las fechas ISO del horizonte.
+ */
+function diasCobertura(hoyIso, leadTimeDias, diasHabiles) {
+  const habiles = new Set(diasHabiles && diasHabiles.length ? diasHabiles.map(Number) : [1, 2, 3, 4, 5, 6, 7]);
+  const h0 = proximoHabil(hoyIso, habiles);
+  const h1 = proximoHabil(addDays(h0, 1), habiles);
+  const llegada = addDays(h1, Number(leadTimeDias) || 0);
+  const dias = [];
+  for (let f = hoyIso; diffDays(f, llegada) <= 0; f = addDays(f, 1)) dias.push(f);
+  return dias;
+}
+
+/**
+ * Demanda del horizonte de reposición: la demanda semanal ponderada por el peso de cada día entre hoy y la
+ * llegada del pedido siguiente (diasCobertura). Es la demanda contra la que se compara el stock en el semáforo.
+ * Control de cambios ERS v02: reemplaza a la demanda de la semana completa, que dejaba en quiebre a casi todo el
+ * catálogo. Complemento aprobado: reemplaza a "lead time + 1 día", que ignoraba los días de atención del
+ * proveedor y dejaba entre 11 y 25 % de venta perdida en la evaluación 2024.
+ */
+function demandaReposicion(demandaSemana, leadTimeDias, diasHabiles, hoyIso) {
+  const peso = diasCobertura(hoyIso, leadTimeDias, diasHabiles)
+    .reduce((s, f) => s + PESOS_DIA[isoWeekday(f) - 1], 0);
+  return demandaSemana * peso;
 }
 
 /** Stock máximo sin merma: lo que se vende durante la vida útil del producto (sin vida útil, sin tope). */
 function stockMaximoPorVidaUtil(demandaSemana, vidaUtilDias) {
   return vidaUtilDias ? (demandaSemana / 7) * vidaUtilDias : Infinity;
+}
+
+/**
+ * Demanda que el stock debe cubrir para el semáforo: la del horizonte de reposición, sin superar lo que se vende dentro
+ * de la vida útil. Si el pedido siguiente llega después de que el producto vence, tener más stock solo produce merma:
+ * el producto no se marca en quiebre por algo que no conviene comprar. Las compras resultantes no cambian, porque la
+ * cantidad sugerida ya estaba acotada por vida útil.
+ */
+function demandaACubrir(demandaSemana, leadTimeDias, diasHabiles, hoyIso, vidaUtilDias, unidad = 'kg') {
+  const rep = demandaReposicion(demandaSemana, leadTimeDias, diasHabiles, hoyIso);
+  const topeExacto = stockMaximoPorVidaUtil(demandaSemana, vidaUtilDias);
+  // Mismo redondeo hacia abajo que acotarPorVidaUtil (0,1 kg o unidades enteras)
+  const tope = !Number.isFinite(topeExacto) ? Infinity : unidad === 'un' ? Math.floor(topeExacto + 1e-9) : Math.floor(topeExacto * 10 + 1e-9) / 10;
+  return { demanda: Math.min(rep, tope), tope, acotada: tope < rep };
 }
 
 /** Umbral local (stock_minimo): sin stock = quiebre; bajo el mínimo = bajo. */
@@ -89,7 +138,10 @@ module.exports = {
   ORDEN,
   peorNivel,
   nivelPorDemanda,
+  PESOS_DIA,
+  diasCobertura,
   demandaReposicion,
+  demandaACubrir,
   stockMaximoPorVidaUtil,
   acotarPorVidaUtil,
   nivelPorMinimo,

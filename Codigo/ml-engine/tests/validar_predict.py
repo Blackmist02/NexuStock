@@ -129,6 +129,25 @@ for horizonte in ['semana'] * 5 + ['mes'] * 5:
 servidor.stdin.write('esto no es json\n')
 servidor.stdin.flush()
 print('    Solicitud inválida ->', json.loads(servidor.stdout.readline()))
+
+# Serie de 18 semanas (4 meses): la semana 1 es la predicción semanal y las 4 primeras suman la del mes
+serie_sol = {**solicitud, 'producto': 'P001', 'horizonte': 'serie', 'semanas': 18}
+inicio = time.perf_counter()
+servidor.stdin.write(json.dumps(serie_sol) + '\n')
+servidor.stdin.flush()
+serie = json.loads(servidor.stdout.readline())
+lat_serie = (time.perf_counter() - inicio) * 1000
+semana_1 = predict.predecir(solicitud, artefacto, 'semana', 'P001')[0]['demanda_kg']
+mes = predict.predecir(solicitud, artefacto, 'mes', 'P001')[0]['demanda_kg']
+cuatro = sum(s['demanda_kg'] for s in serie['semanas'][:4])
+assert len(serie['semanas']) == 18 and serie['semanas'][0]['semana'] == '2024-09-09'
+assert abs(serie['semanas'][0]['demanda_kg'] - semana_1) < 0.01
+assert abs(cuatro * predict.DIAS_MES / 28 - mes) < 0.05, (cuatro, mes)
+servidor.stdin.write(json.dumps({**serie_sol, 'semanas': 40}) + '\n')
+servidor.stdin.flush()
+assert 'error' in json.loads(servidor.stdout.readline())
+print(f'[4] Serie P001, 18 semanas en {lat_serie:.0f} ms: semana 1 = {semana_1} kg (igual a la semanal), '
+      f'4 primeras = {cuatro:.2f} kg (mes {mes} kg / 30 × 28)')
 servidor.stdin.close()
 servidor.wait(timeout=5)
 print(f'    24 productos por solicitud: semana {np.mean(latencias[:5]):.0f} ms, mes {np.mean(latencias[5:]):.0f} ms')

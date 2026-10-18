@@ -1,25 +1,25 @@
 ﻿producto_id,nombre_producto,categoria,unidad_medida,proveedor_id,vida_util_dias,stock_minimo_kg,margen_seguridad_pct,precio_compra_referencia_2022,precio_venta_referencia_2022
-P001,Huachalomo,Vacuno,kg,PR001,5,12.7,10.0,6180,9000
-P002,Lomo Liso,Vacuno,kg,PR012,12,8.5,10.0,9590,13760
-P003,Posta Rosada,Vacuno,kg,PR001,5,11.3,10.0,6990,10010
-P004,Asado de Tira,Vacuno,kg,PR007,35,13.5,10.0,4230,6500
-P005,Lomo Vetado,Vacuno,kg,PR012,12,11.7,10.0,7480,11370
-P006,Punta Paleta,Vacuno,kg,PR002,5,8.7,10.0,4550,6900
-P007,Filete de Res,Vacuno,kg,PR012,12,3.5,10.0,9350,13810
-P008,Malaya,Vacuno,kg,PR002,5,7.4,10.0,3820,5930
-P009,Plateada,Vacuno,kg,PR001,5,8.0,10.0,4060,6250
-P010,Pollo Entero,Pollo,kg,PR005,4,26.2,10.0,1890,2910
-P011,Pechuga de Pollo,Pollo,kg,PR004,4,19.8,10.0,2840,4650
-P012,Trutro Entero,Pollo,kg,PR005,4,20.8,10.0,1810,2750
-P013,Alitas de Pollo,Pollo,kg,PR004,4,7.3,10.0,1580,2520
-P014,Costillar de Cerdo,Cerdo,kg,PR003,5,8.9,10.0,3000,4730
-P015,Chuleta de Cerdo,Cerdo,kg,PR003,5,12.9,10.0,3160,5040
-P016,Pierna de Cerdo,Cerdo,kg,PR003,5,7.2,10.0,2680,4250
-P017,Panceta de Cerdo,Cerdo,kg,PR003,5,6.0,10.0,2840,4490
-P018,Longaniza,Embutidos,kg,PR004,14,12.2,10.0,3000,4960
-P019,Chorizo Parrillero,Embutidos,kg,PR004,14,9.0,10.0,3230,5280
-P020,Prietas,Embutidos,kg,PR004,7,2.9,10.0,2210,3620
-P021,Reineta Entera,Pescados,kg,PR006,3,4.4,10.0,5920,9470
-P022,Merluza Fresca,Pescados,kg,PR006,3,7.5,10.0,1260,2210
-P023,Congrio Negro,Pescados,kg,PR006,3,2.3,10.0,2290,3630
-P024,Choritos (Mejillones),Pescados,kg,PR006,3,3.6,10.0,550,1030
+P001,Huachalomo,Vacuno,kg,PR001,5,12.7,20.0,6180,9000
+P002,Lomo Liso,Vacuno,kg,PR012,12,8.5,20.0,9590,13760
+P003,Posta Rosada,Vacuno,kg,PR001,5,11.3,20.0,6990,10010
+P004,Asado de Tira,Vacuno,kg,PR007,35,13.5,20.0,4230,6500
+P005,Lomo Vetado,Vacuno,kg,PR012,12,11.7,20.0,7480,11370
+P006,Punta Paleta,Vacuno,kg,PR002,5,8.7,20.0,4550,6900
+P007,Filete de Res,Vacuno,kg,PR012,12,3.5,20.0,9350,13810
+P008,Malaya,Vacuno,kg,PR002,5,7.4,20.0,3820,5930
+P009,Plateada,Vacuno,kg,PR001,5,8.0,20.0,4060,6250
+P010,Pollo Entero,Pollo,kg,PR005,4,26.2,20.0,1890,2910
+P011,Pechuga de Pollo,Pollo,kg,PR004,4,19.8,20.0,2840,4650
+P012,Trutro Entero,Pollo,kg,PR005,4,20.8,20.0,1810,2750
+P013,Alitas de Pollo,Pollo,kg,PR004,4,7.3,20.0,1580,2520
+P014,Costillar de Cerdo,Cerdo,kg,PR003,5,8.9,20.0,3000,4730
+P015,Chuleta de Cerdo,Cerdo,kg,PR003,5,12.9,20.0,3160,5040
+P016,Pierna de Cerdo,Cerdo,kg,PR003,5,7.2,20.0,2680,4250
+P017,Panceta de Cerdo,Cerdo,kg,PR003,5,6.0,20.0,2840,4490
+P018,Longaniza,Embutidos,kg,PR004,14,12.2,20.0,3000,4960
+P019,Chorizo Parrillero,Embutidos,kg,PR004,14,9.0,20.0,3230,5280
+P020,Prietas,Embutidos,kg,PR004,7,2.9,20.0,2210,3620
+P021,Reineta Entera,Pescados,kg,PR006,3,4.4,20.0,5920,9470
+P022,Merluza Fresca,Pescados,kg,PR006,3,7.5,20.0,1260,2210
+P023,Congrio Negro,Pescados,kg,PR006,3,2.3,20.0,2290,3630
+P024,Choritos (Mejillones),Pescados,kg,PR006,3,3.6,20.0,550,1030

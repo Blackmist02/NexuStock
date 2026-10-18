@@ -15,7 +15,9 @@ export type Permiso =
   | "registrar_modelo" // registrar y activar versiones del modelo
   | "alertas" // atender o descartar alertas
   | "recalcular" // recalcular predicciones y alertas
-  | "calendario"; // editar el calendario de eventos
+  | "calendario" // editar el calendario de eventos
+  | "importar" // cargar ventas, compras y mermas desde CSV
+  | "fecha_sistema"; // cambiar la fecha de referencia del sistema
 
 /** Misma matriz que aplica la API (middleware requireRole); aquí solo decide qué botones se muestran. */
 const MATRIZ: Record<Permiso, readonly Rol[]> = {
@@ -27,6 +29,8 @@ const MATRIZ: Record<Permiso, readonly Rol[]> = {
   alertas: ["administrador"],
   recalcular: ["administrador", "ti"],
   calendario: ["administrador", "ti"],
+  importar: ["administrador"],
+  fecha_sistema: ["administrador", "ti"],
 };
 
 export const puede = (rol: Rol | undefined | null, permiso: Permiso): boolean => !!rol && MATRIZ[permiso].includes(rol);
@@ -40,4 +44,6 @@ export const FILAS_PERMISOS: { texto: string; roles: readonly Rol[] }[] = [
   { texto: "Gestionar usuarios", roles: MATRIZ.usuarios },
   { texto: "Ver precisión del modelo", roles: MATRIZ.modelo },
   { texto: "Registrar y activar modelos", roles: MATRIZ.registrar_modelo },
+  { texto: "Cargar ventas, compras y mermas (CSV)", roles: MATRIZ.importar },
+  { texto: "Cambiar la fecha del sistema", roles: MATRIZ.fecha_sistema },
 ];

@@ -35,7 +35,7 @@ export function ProductoModal({ producto, onClose, onHecho }: Props) {
   const [minimo, setMinimo] = useState(txt(producto?.stock_minimo ?? 0));
   const [inicial, setInicial] = useState("0");
   const [vida, setVida] = useState(txt(producto?.vida_util_dias));
-  const [margen, setMargen] = useState(txt(producto?.margen_seguridad_pct ?? 10));
+  const [margen, setMargen] = useState(txt(producto?.margen_seguridad_pct ?? 20));
 
   async function guardar() {
     const c: Record<string, string> = {};
@@ -63,7 +63,7 @@ export function ProductoModal({ producto, onClose, onHecho }: Props) {
       stock_minimo: nMin ?? 0,
       ...(edita ? {} : { stock_inicial: nIni ?? 0 }),
       vida_util_dias: nVida,
-      margen_seguridad_pct: nMargen ?? 10,
+      margen_seguridad_pct: nMargen ?? 20,
     };
     const r = await g.ejecutar(() =>
       edita ? api.put<{ data: DetalleProducto }>(`/products/${producto.id_producto}`, cuerpo) : api.post<{ data: DetalleProducto }>("/products", cuerpo),
@@ -106,8 +106,13 @@ export function ProductoModal({ producto, onClose, onHecho }: Props) {
         <TextField label={`Stock mínimo (${unidad})`} placeholder="Ej.: 5" inputMode="decimal" value={minimo} onChange={(e) => setMinimo(e.target.value)} error={g.campos.stock_minimo} />
         {!edita ? <TextField label={`Stock inicial (${unidad})`} placeholder="Ej.: 20" inputMode="decimal" value={inicial} onChange={(e) => setInicial(e.target.value)} error={g.campos.stock_inicial} /> : null}
         <TextField label="Vida útil (días)" placeholder="Ej.: 5" inputMode="numeric" value={vida} onChange={(e) => setVida(e.target.value)} error={g.campos.vida_util_dias} hint="Opcional. Limita cuánto conviene comprar de una vez." />
-        <TextField label="Margen de seguridad (%)" placeholder="Ej.: 10" inputMode="decimal" value={margen} onChange={(e) => setMargen(e.target.value)} error={g.campos.margen_seguridad_pct} hint="Se suma a la demanda proyectada." />
+        <TextField label="Margen de seguridad (%)" placeholder="Ej.: 20" inputMode="decimal" value={margen} onChange={(e) => setMargen(e.target.value)} error={g.campos.margen_seguridad_pct} hint="Se suma a la demanda proyectada." />
       </div>
+      {!edita ? (
+        <div className="callout info" style={{ marginTop: 14 }}>
+          <span>Mientras el producto no tenga ventas registradas, su demanda se estima con el promedio de su categoría.</span>
+        </div>
+      ) : null}
       {g.error ? <div className="form-err" role="alert" style={{ marginTop: 14 }}>{g.error}</div> : null}
     </Modal>
   );

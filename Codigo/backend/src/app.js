@@ -16,7 +16,9 @@ app.set('trust proxy', config.trustProxy);
 app.use(helmet());
 // El frontend consume la API bajo su propio origen (proxy de Next), pero si se llama directo solo se aceptan estos orígenes
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
-app.use(express.json({ limit: '1mb' }));
+// /api/import acepta archivos CSV grandes y define su propio límite
+const json1mb = express.json({ limit: '1mb' });
+app.use((req, res, next) => (req.path.startsWith('/api/import') ? next() : json1mb(req, res, next)));
 app.use(cookieParser());
 app.use('/api', csrfGuard);
 
@@ -55,6 +57,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/history', require('./routes/history'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/config', require('./routes/config'));
+app.use('/api/import', require('./routes/importacion'));
 
 // Manejo centralizado de errores (Express 5 captura los errores de handlers async)
 app.use(notFoundHandler);
@@ -90,11 +93,18 @@ function iniciarTareas() {
 
 // Inicialización del servidor (solo al ejecutar `node src/app.js`; las pruebas importan `app` sin abrir el puerto)
 if (require.main === module) {
-  app.listen(config.port, () => {
-    console.log(`🚀 Servidor NexuStock corriendo en http://localhost:${config.port}`);
-    if (config.fechaReferencia) console.log(`📅 Fecha de referencia: ${config.fechaReferencia}`);
-    iniciarTareas();
-  });
+  // La configuración (negocio y fecha de referencia) se lee de la base antes de atender solicitudes
+  require('./lib/negocio')
+    .cargar()
+    .catch((e) => console.error('[configuración] no se pudo leer CONFIGURACION:', e.message))
+    .finally(() => {
+      app.listen(config.port, () => {
+        const fechaSistema = require('./lib/fechaSistema');
+        console.log(`🚀 Servidor NexuStock corriendo en http://localhost:${config.port}`);
+        if (fechaSistema.referencia()) console.log(`📅 Fecha de referencia: ${fechaSistema.referencia()} (${fechaSistema.origenReferencia()})`);
+        iniciarTareas();
+      });
+    });
   for (const senal of ['SIGINT', 'SIGTERM']) {
     process.on(senal, () => {
       require('./services/prediccion').detenerMotor();
