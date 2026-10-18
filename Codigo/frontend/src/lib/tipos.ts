@@ -96,6 +96,9 @@ export interface Alerta {
   creada_en: string;
   resuelta_en: string | null;
   origen_demanda: OrigenDemanda | null;
+  /** Causa deducida de la fotografía de la alerta (stock, demanda hasta la próxima entrega y margen). */
+  causa: "sin_stock" | "demanda_reposicion" | "margen_seguridad" | "stock_minimo";
+  causa_texto: string;
 }
 
 export interface Evento {

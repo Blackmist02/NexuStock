@@ -1,0 +1,12 @@
+# Contexto de construcción: Codigo/. Solo entra lo necesario para el backend y el motor ML.
+**
+!backend/
+!ml-engine/requirements.txt
+!ml-engine/predict.py
+!ml-engine/models/
+!certs/*.crt
+
+backend/node_modules
+backend/.env
+backend/Dockerfile*
+**/*.log

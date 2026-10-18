@@ -60,10 +60,14 @@ app.use('/api/config', require('./routes/config'));
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-/** Tareas al iniciar y periódicas: feriados iniciales y recálculo de proyecciones y alertas. */
+/**
+ * Tareas al iniciar y periódicas: feriados iniciales, motor predictivo y recálculo de proyecciones y alertas.
+ * La primera evaluación espera a que el modelo termine de cargar (3-5 s); si no alcanza, usa el respaldo (RF-11).
+ */
 function iniciarTareas() {
   const { sembrarSiVacio } = require('./services/eventos');
   const { evaluar } = require('./services/alertas');
+  const { iniciarMotor } = require('./services/prediccion');
   const evaluarTodo = () =>
     evaluar().catch((e) => console.error('[tareas] no se pudo recalcular las alertas:', e.message));
 
@@ -74,6 +78,11 @@ function iniciarTareas() {
     } catch (e) {
       console.error('[tareas] no se pudo cargar el calendario:', e.message);
     }
+    try {
+      if (!(await iniciarMotor(30000))) console.log('[ml] sin modelo disponible: se usa el respaldo por promedio');
+    } catch (e) {
+      console.error('[ml] no se pudo iniciar el motor:', e.message);
+    }
     await evaluarTodo();
   }, 3000).unref();
   if (config.evaluacionCadaMin > 0) setInterval(evaluarTodo, config.evaluacionCadaMin * 60 * 1000).unref();
@@ -83,8 +92,15 @@ function iniciarTareas() {
 if (require.main === module) {
   app.listen(config.port, () => {
     console.log(`🚀 Servidor NexuStock corriendo en http://localhost:${config.port}`);
+    if (config.fechaReferencia) console.log(`📅 Fecha de referencia: ${config.fechaReferencia}`);
     iniciarTareas();
   });
+  for (const senal of ['SIGINT', 'SIGTERM']) {
+    process.on(senal, () => {
+      require('./services/prediccion').detenerMotor();
+      process.exit(0);
+    });
+  }
 }
 
 module.exports = app;

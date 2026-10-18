@@ -3,14 +3,13 @@
  *
  *   estimar(productoIds, horizonte) → Map<id_producto, { demanda, origen }>
  *
- * Hoy la única implementación es el respaldo estadístico del diseño (`promedio_historico` y, sin historial,
- * `categoria`). Cuando el motor de ML esté listo, se agrega otro proveedor con origen = 'modelo' y se registra
- * con setDemandProvider().
+ * El proveedor por defecto (`compuesto`) usa el modelo de ML activo (origen `modelo`) y, cuando no está disponible,
+ * el respaldo estadístico del diseño (`promedio_historico` y, sin historial, `categoria`).
  */
 const config = require('../config');
 const db = require('../db');
 const { hoy } = require('../lib/dates');
-const { fechaObjetivo, modeloDisponible, predecirConModelo } = require('./prediccion');
+const { fechaObjetivo, modeloDisponible, predecirLote } = require('./prediccion');
 
 const DIAS = { semana: 7, mes: 30 };
 const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -22,17 +21,20 @@ const promedioHistorico = {
    */
   async estimar(productoIds, horizonte = 'semana') {
     const semanas = config.demandaSemanasHistorial;
+    // «Ahora» = fin del día de hoy en la zona del negocio (respeta FECHA_REFERENCIA en la demo)
     const { rows } = await db.query(
-      `SELECT p.id_producto, p.id_categoria,
+      `WITH ref AS (SELECT (($2::date + 1)::timestamp AT TIME ZONE $3) AS ahora)
+       SELECT p.id_producto, p.id_categoria,
               (SELECT MIN(v.fecha_hora) FROM ventas v WHERE v.id_producto = p.id_producto) AS primera_venta,
               COALESCE((SELECT SUM(v.cantidad) FROM ventas v
                          WHERE v.id_producto = p.id_producto
-                           AND v.fecha_hora >= NOW() - make_interval(weeks => $1)), 0) AS total,
-              EXTRACT(EPOCH FROM (NOW() - (SELECT MIN(v.fecha_hora) FROM ventas v
-                                            WHERE v.id_producto = p.id_producto))) / 86400.0 AS dias_historial
-         FROM productos p
+                           AND v.fecha_hora >= ref.ahora - make_interval(weeks => $1)
+                           AND v.fecha_hora < ref.ahora), 0) AS total,
+              EXTRACT(EPOCH FROM (ref.ahora - (SELECT MIN(v.fecha_hora) FROM ventas v
+                                                WHERE v.id_producto = p.id_producto))) / 86400.0 AS dias_historial
+         FROM productos p, ref
         WHERE p.activo`,
-      [semanas]
+      [semanas, hoy(), config.tz]
     );
 
     const dias = DIAS[horizonte];
@@ -73,22 +75,14 @@ const promedioHistorico = {
   }
 };
 
-/** Ejecuta `tarea` sobre cada elemento con a lo más `n` en paralelo (el motor no debe saturar el servidor). */
-async function conConcurrencia(items, n, tarea) {
-  const cola = [...items];
-  await Promise.all(
-    Array.from({ length: Math.min(n, cola.length) }, async () => {
-      while (cola.length) await tarea(cola.shift());
-    })
-  );
-}
-
 /**
  * Proveedor por defecto: usa el modelo activo (origen «modelo») cuando existe y responde; en cualquier otro caso
  * —sin modelo, script caído, más de 2 s, valor inválido o producto sin historial— aplica el respaldo (RF-11).
  *
  * `ejecutar: false` (lecturas como el dashboard) solo reutiliza las predicciones del modelo ya registradas hoy;
- * `ejecutar: true` (motor de alertas, «generar predicción») invoca el script para los productos que falten.
+ * `ejecutar: true` (motor de alertas, «generar predicción») invoca el motor para los productos que falten, en una
+ * sola solicitud. Con FECHA_REFERENCIA (demostración con datos históricos) se reutiliza la predicción de la semana
+ * objetivo aunque se haya generado otro día, porque la fecha de generación es la del reloj y no la de referencia.
  */
 const compuesto = {
   async estimar(productoIds, horizonte = 'semana', { ejecutar = false } = {}) {
@@ -106,9 +100,10 @@ const compuesto = {
       `SELECT DISTINCT ON (id_producto) id_producto, demanda_pred::float AS demanda, id_modelo, latencia_ms
          FROM predicciones
         WHERE id_producto = ANY($1::bigint[]) AND horizonte = $2 AND fecha_objetivo = $3::date
-          AND origen = 'modelo' AND id_modelo = $4 AND (generada_en AT TIME ZONE $5)::date = $6::date
+          AND origen = 'modelo' AND id_modelo = $4
+          AND ($7::boolean OR (generada_en AT TIME ZONE $5)::date = $6::date)
         ORDER BY id_producto, generada_en DESC`,
-      [ids, horizonte, fechaObjetivo(horizonte), modelo.id_modelo, config.tz, hoy()]
+      [ids, horizonte, fechaObjetivo(horizonte), modelo.id_modelo, config.tz, hoy(), Boolean(config.fechaReferencia)]
     );
     for (const r of rows) out.set(r.id_producto, { demanda: r.demanda, origen: 'modelo', id_modelo: r.id_modelo, latencia_ms: r.latencia_ms });
     if (!ejecutar) return out;
@@ -122,13 +117,11 @@ const compuesto = {
          FROM productos p JOIN categorias c ON c.id_categoria = p.id_categoria WHERE p.id_producto = ANY($1::bigint[])`,
       [pendientes]
     );
-    await conConcurrencia(info.rows, 3, async (prod) => {
-      try {
-        out.set(prod.id_producto, await predecirConModelo(prod, horizonte, modelo));
-      } catch (e) {
-        console.warn(`[demanda] respaldo para el producto ${prod.id_producto}: ${e.message}`);
-      }
-    });
+    try {
+      for (const [id, r] of await predecirLote(info.rows, horizonte, modelo)) out.set(id, r);
+    } catch (e) {
+      console.warn(`[demanda] respaldo para ${pendientes.length} productos: ${e.message}`);
+    }
     return out;
   }
 };

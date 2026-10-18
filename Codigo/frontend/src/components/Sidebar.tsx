@@ -11,6 +11,7 @@ import type { ConfigNegocio } from "@/lib/tipos";
 export const NAV_ITEMS = [
   { key: "dashboard", href: "/dashboard", label: "Dashboard" },
   { key: "inventario", href: "/inventario", label: "Inventario" },
+  { key: "alertas", href: "/alertas", label: "Alertas" },
   { key: "prediccion", href: "/prediccion", label: "Predicción" },
   { key: "historial", href: "/historial", label: "Historial" },
   { key: "configuracion", href: "/configuracion", label: "Configuración" },

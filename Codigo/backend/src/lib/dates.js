@@ -7,8 +7,8 @@ const fmt = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit'
 });
 
-/** Fecha de hoy (AAAA-MM-DD) en la zona horaria del negocio. */
-const hoy = (now = new Date()) => fmt.format(now);
+/** Fecha de hoy (AAAA-MM-DD) en la zona horaria del negocio, o FECHA_REFERENCIA si está definida (demo). */
+const hoy = (now) => (now === undefined && config.fechaReferencia ? config.fechaReferencia : fmt.format(now ?? new Date()));
 
 function addDays(iso, days) {
   const [y, m, d] = iso.split('-').map(Number);
@@ -54,4 +54,14 @@ function fechaHoraLocal(d) {
   return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
 }
 
-module.exports = { fechaHoraLocal, hoy, addDays, isoWeekday, diffDays, inicioSemana, inicioMes, finMes, esFechaIso };
+/**
+ * Expresión SQL del instante actual del negocio: now(), o con FECHA_REFERENCIA (demostración con datos históricos)
+ * esa fecha con la hora actual de la carnicería. Parámetros SQL: fecha de referencia (o null) y zona horaria.
+ */
+const momentoSql = (pRef, pTz) =>
+  `CASE WHEN ${pRef}::date IS NULL THEN now() ` +
+  `ELSE ((${pRef}::date + (now() AT TIME ZONE ${pTz})::time) AT TIME ZONE ${pTz}) END`;
+
+module.exports = {
+  fechaHoraLocal, hoy, addDays, isoWeekday, diffDays, inicioSemana, inicioMes, finMes, esFechaIso, momentoSql
+};

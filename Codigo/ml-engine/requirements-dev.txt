@@ -1,0 +1,7 @@
+-r requirements.txt
+jupyter
+ipykernel
+matplotlib
+seaborn
+pyarrow
+psycopg[binary]

@@ -37,6 +37,10 @@ interface Sugerencia {
 
 interface Dashboard {
   generado_en: string;
+  /** «Hoy» según el backend (AAAA-MM-DD): FECHA_REFERENCIA si está definida. */
+  hoy: string;
+  fecha_demo: boolean;
+  origen_proyeccion: "modelo" | "promedio_historico";
   kpis: {
     valor_inventario_clp: number;
     productos_quiebre: number;
@@ -52,9 +56,14 @@ interface Dashboard {
   productos_criticos: Sugerencia[];
 }
 
-function fechaLarga(iso: string): string {
+function fechaLarga(iso: string, conAnio = false): string {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Intl.DateTimeFormat("es-CL", { timeZone: "UTC", day: "numeric", month: "long" }).format(new Date(Date.UTC(y, m - 1, d)));
+  return new Intl.DateTimeFormat("es-CL", {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "long",
+    ...(conAnio ? { year: "numeric" } : {}),
+  }).format(new Date(Date.UTC(y, m - 1, d)));
 }
 
 function fechaLimite(iso: string | null, hoy: string): { texto: string; vencida: boolean } {
@@ -92,7 +101,8 @@ export function DashboardView() {
     }
   }
 
-  const hoy = hoyISO();
+  // La fecha de trabajo la define el backend (FECHA_REFERENCIA si está definida); el reloj local es el respaldo
+  const hoy = data?.hoy ?? hoyISO();
   const vacio = !!data && data.kpis.total_productos === 0;
 
   if (vacio) {
@@ -129,7 +139,9 @@ export function DashboardView() {
         <div>
           <h1 className={c("h1")}>Dashboard</h1>
           <div className={c("subtitle")}>
-            Resumen general · hoy, {fechaLarga(hoy)}
+            {data?.fecha_demo
+              ? `Resumen general · ${fechaLarga(hoy, true)} (fecha de referencia)`
+              : `Resumen general · hoy, ${fechaLarga(hoy)}`}
             {data && obsoleto ? ` · Datos guardados el ${fechaHoraLocal(data.generado_en)}` : ""}
           </div>
         </div>
@@ -200,7 +212,7 @@ export function DashboardView() {
                 </span>
                 <span>
                   <i className={c("sw dash")} style={{ color: "var(--accent)" }} />
-                  Demanda proyectada (promedio histórico)
+                  Demanda proyectada ({data.origen_proyeccion === "modelo" ? "modelo de ML" : "promedio histórico"})
                 </span>
                 <span>Cantidad por semana · 8 semanas atrás + 2 por delante</span>
               </div>

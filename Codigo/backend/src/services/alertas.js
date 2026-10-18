@@ -1,10 +1,15 @@
 /**
  * MotorAlertasService (RF-09, RF-10, RF-05): evalúa el semáforo de cada producto, registra la proyección usada y
  * crea o actualiza la alerta activa del producto sin duplicarla.
+ *
+ * El semáforo y la cantidad sugerida usan la demanda del horizonte de reposición (lead time + 1 día), que es la que
+ * se guarda en demanda_proyectada; con ella y el margen se deduce la causa de cada alerta (control de cambios ERS v02).
+ * Las fechas de creación y resolución respetan FECHA_REFERENCIA cuando se muestran datos históricos.
  */
+const config = require('../config');
 const db = require('../db');
 const { ApiError } = require('../lib/errors');
-const { addDays, hoy } = require('../lib/dates');
+const { addDays, hoy, momentoSql } = require('../lib/dates');
 const negocio = require('../lib/negocio');
 const { withTransaction } = require('../lib/tx');
 const { fechaObjetivo } = require('./prediccion');
@@ -13,11 +18,34 @@ const {
   ORDEN, acotarPorVidaUtil, cantidadSugerida, fechaLimitePedido, fechaQuiebreEstimada
 } = require('./reglas');
 
-/** Sugerencia de compra de un producto del inventario (fechas, cantidad acotada por vida útil y lead time). */
+const CAUSAS = {
+  sin_stock: 'Sin stock',
+  demanda_reposicion: 'El stock no alcanza para la demanda hasta la próxima entrega (lead time + 1 día)',
+  margen_seguridad: 'El stock cubre la demanda hasta la próxima entrega, pero no el margen de seguridad',
+  stock_minimo: 'El stock está bajo el mínimo definido para el producto'
+};
+
+/** Causa de una alerta a partir de su fotografía: stock, demanda de reposición y margen (función pura). */
+function causaAlerta({ stock_actual: stock, demanda_proyectada: demanda, margen_seguridad_pct: margen }) {
+  if (stock <= 0) return 'sin_stock';
+  if (stock < demanda) return 'demanda_reposicion';
+  if (stock < demanda * (1 + margen / 100)) return 'margen_seguridad';
+  return 'stock_minimo';
+}
+
+/** Instante actual del negocio (respeta FECHA_REFERENCIA). */
+async function momento(client = db) {
+  return (await client.query(`SELECT ${momentoSql('$1', '$2')} AS m`, [config.fechaReferencia || null, config.tz])).rows[0].m;
+}
+
+/**
+ * Sugerencia de compra de un producto del inventario: demanda del horizonte de reposición (lead time + 1 día),
+ * cantidad acotada para que el stock resultante se venda dentro de la vida útil, y fechas de quiebre y de pedido.
+ */
 function sugerenciaDe(p, hoyIso) {
   const fechaQuiebre = fechaQuiebreEstimada(hoyIso, p.stock_actual, p.demanda_semana);
-  const bruta = cantidadSugerida(p.stock_actual, p.demanda_semana, p.margen_seguridad_pct, p.unidad, p.stock_minimo);
-  const { cantidad, acotada } = acotarPorVidaUtil(bruta, p.demanda_semana, p.vida_util_dias, p.unidad);
+  const bruta = cantidadSugerida(p.stock_actual, p.demanda_reposicion, p.margen_seguridad_pct, p.unidad, p.stock_minimo);
+  const { cantidad, acotada } = acotarPorVidaUtil(bruta, p.demanda_semana, p.vida_util_dias, p.unidad, p.stock_actual);
   return {
     id_producto: p.id_producto,
     producto: p.nombre,
@@ -28,6 +56,7 @@ function sugerenciaDe(p, hoyIso) {
     stock_minimo: p.stock_minimo,
     margen_seguridad_pct: p.margen_seguridad_pct,
     demanda_semana: p.demanda_semana,
+    demanda_reposicion: p.demanda_reposicion,
     origen_demanda: p.origen_demanda,
     dias_cobertura: p.dias_cobertura,
     id_proveedor: p.id_proveedor,
@@ -89,6 +118,7 @@ async function evaluar({ productoIds = null } = {}) {
 
   await withTransaction(async (client) => {
     await client.query('SELECT pg_advisory_xact_lock(7001)'); // evita evaluaciones simultáneas duplicando alertas
+    const ahora = await momento(client);
     for (const p of inventario) {
       const idPred = await registrarPrediccion(client, {
         id_producto: p.id_producto,
@@ -107,8 +137,8 @@ async function evaluar({ productoIds = null } = {}) {
       if (p.nivel === 'optimo') {
         if (activa.length) {
           await client.query(
-            `UPDATE alertas_inventario SET estado = 'atendida', resuelta_en = NOW() WHERE id_producto = $1 AND estado = 'activa'`,
-            [p.id_producto]
+            `UPDATE alertas_inventario SET estado = 'atendida', resuelta_en = $2 WHERE id_producto = $1 AND estado = 'activa'`,
+            [p.id_producto, ahora]
           );
           resumen.cerradas += activa.length;
         }
@@ -118,7 +148,7 @@ async function evaluar({ productoIds = null } = {}) {
 
       const s = sugerenciaDe(p, hoyIso);
       const valores = [
-        p.nivel, p.stock_actual, p.demanda_semana, p.margen_seguridad_pct, s.cantidad_sugerida,
+        p.nivel, p.stock_actual, p.demanda_reposicion, p.margen_seguridad_pct, s.cantidad_sugerida,
         p.lead_time_dias, s.fecha_quiebre_estimada, s.fecha_limite_pedido, p.id_proveedor, idPred
       ];
       if (activa.length) {
@@ -132,8 +162,8 @@ async function evaluar({ productoIds = null } = {}) {
         // si había varias activas (no debería), se cierran las sobrantes
         if (activa.length > 1) {
           await client.query(
-            `UPDATE alertas_inventario SET estado = 'atendida', resuelta_en = NOW() WHERE id_alerta = ANY($1::bigint[])`,
-            [activa.slice(1).map((a) => a.id_alerta)]
+            `UPDATE alertas_inventario SET estado = 'atendida', resuelta_en = $2 WHERE id_alerta = ANY($1::bigint[])`,
+            [activa.slice(1).map((a) => a.id_alerta), ahora]
           );
         }
         resumen.actualizadas++;
@@ -147,9 +177,9 @@ async function evaluar({ productoIds = null } = {}) {
       const descartada = (
         await client.query(
           `SELECT nivel FROM alertas_inventario
-            WHERE id_producto = $1 AND estado = 'descartada' AND resuelta_en > NOW() - interval '24 hours'
+            WHERE id_producto = $1 AND estado = 'descartada' AND resuelta_en > $2::timestamptz - interval '24 hours'
             ORDER BY resuelta_en DESC LIMIT 1`,
-          [p.id_producto]
+          [p.id_producto, ahora]
         )
       ).rows[0];
       if (descartada && ORDEN[p.nivel] <= ORDEN[descartada.nivel]) {
@@ -159,9 +189,9 @@ async function evaluar({ productoIds = null } = {}) {
       const ins = await client.query(
         `INSERT INTO alertas_inventario
            (id_producto, nivel, stock_actual, demanda_proyectada, margen_seguridad_pct, cantidad_sugerida, lead_time_dias,
-            fecha_quiebre_estimada, fecha_limite_pedido, id_proveedor, id_prediccion)
-         VALUES ($11, $1, $2, $3, $4, $5, $6, $7::date, $8::date, $9, $10) RETURNING id_alerta`,
-        [...valores, p.id_producto]
+            fecha_quiebre_estimada, fecha_limite_pedido, id_proveedor, id_prediccion, creada_en)
+         VALUES ($11, $1, $2, $3, $4, $5, $6, $7::date, $8::date, $9, $10, $12) RETURNING id_alerta`,
+        [...valores, p.id_producto, ahora]
       );
       resumen.creadas++;
       resumen.productos.push({ id_producto: p.id_producto, nivel: p.nivel, alerta: ins.rows[0].id_alerta });
@@ -194,29 +224,52 @@ const SELECT_ALERTA = `
     JOIN proveedores pr ON pr.id_proveedor = a.id_proveedor
     LEFT JOIN predicciones pd ON pd.id_prediccion = a.id_prediccion`;
 
+const conCausa = (a) => {
+  const causa = causaAlerta(a);
+  return { ...a, causa, causa_texto: CAUSAS[causa] };
+};
+
+/**
+ * Alertas con su causa. Las activas se ordenan por riesgo y fecha límite de pedido; el historial (atendidas,
+ * descartadas o todas) por fecha de creación, de la más reciente a la más antigua.
+ */
 async function listar({ estado = 'activa' } = {}) {
+  const orden =
+    estado === 'activa'
+      ? `CASE a.nivel WHEN 'quiebre' THEN 0 WHEN 'bajo' THEN 1 ELSE 2 END, a.fecha_limite_pedido, p.nombre`
+      : 'a.creada_en DESC, a.id_alerta DESC';
   const { rows } = await db.query(
     `${SELECT_ALERTA}
       WHERE ($1::text IS NULL OR a.estado = $1)
-      ORDER BY CASE a.nivel WHEN 'quiebre' THEN 0 WHEN 'bajo' THEN 1 ELSE 2 END, a.fecha_limite_pedido, p.nombre
+      ORDER BY ${orden}
       LIMIT 500`,
     [estado === 'todas' ? null : estado]
   );
-  return rows;
+  return rows.map(conCausa);
 }
 
 /** RF-05: marca la alerta como atendida o descartada y registra el momento. Una alerta ya resuelta no se vuelve a resolver. */
 async function resolver(idAlerta, estado) {
   const r = await db.query(
-    `UPDATE alertas_inventario SET estado = $2, resuelta_en = NOW() WHERE id_alerta = $1 AND estado = 'activa' RETURNING id_alerta`,
-    [idAlerta, estado]
+    `UPDATE alertas_inventario SET estado = $2, resuelta_en = $3 WHERE id_alerta = $1 AND estado = 'activa' RETURNING id_alerta`,
+    [idAlerta, estado, await momento()]
   );
   if (r.rowCount === 0) {
     const e = await db.query('SELECT estado FROM alertas_inventario WHERE id_alerta = $1', [idAlerta]);
     if (!e.rowCount) throw new ApiError(404, 'no_encontrada', 'La alerta no existe');
     throw new ApiError(409, 'ya_resuelta', `La alerta ya fue ${e.rows[0].estado === 'atendida' ? 'atendida' : 'descartada'}. Actualizamos el listado.`);
   }
-  return (await db.query(`${SELECT_ALERTA} WHERE a.id_alerta = $1`, [idAlerta])).rows[0];
+  return conCausa((await db.query(`${SELECT_ALERTA} WHERE a.id_alerta = $1`, [idAlerta])).rows[0]);
 }
 
-module.exports = { calcularRiesgos, sugerenciaDe, registrarPrediccion, evaluar, evaluarSinFallar, listar, resolver };
+module.exports = {
+  CAUSAS,
+  causaAlerta,
+  calcularRiesgos,
+  sugerenciaDe,
+  registrarPrediccion,
+  evaluar,
+  evaluarSinFallar,
+  listar,
+  resolver
+};

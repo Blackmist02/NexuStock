@@ -1,44 +1,56 @@
-# ml-engine — motor predictivo (equipo de datos)
+# ml-engine — motor predictivo
 
-Esta carpeta la llena el equipo de ciencia de datos; el backend solo la **lee** (en Docker se monta como `/ml-engine`, solo lectura).
+Modelo de demanda semanal por producto (Random Forest) y su integración con el backend. El backend solo **lee** esta
+carpeta (en Docker se monta como `/ml-engine`, solo lectura).
 
 ```
 ml-engine/
-  predict.py            ← tu script (lo invoca el backend). Ver predict.example.py para el contrato.
-  models/               ← artefactos del modelo (.joblib, .pkl…)
-  predict.example.py    ← ejemplo mínimo del contrato (no es un modelo real)
+  predict.py               ← motor de predicción (lo usa el backend como proceso hijo)
+  models/                  ← modelo serializado (demanda_rf_v1.0.0.joblib) y su fila para MODELOS_ML
+  notebooks/               ← 01 EDA · 02 variables · 03 modelado y evaluación
+  data/raw/                ← ventas, compras, mermas, catálogo, proveedores y calendario 2022-2024
+  data/processed/          ← datasets que producen los notebooks
+  data/evaluacion/         ← demanda total y venta perdida por día (solo evaluación, nunca variable del modelo)
+  tests/validar_predict.py ← comprueba que predict.py reproduce las predicciones del notebook 03
+  crear_esquema.py         ← crea el esquema (init.sql) en una base vacía (local, Supabase o proveedor definitivo)
+  cargar_bd.py             ← carga los datos hasta una fecha y registra las predicciones semanales de 2024
 ```
 
-## Cómo se usa
+Entorno: Python 3.12 y las versiones de `requirements.txt` (scikit-learn va fijo: debe coincidir con el del modelo).
+Para los notebooks y los scripts de carga: `pip install -r requirements-dev.txt`.
 
-1. Copia `predict.py` y el artefacto (p. ej. `models/rf_v1.joblib`) aquí.
-2. Si el script necesita librerías, habilita Python en la imagen del backend: en `.env` pon `WITH_PYTHON=true` y
-   `ML_PIP_PACKAGES=scikit-learn joblib pandas`, y reconstruye (`docker compose build backend`).
-3. En NexuStock, con un usuario **TI**: *Predicción → Precisión del modelo → Registrar versión* (algoritmo, versión, MAE, fechas
-   de entrenamiento y prueba, ruta `models/rf_v1.joblib`) y luego *Activar*. Solo hay un modelo activo.
+## Cómo lo usa el backend
+
+1. Al iniciar, el backend lanza `python3 predict.py --servidor` con el artefacto del **modelo activo** de `MODELOS_ML`
+   (variable `NEXUSTOCK_MODELO`). El proceso carga el modelo una vez (3-5 s) y responde `{"listo": true}`.
+2. Cada predicción es una línea JSON por la entrada estándar y una línea JSON de respuesta (~50 ms para 24 productos).
+3. Si el motor no está listo, falla, tarda más de 2 s (`ML_TIMEOUT_MS`) o devuelve un valor no viable (negativo o sobre
+   `CAPACIDAD_KG_SEMANA`), esa proyección usa el **promedio histórico** del producto o el de su categoría (RF-11).
+4. Si se activa otro modelo, el proceso se reinicia con su artefacto.
+
+El modelo se registra en NexuStock → *Predicción → Precisión del modelo* (rol TI) con la ruta `models/demanda_rf_v1.0.0.joblib`
+(relativa a esta carpeta), o con `models/registro_modelos_ml.sql`.
 
 ## Contrato
 
-El backend ejecuta `python3 predict.py <id_producto> <semana|mes>` como proceso hijo, entrega un JSON por **stdin** y lee un JSON por **stdout**:
-
 ```jsonc
-// stdin
-{ "producto": { "id_producto": 3, "nombre": "Lomo vetado", "unidad": "kg", "categoria": "Vacuno" },
-  "horizonte": "semana",                    // "semana" | "mes"
-  "fecha_objetivo": "2026-10-12",           // lunes de la semana en curso o primer día del mes
-  "artefacto": "/ml-engine/models/rf_v1.joblib",
-  "ventas":  [{ "fecha": "2026-10-01", "cantidad": 12.5 }],   // últimos 120 días, cantidad diaria
-  "eventos": [{ "fecha": "2026-10-12", "nombre": "Encuentro de Dos Mundos", "tipo": "feriado" }] }
+// solicitud (una línea)
+{ "fecha_objetivo": "2024-09-30",          // lunes de la semana a proyectar
+  "producto": "todos", "horizonte": "semana",   // "semana" | "mes"
+  "eventos":   [{ "fecha": "2024-10-12", "nombre": "Encuentro de Dos Mundos", "tipo": "feriado" }],
+  "productos": [{ "producto_id": 3, "categoria": "Vacuno",
+                  "ventas_semanales": [{ "semana": "2024-09-23", "kg": 35.2 }] }] }   // 8 semanas previas
 
-// stdout
-{ "demanda_kg": 84.2, "mae": 3.6, "latencia_ms": 120 }
+// respuesta (una línea)
+{ "predicciones": [{ "producto_id": 3, "demanda_kg": 38.13 }], "mae": 5.144, "latencia_ms": 46, "version": "1.0.0" }
 ```
 
-## Reglas que aplica el backend
+Un producto sin ventas en las 8 semanas previas responde `{ "producto_id": …, "error": "historial_insuficiente" }` y el
+backend usa el promedio de su categoría. También se puede usar sin el backend:
+`python predict.py <producto_id|todos> <semana|mes> < solicitud.json`.
 
-- **Límite de 2 segundos** (`ML_TIMEOUT_MS`): si el script tarda más, falla o devuelve algo inválido (no numérico, negativo o sobre
-  `CAPACIDAD_KG_SEMANA`), esa proyección usa el **promedio histórico** del producto (o el de su categoría si no tiene ventas) y se
-  marca como tal. El usuario nunca ve el error técnico (RF-11).
-- Cada predicción se registra en `PREDICCIONES` con su origen (`modelo` / `promedio_historico` / `categoria`) y su latencia (RF-10).
-- Las predicciones con el modelo se reutilizan durante el día; se recalculan al cambiar el modelo activo o con *Recalcular*.
-- El artefacto debe estar dentro de esta carpeta (no se aceptan rutas con `..`).
+## Validación
+
+```powershell
+python tests\validar_predict.py      # debe terminar en "Resultado: OK"
+```

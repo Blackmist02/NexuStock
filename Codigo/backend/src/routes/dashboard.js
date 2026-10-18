@@ -76,6 +76,10 @@ router.get('/', async (_req, res) => {
   res.json({
     generado_en: new Date().toISOString(),
     hoy: hoyIso,
+    // true cuando «hoy» es FECHA_REFERENCIA (datos históricos)
+    fecha_demo: Boolean(config.fechaReferencia),
+    // Origen de la proyección: el modelo si al menos un producto se proyectó con él
+    origen_proyeccion: inventario.some((p) => p.origen_demanda === 'modelo') ? 'modelo' : 'promedio_historico',
     kpis: {
       valor_inventario_clp: Math.round(valorInventario),
       productos_quiebre: semaforo.quiebre,
