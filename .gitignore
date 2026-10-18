@@ -73,3 +73,6 @@ ehthumbs.db
 # --- Archivos temporales de Office (documentos abiertos) ---
 ~$*
 *.tmp
+
+# Plantillas de carga generadas con ml-engine/exportar_plantillas.py (se regeneran desde data/raw)
+Codigo/ml-engine/data/plantillas/
