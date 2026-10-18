@@ -2,12 +2,13 @@
  * MotorAlertasService (RF-09, RF-10, RF-05): evalúa el semáforo de cada producto, registra la proyección usada y
  * crea o actualiza la alerta activa del producto sin duplicarla.
  *
- * El semáforo y la cantidad sugerida usan la demanda del horizonte de reposición (lead time + 1 día), que es la que
+ * El semáforo y la cantidad sugerida usan la demanda del horizonte de reposición (hasta la llegada del pedido siguiente), que es la que
  * se guarda en demanda_proyectada; con ella y el margen se deduce la causa de cada alerta (control de cambios ERS v02).
  * Las fechas de creación y resolución respetan FECHA_REFERENCIA cuando se muestran datos históricos.
  */
 const config = require('../config');
 const db = require('../db');
+const fechaSistema = require('../lib/fechaSistema');
 const { ApiError } = require('../lib/errors');
 const { addDays, hoy, momentoSql } = require('../lib/dates');
 const negocio = require('../lib/negocio');
@@ -20,7 +21,7 @@ const {
 
 const CAUSAS = {
   sin_stock: 'Sin stock',
-  demanda_reposicion: 'El stock no alcanza para la demanda hasta la próxima entrega (lead time + 1 día)',
+  demanda_reposicion: 'El stock no alcanza para la demanda hasta la llegada del pedido siguiente (o hasta su vencimiento, si ocurre antes)',
   margen_seguridad: 'El stock cubre la demanda hasta la próxima entrega, pero no el margen de seguridad',
   stock_minimo: 'El stock está bajo el mínimo definido para el producto'
 };
@@ -35,11 +36,11 @@ function causaAlerta({ stock_actual: stock, demanda_proyectada: demanda, margen_
 
 /** Instante actual del negocio (respeta FECHA_REFERENCIA). */
 async function momento(client = db) {
-  return (await client.query(`SELECT ${momentoSql('$1', '$2')} AS m`, [config.fechaReferencia || null, config.tz])).rows[0].m;
+  return (await client.query(`SELECT ${momentoSql('$1', '$2')} AS m`, [fechaSistema.referencia() || null, config.tz])).rows[0].m;
 }
 
 /**
- * Sugerencia de compra de un producto del inventario: demanda del horizonte de reposición (lead time + 1 día),
+ * Sugerencia de compra de un producto del inventario: demanda del horizonte de reposición (hasta la llegada del pedido siguiente),
  * cantidad acotada para que el stock resultante se venda dentro de la vida útil, y fechas de quiebre y de pedido.
  */
 function sugerenciaDe(p, hoyIso) {
@@ -57,6 +58,7 @@ function sugerenciaDe(p, hoyIso) {
     margen_seguridad_pct: p.margen_seguridad_pct,
     demanda_semana: p.demanda_semana,
     demanda_reposicion: p.demanda_reposicion,
+    reposicion_acotada_vida_util: !!p.reposicion_acotada_vida_util,
     origen_demanda: p.origen_demanda,
     dias_cobertura: p.dias_cobertura,
     id_proveedor: p.id_proveedor,

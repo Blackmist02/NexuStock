@@ -205,6 +205,58 @@ describe('API de NexuStock', { skip: omitir }, () => {
     assert.equal((await llamar('operador', 'POST', '/predictions/generar', { id_producto: ids.lomo })).status, 403);
   });
 
+  test('serie de predicción: rango de 1 a 4 meses hacia atrás y adelante, en semanas completas', async () => {
+    const { hoy, inicioSemana, addDays, isoWeekday } = require('../src/lib/dates');
+    const lunesHoy = inicioSemana(hoy());
+    // predicción registrada de la semana pasada: el gráfico la muestra y la precisión en operación la compara
+    await db.query(
+      `INSERT INTO predicciones (id_producto, horizonte, fecha_objetivo, demanda_pred, origen) VALUES ($1, 'semana', $2, 12.5, 'modelo')`,
+      [ids.lomo, addDays(lunesHoy, -7)]
+    );
+    const r = await llamar('operador', 'GET', `/predictions/producto/${ids.lomo}/serie?atras=2&adelante=3`);
+    ok(r, 200);
+    const d = r.json.data;
+    assert.equal(isoWeekday(d.desde), 1);
+    assert.equal(isoWeekday(d.hasta), 7);
+    assert.equal(d.dias.length, d.semanas.length * 7);
+    assert.ok(d.desde < addDays(hoy(), -55) && d.hasta > addDays(hoy(), 85));
+    assert.notEqual(d.origen_proyeccion, 'modelo'); // sin motor: respaldo
+    const enCurso = d.semanas.findIndex((s) => s.tipo === 'en_curso');
+    assert.equal(d.semanas[enCurso].semana, lunesHoy);
+    assert.ok(d.semanas.slice(enCurso).every((s) => s.proyectada !== null && s.real === null || s.tipo === 'en_curso'));
+    assert.equal(d.semanas[enCurso - 1].proyectada, 12.5);
+    // la semana se reparte entre los días con los pesos de la semana: los 7 días suman la semanal
+    const dias = d.dias.filter((x) => x.fecha >= addDays(lunesHoy, -7) && x.fecha < lunesHoy);
+    assert.ok(Math.abs(dias.reduce((a, x) => a + x.proyectada, 0) - 12.5) < 0.05);
+    const tope = await llamar('admin', 'GET', `/predictions/producto/${ids.lomo}/serie?atras=9&adelante=0`);
+    assert.equal(tope.json.data.atras, 4);
+    assert.equal(tope.json.data.adelante, 1);
+    assert.equal((await llamar('admin', 'GET', '/predictions/producto/abc/serie')).status, 400);
+    // Total de los productos por kilo y por categoría: misma forma, con la suma de los productos
+    const total = await llamar('admin', 'GET', '/predictions/serie?atras=1&adelante=1');
+    ok(total, 200);
+    assert.equal(total.json.data.producto, 'Todos los productos');
+    assert.ok(total.json.data.productos >= 1);
+    assert.ok(total.json.data.semanas.find((s) => s.tipo === 'en_curso').proyectada >= d.semanas[enCurso].proyectada);
+    const cat = await llamar('admin', 'GET', `/predictions/serie?categoria=${ids.cat}`);
+    ok(cat, 200);
+    assert.equal(cat.json.data.producto, 'Vacuno');
+
+    const m = await llamar('admin', 'GET', '/models');
+    ok(m, 200);
+    assert.ok(m.json.data.operacion && m.json.data.operacion.observaciones >= 1);
+    assert.ok(m.json.data.productos.find((p) => p.id_producto === ids.lomo).semanas_operacion >= 1);
+  });
+
+  test('«Recordarme» (RF-07): la cookie dura 30 días; sin marcarlo es de sesión', async () => {
+    const entrarCon = (recordar) =>
+      fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-nx-csrf': '1' }, body: JSON.stringify({ email: 'ana@carniceria.cl', password: 'Clave1234', recordar }) });
+    const con = (await entrarCon(true)).headers.getSetCookie().join(';');
+    const sin = (await entrarCon(false)).headers.getSetCookie().join(';');
+    assert.match(con, /Max-Age=2592000/);
+    assert.doesNotMatch(sin, /Max-Age|Expires/);
+  });
+
   test('modelos (RF-06): solo TI registra; la ruta debe existir en ml-engine', async () => {
     const cuerpo = {
       algoritmo: 'Random Forest', version: 'v1', mae_general: 3.2, mae_festivos: 5,
@@ -278,5 +330,73 @@ describe('API de NexuStock', { skip: omitir }, () => {
     assert.equal(r.json.data.alertas.bajo, false);
     assert.equal(r.json.data.alertas.quiebre, true);
     assert.equal((await llamar('operador', 'PUT', '/config', { nombre: 'Hackeado' })).status, 403);
+  });
+
+  test('fecha del sistema guardada en CONFIGURACION: sin reiniciar, no futura ni anterior a lo cargado', async () => {
+    const { hoy, addDays } = require('../src/lib/dates');
+    const real = hoy(new Date());
+    const g = await llamar('admin', 'GET', '/config');
+    assert.equal(g.json.data.fecha.real, real);
+    assert.equal(g.json.data.fecha.minima, real); // las pruebas registran movimientos hoy
+    assert.equal((await llamar('admin', 'PUT', '/config/fecha', { fecha: addDays(real, 1) })).status, 400);
+    assert.equal((await llamar('admin', 'PUT', '/config/fecha', { fecha: addDays(real, -1) })).status, 400);
+    assert.equal((await llamar('operador', 'PUT', '/config/fecha', { fecha: real })).status, 403);
+    const fijada = await llamar('ti', 'PUT', '/config/fecha', { fecha: real });
+    ok(fijada, 200);
+    assert.equal(fijada.json.data.fecha.referencia, real);
+    assert.equal(fijada.json.data.fecha.origen, 'base');
+    const guardada = await db.query("SELECT valor FROM configuracion WHERE clave = 'fecha_referencia'");
+    assert.equal(guardada.rows[0].valor.fecha, real);
+    const libre = await llamar('admin', 'PUT', '/config/fecha', { fecha: null });
+    assert.equal(libre.json.data.fecha.origen, 'real');
+  });
+
+  test('carga de ventas, compras y mermas por CSV: valida, aplica en orden cronológico y no duplica', async () => {
+    const { hoy } = require('../src/lib/dates');
+    const f = hoy(new Date());
+    const plantilla = await llamar('admin', 'GET', '/import/plantilla/ventas');
+    ok(plantilla, 200);
+    assert.ok(plantilla.texto.startsWith('﻿fecha;hora;producto;cantidad;precio_unitario_clp'));
+    assert.equal((await llamar('operador', 'POST', '/import/validar', { ventas: 'x' })).status, 403);
+
+    // Producto propio (los anteriores se desactivaron en otras pruebas)
+    const prod = await llamar('admin', 'POST', '/products', { nombre: 'Pollo entero', id_categoria: ids.cat, id_proveedor: ids.prov, unidad: 'kg', precio_venta_clp: 4000, stock_inicial: 5 });
+    ok(prod, 201);
+    const idPollo = prod.json.data.id_producto;
+    const antes = 5;
+    const compras = `fecha;hora;producto;cantidad;costo_unitario_clp;proveedor\n${f};23:57;Pollo entero;10;2800;Agrocarnes\n`;
+    const ventas = `fecha;hora;producto;cantidad;precio_unitario_clp\n${f};23:58;POLLO ENTERO;2,5;4000\n`;
+    const mermas = `fecha;hora;producto;cantidad;motivo;costo_unitario_clp\n${f};23:59;Pollo entero;0,5;vencimiento;2800\n`;
+
+    // Errores: producto desconocido y venta mayor al stock disponible en ese momento
+    const malo = await llamar('admin', 'POST', '/import/validar', {
+      ventas: `fecha;hora;producto;cantidad;precio_unitario_clp\n${f};23:58;Cordero;1;9000\n${f};23:59;Pollo entero;${antes + 100};4000\n`
+    });
+    ok(malo, 200);
+    assert.equal(malo.json.data.valido, false);
+    assert.equal(malo.json.data.total_errores, 2);
+    assert.match(malo.json.data.errores[0].mensaje, /Producto no encontrado/);
+    assert.match(malo.json.data.errores[1].mensaje, /Stock insuficiente/);
+
+    const v = await llamar('admin', 'POST', '/import/validar', { ventas, compras, mermas });
+    ok(v, 200);
+    assert.equal(v.json.data.valido, true, JSON.stringify(v.json.data));
+    assert.equal(v.json.data.total_a_importar, 3);
+    assert.equal((await llamar('admin', 'GET', `/products/${idPollo}`)).json.data.stock_actual, antes); // validar no escribe
+
+    const r = await llamar('admin', 'POST', '/import', { ventas, compras, mermas });
+    ok(r, 201);
+    assert.equal(r.json.data.importado, true);
+    assert.equal((await llamar('admin', 'GET', `/products/${idPollo}`)).json.data.stock_actual, Math.round((antes + 10 - 2.5 - 0.5) * 100) / 100);
+    const hist = await llamar('admin', 'GET', `/history?desde=${f}&hasta=${f}&tipo=mermas`);
+    assert.equal(hist.json.movimientos.length, 1);
+    assert.equal(hist.json.movimientos[0].proveedor, 'vencimiento');
+    assert.equal(hist.json.totales.mermas_kg, 0.5);
+
+    // Subir de nuevo los mismos archivos no duplica: todo está cargado
+    const otra = await llamar('admin', 'POST', '/import', { ventas, compras, mermas });
+    assert.equal(otra.status, 400);
+    assert.equal(otra.json.data.tipos.ventas.ya_cargadas, 1);
+    assert.match(otra.json.data.errores_generales[0], /No hay filas nuevas/);
   });
 });

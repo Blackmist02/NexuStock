@@ -12,7 +12,7 @@ function rango(query) {
   const desde = fechaQuery(query.desde, 'desde') || inicioMes(hoyIso);
   const hasta = fechaQuery(query.hasta, 'hasta') || finMes(hoyIso);
   if (desde > hasta) throw errorCampo('hasta', 'La fecha final no puede ser anterior a la inicial');
-  const tipo = ['ventas', 'compras'].includes(query.tipo) ? query.tipo : 'todos';
+  const tipo = ['ventas', 'compras', 'mermas'].includes(query.tipo) ? query.tipo : 'todos';
   return { desde, hasta, tipo };
 }
 
@@ -27,8 +27,12 @@ const MOVIMIENTOS = `
       FROM compras c JOIN productos p ON p.id_producto = c.id_producto JOIN usuarios u ON u.id_usuario = c.id_usuario
       JOIN proveedores pr ON pr.id_proveedor = c.id_proveedor
      WHERE (c.fecha_hora AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date
+    UNION ALL
+    SELECT m.fecha_hora, 'merma', m.id_producto, p.nombre, p.unidad, m.cantidad::float, m.costo_total_clp, u.nombre, m.motivo
+      FROM mermas m JOIN productos p ON p.id_producto = m.id_producto JOIN usuarios u ON u.id_usuario = m.id_usuario
+     WHERE (m.fecha_hora AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date
   ) m
-  WHERE ($4 = 'todos' OR ($4 = 'ventas' AND m.tipo = 'venta') OR ($4 = 'compras' AND m.tipo = 'compra'))`;
+  WHERE ($4 = 'todos' OR ($4 = 'ventas' AND m.tipo = 'venta') OR ($4 = 'compras' AND m.tipo = 'compra') OR ($4 = 'mermas' AND m.tipo = 'merma'))`;
 
 /** Historial y reportes: totales del período, movimientos paginados y ventas de las últimas 6 semanas. */
 router.get('/', async (req, res) => {
@@ -46,7 +50,9 @@ router.get('/', async (req, res) => {
          (SELECT COALESCE(SUM(v.cantidad), 0)::float FROM ventas v JOIN productos p ON p.id_producto = v.id_producto
            WHERE p.unidad = 'kg' AND (v.fecha_hora AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date) AS ventas_kg,
          (SELECT COUNT(DISTINCT id_producto)::int FROM ventas WHERE (fecha_hora AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date) AS productos_con_ventas,
-         (SELECT COUNT(*)::int FROM productos WHERE activo) AS productos_activos`,
+         (SELECT COUNT(*)::int FROM productos WHERE activo) AS productos_activos,
+         (SELECT COALESCE(SUM(cantidad), 0)::float FROM mermas WHERE (fecha_hora AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date) AS mermas_kg,
+         (SELECT COALESCE(SUM(costo_total_clp), 0)::bigint FROM mermas WHERE (fecha_hora AT TIME ZONE $1)::date BETWEEN $2::date AND $3::date) AS mermas_clp`,
       [config.tz, desde, hasta]
     ),
     db.query(`${MOVIMIENTOS} ORDER BY m.fecha_hora DESC LIMIT $5 OFFSET $6`, [config.tz, desde, hasta, tipo, pageSize, offset]),
@@ -68,12 +74,12 @@ router.get('/export.csv', async (req, res) => {
   const { rows } = await db.query(`${MOVIMIENTOS} ORDER BY m.fecha_hora DESC LIMIT 50000`, [config.tz, desde, hasta, tipo]);
   enviarCsv(res, `historial-${desde}_a_${hasta}.csv`, [
     { titulo: 'Fecha y hora', valor: (m) => fechaHoraLocal(m.fecha_hora) },
-    { titulo: 'Tipo', valor: (m) => (m.tipo === 'venta' ? 'Venta' : 'Compra') },
+    { titulo: 'Tipo', valor: (m) => ({ venta: 'Venta', compra: 'Compra', merma: 'Merma' })[m.tipo] },
     { titulo: 'Producto', valor: (m) => m.producto },
     { titulo: 'Cantidad', valor: (m) => m.cantidad },
     { titulo: 'Unidad', valor: (m) => m.unidad },
     { titulo: 'Monto (CLP)', valor: (m) => m.monto_clp },
-    { titulo: 'Proveedor', valor: (m) => m.proveedor },
+    { titulo: 'Proveedor o motivo', valor: (m) => m.proveedor },
     { titulo: 'Registrado por', valor: (m) => m.usuario }
   ], rows);
 });

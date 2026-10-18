@@ -1,15 +1,14 @@
 const { Router } = require('express');
 const { z } = require('zod');
-const config = require('../config');
 const db = require('../db');
-const { addDays, hoy } = require('../lib/dates');
+const { hoy } = require('../lib/dates');
 const { parse } = require('../lib/errors');
 const { entero, errorCampo } = require('../lib/http');
 const { requireRole } = require('../middleware/auth');
 const { calcularRiesgos, registrarPrediccion } = require('../services/alertas');
-const { eventosEnRango } = require('../services/eventos');
 const { snapshotInventario } = require('../services/inventario');
 const { DIAS, modeloActivo, modeloDisponible, predecirConModelo } = require('../services/prediccion');
+const { construirSerie } = require('../services/serieDemanda');
 const { promedioHistorico } = require('../services/demanda');
 const { withTransaction } = require('../lib/tx');
 
@@ -54,35 +53,29 @@ router.get('/resumen', async (req, res) => {
   });
 });
 
-/** Serie diaria de un producto: histórico (kg/día), proyección de los próximos 7 días y eventos del calendario. */
+const MESES_MAX = 4;
+const mesesParam = (v) => Math.min(MESES_MAX, Math.max(1, parseInt(v, 10) || 1));
+
+/**
+ * Serie de demanda de un producto para el gráfico de Predicción, de `atras` a `adelante` meses (1 a 4 cada uno) en
+ * semanas completas: venta real y predicción registrada en el pasado; proyección del modelo desde la semana en curso.
+ */
 router.get('/producto/:id/serie', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) throw errorCampo('id', 'Identificador inválido');
-  const dias = Math.min(90, Math.max(7, parseInt(req.query.dias, 10) || 30));
-  const hoyIso = hoy();
   const [snap] = await snapshotInventario([id]);
   if (!snap) throw errorCampo('id', 'El producto no existe o está inactivo', 404);
-  const hist = await db.query(
-    `SELECT to_char(d::date, 'YYYY-MM-DD') AS fecha,
-            COALESCE((SELECT SUM(cantidad) FROM ventas WHERE id_producto = $1 AND (fecha_hora AT TIME ZONE $2)::date = d::date), 0)::float AS kg
-       FROM generate_series($3::date - $4::int, $3::date, interval '1 day') d ORDER BY d`,
-    [id, config.tz, hoyIso, dias - 1]
-  );
-  const diaria = Math.round((snap.demanda_semana / 7) * 100) / 100;
-  const prediccion = Array.from({ length: 7 }, (_, i) => ({ fecha: addDays(hoyIso, i + 1), kg: diaria }));
-  const eventos = await eventosEnRango(addDays(hoyIso, -(dias - 1)), addDays(hoyIso, 7));
-  res.json({
-    data: {
-      id_producto: id,
-      producto: snap.nombre,
-      unidad: snap.unidad,
-      hoy: hoyIso,
-      origen_demanda: snap.origen_demanda,
-      historico: hist.rows,
-      prediccion,
-      eventos: eventos.filter((e) => e.tipo !== 'quincena' && e.tipo !== 'fin_de_mes')
-    }
-  });
+  const serie = await construirSerie([snap], mesesParam(req.query.atras), mesesParam(req.query.adelante));
+  res.json({ data: { id_producto: id, producto: snap.nombre, unidad: snap.unidad, ...serie } });
+});
+
+/** La misma serie para el total de los productos por kilo, o de una categoría (?categoria=). */
+router.get('/serie', async (req, res) => {
+  const idCat = Number(req.query.categoria) || null;
+  const snaps = (await snapshotInventario()).filter((p) => p.unidad === 'kg' && (!idCat || p.id_categoria === idCat));
+  const serie = await construirSerie(snaps, mesesParam(req.query.atras), mesesParam(req.query.adelante));
+  const nombre = idCat ? snaps[0]?.categoria ?? 'Categoría' : 'Todos los productos';
+  res.json({ data: { id_producto: null, producto: nombre, unidad: 'kg', ...serie } });
 });
 
 const generarSchema = z.object({ id_producto: entero('Elige un producto', 1), horizonte: z.enum(['semana', 'mes'], { error: 'El horizonte es semana o mes' }).default('semana') });

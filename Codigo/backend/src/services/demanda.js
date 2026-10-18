@@ -8,6 +8,7 @@
  */
 const config = require('../config');
 const db = require('../db');
+const fechaSistema = require('../lib/fechaSistema');
 const { hoy } = require('../lib/dates');
 const { fechaObjetivo, modeloDisponible, predecirLote } = require('./prediccion');
 
@@ -103,7 +104,7 @@ const compuesto = {
           AND origen = 'modelo' AND id_modelo = $4
           AND ($7::boolean OR (generada_en AT TIME ZONE $5)::date = $6::date)
         ORDER BY id_producto, generada_en DESC`,
-      [ids, horizonte, fechaObjetivo(horizonte), modelo.id_modelo, config.tz, hoy(), Boolean(config.fechaReferencia)]
+      [ids, horizonte, fechaObjetivo(horizonte), modelo.id_modelo, config.tz, hoy(), Boolean(fechaSistema.referencia())]
     );
     for (const r of rows) out.set(r.id_producto, { demanda: r.demanda, origen: 'modelo', id_modelo: r.id_modelo, latencia_ms: r.latencia_ms });
     if (!ejecutar) return out;

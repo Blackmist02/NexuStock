@@ -7,6 +7,7 @@
  *   { fecha_objetivo, producto: 'todos', horizonte, eventos: [{fecha, nombre, tipo}],
  *     productos: [{ producto_id, categoria, ventas_semanales: [{semana, kg}] }] }
  *   → { predicciones: [{ producto_id, demanda_kg } | { producto_id, error }], mae, latencia_ms, version }
+ * Con horizonte 'serie' la solicitud agrega `semanas` y cada predicción trae `semanas: [{ semana, demanda_kg }]`.
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -18,6 +19,7 @@ const { PyPredictorAdapter } = require('./pyPredictorAdapter');
 const DIAS = { semana: 7, mes: 30 };
 const SEMANAS_HISTORIAL = 8;
 const DIAS_EVENTOS = 35; // el horizonte mensual predice 4 semanas en cadena
+const SEMANAS_SERIE_MAX = 26;
 
 /** Fecha objetivo del ciclo: lunes de la semana en curso o primer día del mes. */
 const fechaObjetivo = (horizonte, hoyIso = hoy()) => (horizonte === 'mes' ? inicioMes(hoyIso) : inicioSemana(hoyIso));
@@ -71,11 +73,47 @@ const detenerMotor = () => motor.detener();
  * Lanza un Error si el motor no está disponible, falla o supera el tiempo máximo.
  */
 async function predecirLote(productos, horizonte, modelo) {
+  const lunes = inicioSemana(fechaObjetivo(horizonte));
+  const { resp, latencia } = await consultarMotor(productos, horizonte, modelo, lunes, DIAS_EVENTOS);
+  const tope = config.ml.capacidadKgSemana * (horizonte === 'mes' ? 4.5 : 1);
+  const out = new Map();
+  for (const r of resp.predicciones) {
+    const demanda = Number(r.demanda_kg);
+    if (r.error || !Number.isFinite(demanda) || demanda < 0 || demanda > tope) continue;
+    out.set(Number(r.producto_id), {
+      demanda: Math.round(demanda * 100) / 100,
+      origen: 'modelo',
+      id_modelo: modelo.id_modelo,
+      latencia_ms: latencia
+    });
+  }
+  return out;
+}
+
+/**
+ * Proyección semana a semana de varios productos desde la semana en curso, en una sola solicitud (horizonte 'serie' de
+ * predict.py): cada semana usa las anteriores como lags. Devuelve { porProducto: Map<id, [{ semana, demanda }]>,
+ * latencia_ms }; los productos sin historial o con alguna semana no viable quedan fuera (el llamador usa el respaldo).
+ * Lanza un Error si el motor no está disponible, falla o supera el tiempo máximo.
+ */
+async function proyectarSerie(productos, semanas, modelo) {
+  const n = Math.min(SEMANAS_SERIE_MAX, Math.max(1, semanas));
+  const lunes = inicioSemana(hoy());
+  const { resp, latencia } = await consultarMotor(productos, 'serie', modelo, lunes, 7 * (n + 1), { semanas: n });
+  const porProducto = new Map();
+  for (const r of resp.predicciones) {
+    if (r.error || !Array.isArray(r.semanas) || r.semanas.length !== n) continue;
+    const serie = r.semanas.map((s) => ({ semana: s.semana, demanda: Number(s.demanda_kg) }));
+    if (serie.some((s) => !Number.isFinite(s.demanda) || s.demanda < 0 || s.demanda > config.ml.capacidadKgSemana)) continue;
+    porProducto.set(Number(r.producto_id), serie.map((s) => ({ ...s, demanda: Math.round(s.demanda * 100) / 100 })));
+  }
+  return { porProducto, latencia_ms: latencia };
+}
+
+/** Arma la solicitud (8 semanas de ventas previas a `lunes` y eventos de `diasEventos` días) y consulta al motor. */
+async function consultarMotor(productos, horizonte, modelo, lunes, diasEventos, extra = {}) {
   motor.usar(resolverArtefacto(modelo.artefacto_ruta)); // si cambió el modelo activo, se reinicia con el nuevo
   if (!motor.disponible) throw new Error('motor_no_disponible');
-
-  const objetivo = fechaObjetivo(horizonte);
-  const lunes = inicioSemana(objetivo);
   const ids = productos.map((p) => p.id_producto);
   const [ventas, eventos] = await Promise.all([
     db.query(
@@ -91,7 +129,7 @@ async function predecirLote(productos, horizonte, modelo) {
     db.query(
       `SELECT to_char(fecha, 'YYYY-MM-DD') AS fecha, nombre, tipo FROM eventos_calendario
         WHERE fecha >= $1::date AND fecha < $1::date + $2::int ORDER BY fecha`,
-      [lunes, DIAS_EVENTOS]
+      [lunes, diasEventos]
     )
   ]);
   const porProducto = new Map(ids.map((id) => [id, []]));
@@ -99,6 +137,7 @@ async function predecirLote(productos, horizonte, modelo) {
 
   const inicio = Date.now();
   const resp = await motor.solicitar({
+    ...extra,
     fecha_objetivo: lunes,
     producto: 'todos',
     horizonte,
@@ -110,21 +149,7 @@ async function predecirLote(productos, horizonte, modelo) {
     }))
   });
   if (resp.error || !Array.isArray(resp.predicciones)) throw new Error('salida_invalida');
-  const latencia = Date.now() - inicio;
-
-  const tope = config.ml.capacidadKgSemana * (horizonte === 'mes' ? 4.5 : 1);
-  const out = new Map();
-  for (const r of resp.predicciones) {
-    const demanda = Number(r.demanda_kg);
-    if (r.error || !Number.isFinite(demanda) || demanda < 0 || demanda > tope) continue;
-    out.set(Number(r.producto_id), {
-      demanda: Math.round(demanda * 100) / 100,
-      origen: 'modelo',
-      id_modelo: modelo.id_modelo,
-      latencia_ms: latencia
-    });
-  }
-  return out;
+  return { resp, latencia: Date.now() - inicio };
 }
 
 /** Proyección de un producto con el modelo activo. Lanza un Error si no se puede (el llamador usa el respaldo). */
@@ -141,6 +166,7 @@ module.exports = {
   modeloDisponible,
   predecirLote,
   predecirConModelo,
+  proyectarSerie,
   iniciarMotor,
   detenerMotor,
   artefactoExiste,

@@ -56,4 +56,54 @@ async function maeRespaldo(desde, hasta, n = config.demandaSemanasHistorial) {
   return { mae_general: r2(sumaG / nG), mae_festivos: nF ? r2(sumaF / nF) : null, productos, observaciones: nG };
 }
 
-module.exports = { maeRespaldo };
+/**
+ * Precisión en operación: compara la predicción semanal que el sistema registró con origen «modelo» (PREDICCIONES,
+ * hecha solo con las ventas anteriores a cada semana) con la venta real de esa semana, para las semanas completas entre
+ * `desde` y `hasta`. Si una semana tiene varias predicciones del mismo producto se usa la última.
+ * Devuelve { mae_general, mae_festivos, observaciones, semanas, productos: Map<id, { mae, n }> } o null si no hay datos.
+ */
+async function maeOperacion(desde, hasta) {
+  const ini = inicioSemana(desde);
+  const fin = addDays(inicioSemana(hasta), 7); // exclusivo: incluye la semana de `hasta`
+  const { rows } = await db.query(
+    `WITH pred AS (
+       SELECT DISTINCT ON (id_producto, fecha_objetivo) id_producto, fecha_objetivo, demanda_pred::float AS pred
+         FROM predicciones
+        WHERE horizonte = 'semana' AND origen = 'modelo' AND fecha_objetivo >= $2::date AND fecha_objetivo < $3::date
+        ORDER BY id_producto, fecha_objetivo, generada_en DESC
+     ), real AS (
+       SELECT id_producto, date_trunc('week', fecha_hora AT TIME ZONE $1)::date AS semana, SUM(cantidad)::float AS kg
+         FROM ventas
+        WHERE fecha_hora >= ($2::date::timestamp AT TIME ZONE $1) AND fecha_hora < ($3::date::timestamp AT TIME ZONE $1)
+        GROUP BY 1, 2
+     )
+     SELECT p.id_producto, to_char(p.fecha_objetivo, 'YYYY-MM-DD') AS semana, p.pred, COALESCE(r.kg, 0) AS kg
+       FROM pred p JOIN productos pr ON pr.id_producto = p.id_producto AND pr.unidad = 'kg'
+       LEFT JOIN real r ON r.id_producto = p.id_producto AND r.semana = p.fecha_objetivo`,
+    [config.tz, ini, fin]
+  );
+  if (!rows.length) return null;
+  const eventos = await eventosEnRango(ini, addDays(fin, -1));
+  const semanaFestiva = new Set(eventos.filter((e) => TIPOS_FESTIVOS.has(e.tipo)).map((e) => inicioSemana(e.fecha)));
+  let suma = 0, sumaF = 0, nF = 0;
+  const productos = new Map();
+  const semanas = new Set();
+  for (const r of rows) {
+    const err = Math.abs(r.kg - r.pred);
+    suma += err;
+    semanas.add(r.semana);
+    if (semanaFestiva.has(r.semana)) { sumaF += err; nF++; }
+    const acc = productos.get(r.id_producto) || { suma: 0, n: 0 };
+    productos.set(r.id_producto, { suma: acc.suma + err, n: acc.n + 1 });
+  }
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  return {
+    mae_general: r3(suma / rows.length),
+    mae_festivos: nF ? r3(sumaF / nF) : null,
+    observaciones: rows.length,
+    semanas: semanas.size,
+    productos: new Map([...productos].map(([id, a]) => [id, { mae: r3(a.suma / a.n), n: a.n }]))
+  };
+}
+
+module.exports = { maeRespaldo, maeOperacion };

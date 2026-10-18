@@ -1,16 +1,17 @@
 const { Router } = require('express');
 const { z } = require('zod');
 const db = require('../db');
-const { addDays, esFechaIso, hoy } = require('../lib/dates');
+const { addDays, esFechaIso, hoy, inicioSemana } = require('../lib/dates');
 const { ApiError, parse } = require('../lib/errors');
 const { errorCampo, idParam } = require('../lib/http');
 const { withTransaction } = require('../lib/tx');
 const { requireRole } = require('../middleware/auth');
-const { maeRespaldo } = require('../services/precision');
+const { maeOperacion, maeRespaldo } = require('../services/precision');
 const { artefactoExiste, modeloDisponible } = require('../services/prediccion');
 const { snapshotInventario } = require('../services/inventario');
 
 const router = Router();
+const SEMANAS_OPERACION = 12;
 const ver = requireRole('administrador', 'ti');
 const gestionar = requireRole('ti');
 
@@ -54,8 +55,11 @@ router.get('/', ver, async (_req, res) => {
   let base = null;
   let baseVentana = null;
   if (activo) {
-    base = await maeRespaldo(activo.prueba_desde, activo.prueba_hasta);
-    if (base) baseVentana = { desde: activo.prueba_desde, hasta: activo.prueba_hasta, tipo: 'prueba' };
+    // Solo semanas ya cumplidas: las posteriores a hoy no tienen ventas y darían un error artificialmente bajo
+    const cumplida = addDays(inicioSemana(hoyIso), -1);
+    const hastaBase = activo.prueba_hasta < cumplida ? activo.prueba_hasta : cumplida;
+    if (activo.prueba_desde <= hastaBase) base = await maeRespaldo(activo.prueba_desde, hastaBase);
+    if (base) baseVentana = { desde: activo.prueba_desde, hasta: hastaBase, tipo: 'prueba' };
   }
   const reciente = await maeRespaldo(addDays(hoyIso, -56), hoyIso);
   if (!base && reciente) {
@@ -63,11 +67,16 @@ router.get('/', ver, async (_req, res) => {
     baseVentana = { desde: addDays(hoyIso, -56), hasta: hoyIso, tipo: 'reciente' };
   }
 
-  const [lat, inventario, disponible] = await Promise.all([
+  // Precisión en operación: últimas semanas completas, contra el respaldo medido en las mismas semanas
+  const opHasta = addDays(inicioSemana(hoyIso), -1);
+  const opDesde = addDays(inicioSemana(hoyIso), -7 * SEMANAS_OPERACION);
+  const [lat, inventario, disponible, operacion, respaldoOp] = await Promise.all([
     db.query(`SELECT AVG(latencia_ms)::float AS promedio, MAX(latencia_ms) AS maximo, COUNT(*)::int AS n
                 FROM (SELECT latencia_ms FROM predicciones WHERE origen = 'modelo' AND latencia_ms IS NOT NULL ORDER BY generada_en DESC LIMIT 200) t`),
     snapshotInventario(),
-    modeloDisponible().catch(() => null)
+    modeloDisponible().catch(() => null),
+    maeOperacion(opDesde, opHasta),
+    maeRespaldo(opDesde, opHasta)
   ]);
   const porProducto = inventario.map((p) => ({
     id_producto: p.id_producto,
@@ -75,6 +84,8 @@ router.get('/', ver, async (_req, res) => {
     unidad: p.unidad,
     origen: p.origen_demanda,
     mae_respaldo: reciente && reciente.productos.has(p.id_producto) ? Math.round(reciente.productos.get(p.id_producto) * 1000) / 1000 : null,
+    mae_operacion: operacion && operacion.productos.has(p.id_producto) ? operacion.productos.get(p.id_producto).mae : null,
+    semanas_operacion: operacion && operacion.productos.has(p.id_producto) ? operacion.productos.get(p.id_producto).n : 0,
     sin_historial: p.origen_demanda === 'categoria'
   }));
 
@@ -85,6 +96,16 @@ router.get('/', ver, async (_req, res) => {
       motor: { disponible: !!disponible, limite_ms: 2000, latencia_promedio_ms: lat.rows[0].promedio, latencia_maxima_ms: lat.rows[0].maximo, predicciones_con_modelo: lat.rows[0].n },
       base: base && { mae_general: base.mae_general, mae_festivos: base.mae_festivos, observaciones: base.observaciones, ventana: baseVentana },
       mejora_general_pct: activo && base && base.mae_general > 0 ? Math.round((1 - activo.mae_general / base.mae_general) * 100) : null,
+      operacion: operacion && {
+        desde: opDesde,
+        hasta: opHasta,
+        semanas: operacion.semanas,
+        observaciones: operacion.observaciones,
+        mae_general: operacion.mae_general,
+        mae_festivos: operacion.mae_festivos,
+        mae_respaldo: respaldoOp ? respaldoOp.mae_general : null,
+        mejora_pct: respaldoOp && respaldoOp.mae_general > 0 ? Math.round((1 - operacion.mae_general / respaldoOp.mae_general) * 100) : null
+      },
       productos: porProducto
     }
   });

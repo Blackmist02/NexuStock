@@ -2,8 +2,9 @@ const { Router } = require('express');
 const { z } = require('zod');
 const config = require('../config');
 const db = require('../db');
+const fechaSistema = require('../lib/fechaSistema');
 const { enviarCsv } = require('../lib/csv');
-const { fechaHoraLocal, hoy } = require('../lib/dates');
+const { fechaHoraLocal, hoy, momentoSql } = require('../lib/dates');
 const { ApiError, parse } = require('../lib/errors');
 const { entero, errorCampo, idParam, redondear2, validarNombreUnico } = require('../lib/http');
 const { withTransaction } = require('../lib/tx');
@@ -25,7 +26,7 @@ const schema = z.object({
   stock_minimo: numero('El stock mínimo debe ser 0 o más', 0, 100000).default(0),
   stock_inicial: numero('El stock inicial debe ser 0 o más', 0, 100000).default(0),
   vida_util_dias: entero('La vida útil debe ser un número de días mayor que 0', 1, 3650).nullish().transform((v) => v ?? null),
-  margen_seguridad_pct: numero('El margen debe ser 0 o más', 0, 500).default(10)
+  margen_seguridad_pct: numero('El margen debe ser 0 o más', 0, 500).default(20)
 });
 
 /** Las unidades se registran enteras y los kilos con hasta 2 decimales. */
@@ -139,6 +140,7 @@ async function detalle(id) {
   const { dias_habiles, ...resto } = p;
   return {
     ...resto,
+    hoy: hoyIso,
     valor_stock_clp: Math.round(p.stock_actual * p.precio_venta_clp),
     nivel: i ? i.nivel : null,
     demanda_semana: i ? i.demanda_semana : null,
@@ -205,7 +207,10 @@ router.patch('/:id/estado', catalogo, async (req, res) => {
     const r = await client.query('UPDATE productos SET activo = $2 WHERE id_producto = $1', [id, activo]);
     if (!r.rowCount) throw new ApiError(404, 'no_encontrado', 'El producto no existe');
     if (!activo) {
-      await client.query(`UPDATE alertas_inventario SET estado = 'descartada', resuelta_en = NOW() WHERE id_producto = $1 AND estado = 'activa'`, [id]);
+      await client.query(
+        `UPDATE alertas_inventario SET estado = 'descartada', resuelta_en = ${momentoSql('$2', '$3')} WHERE id_producto = $1 AND estado = 'activa'`,
+        [id, fechaSistema.referencia() || null, config.tz]
+      );
     }
   });
   if (activo) await evaluarSinFallar([id]);

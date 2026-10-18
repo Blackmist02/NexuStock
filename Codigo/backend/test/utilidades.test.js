@@ -4,7 +4,28 @@ const { test } = require('node:test');
 const { acotarPorVidaUtil } = require('../src/services/reglas');
 const { feriadosChile, pascua } = require('../src/services/eventos');
 const { toCsv } = require('../src/lib/csv');
-const { addDays, inicioSemana, inicioMes, finMes, esFechaIso } = require('../src/lib/dates');
+const { addDays, addMonths, inicioSemana, inicioMes, finMes, esFechaIso } = require('../src/lib/dates');
+const { leerCsv, leerFecha, leerHora, leerNumero } = require('../src/lib/csvLeer');
+
+test('lectura de CSV: separador «;» o «,», comillas, BOM, coma decimal y fechas', () => {
+  const a = leerCsv(`${String.fromCharCode(0xfeff)}Fecha;Producto;Cantidad\r\n2024-10-01;"Lomo; vetado";1,5\r\n\r\n`);
+  assert.equal(a.separador, ';');
+  assert.deepEqual(a.columnas, ['fecha', 'producto', 'cantidad']);
+  assert.equal(a.filas.length, 1);
+  assert.equal(a.filas[0].linea, 2);
+  assert.equal(a.filas[0].valores.producto, 'Lomo; vetado');
+  const b = leerCsv(`fecha,producto,cantidad\n01/10/2024,"Pollo ""entero""",2.25\n`);
+  assert.equal(b.separador, ',');
+  assert.equal(b.filas[0].valores.producto, 'Pollo "entero"');
+  assert.equal(leerNumero('1,5'), 1.5);
+  assert.equal(leerNumero('1.250,5'), 1250.5);
+  assert.equal(leerNumero('2.25'), 2.25);
+  assert.equal(leerNumero('abc'), null);
+  assert.equal(leerFecha('01/10/2024'), '2024-10-01');
+  assert.equal(leerFecha('2024-02-30'), null);
+  assert.equal(leerHora('9:05'), '09:05:00');
+  assert.equal(leerHora('25:00'), null);
+});
 
 test('vida útil: no se sugiere comprar más de lo que se alcanza a vender', () => {
   // demanda 70 kg/semana = 10 kg/día; vida útil 3 días → tope 30 kg
@@ -55,4 +76,8 @@ test('fechas: lunes de la semana, inicio y fin de mes, validación ISO', () => {
   assert.equal(esFechaIso('2026-02-30'), false);
   assert.equal(esFechaIso('2026-10-16'), true);
   assert.equal(esFechaIso('16/10/2026'), false);
+  assert.equal(addMonths('2024-09-30', 4), '2025-01-30');
+  assert.equal(addMonths('2024-09-30', -4), '2024-05-30');
+  assert.equal(addMonths('2024-03-31', -1), '2024-02-29'); // el 31 de febrero no existe: último día del mes
+  assert.equal(addMonths('2024-10-31', 4), '2025-02-28');
 });

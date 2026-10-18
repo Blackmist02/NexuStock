@@ -7,15 +7,20 @@ const { fingerprint } = require('../lib/password');
 const COOKIE_NAME = 'nx_token';
 const cookieOpts = { httpOnly: true, sameSite: 'lax', secure: config.cookieSecure, path: '/' };
 
+/** Duración de la sesión con «Recordarme» (RF-07): 30 días; sin marcarla, hasta cerrar el navegador o JWT_EXPIRES_IN. */
+const RECORDAR_MS = 30 * 24 * 60 * 60 * 1000;
+
 /** Token de acceso. `pv` es la huella de la contraseña vigente: si la contraseña cambia, el token deja de servir. */
-function signAccessToken(user) {
+function signAccessToken(user, recordar = false) {
   return jwt.sign({ sub: String(user.id_usuario), pv: fingerprint(user.password_hash), typ: 'access' }, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
+    expiresIn: recordar ? '30d' : config.jwtExpiresIn,
     algorithm: 'HS256'
   });
 }
 
-const setAuthCookie = (res, token) => res.cookie(COOKIE_NAME, token, { ...cookieOpts, maxAge: 24 * 60 * 60 * 1000 });
+/** Con «Recordarme» la cookie dura 30 días; sin ella es de sesión (se borra al cerrar el navegador). */
+const setAuthCookie = (res, token, recordar = false) =>
+  res.cookie(COOKIE_NAME, token, recordar ? { ...cookieOpts, maxAge: RECORDAR_MS } : cookieOpts);
 const clearAuthCookie = (res) => res.clearCookie(COOKIE_NAME, cookieOpts);
 
 /** Lee el JWT (cookie httpOnly o cabecera Bearer) y carga el usuario vigente desde la BD. */
