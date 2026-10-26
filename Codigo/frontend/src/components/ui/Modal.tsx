@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   titulo: string;
@@ -14,7 +15,10 @@ interface ModalProps {
   ocupado?: boolean;
 }
 
-/** Ventana modal accesible (.modal del diseño): Esc y clic fuera cierran; el foco entra al primer campo. */
+/**
+ * Ventana modal accesible (.modal del diseño): Esc y clic fuera cierran; el foco entra al primer campo.
+ * Se monta en <body> para que las tarjetas de vidrio (backdrop-filter, transform) no recorten su posición fija.
+ */
 export function Modal({ titulo, subtitulo, onClose, children, pie, ancho, ocupado }: ModalProps) {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
@@ -39,7 +43,7 @@ export function Modal({ titulo, subtitulo, onClose, children, pie, ancho, ocupad
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose, ocupado]);
 
-  return (
+  return createPortal(
     <div className="overlay">
       <div className="scrim" onClick={() => !ocupado && onClose()} aria-hidden="true" />
       <div ref={ref} className="modal" role="dialog" aria-modal="true" aria-labelledby={id} tabIndex={-1} style={ancho ? { width: ancho } : undefined}>
@@ -55,6 +59,7 @@ export function Modal({ titulo, subtitulo, onClose, children, pie, ancho, ocupad
         {children}
         {pie ? <div className="mfoot">{pie}</div> : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

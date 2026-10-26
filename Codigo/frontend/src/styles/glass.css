@@ -1,0 +1,565 @@
+/*
+ * Capa "liquid glass": superficies translúcidas sobre un fondo ambiental en movimiento, con brillo que sigue al puntero
+ * y animaciones de entrada. Se carga al final para sobrescribir ui.css / shell.css / views.css sin cambiar su estructura.
+ * Los colores salen de tokens.css (--glass-*, --amb-*), así que funciona en los dos temas.
+ */
+
+/* ---------- Fondo ambiental ---------- */
+body {
+  background: var(--amb-base);
+  background-color: var(--bg);
+}
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--amb-base);
+}
+.ambient i {
+  position: absolute;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.9;
+  will-change: transform;
+}
+.ambient i:nth-child(1) {
+  top: -24vmax;
+  left: -14vmax;
+  background: radial-gradient(circle at 50% 50%, var(--amb-1), transparent 65%);
+  animation: nx-deriva-1 38s var(--ease-in-out) infinite alternate;
+}
+.ambient i:nth-child(2) {
+  bottom: -30vmax;
+  right: -18vmax;
+  background: radial-gradient(circle at 50% 50%, var(--amb-2), transparent 65%);
+  animation: nx-deriva-2 46s var(--ease-in-out) infinite alternate;
+}
+.ambient i:nth-child(3) {
+  top: 18vh;
+  left: 38vw;
+  width: 44vmax;
+  height: 44vmax;
+  background: radial-gradient(circle at 50% 50%, var(--amb-3), transparent 65%);
+  animation: nx-deriva-3 32s var(--ease-in-out) infinite alternate;
+}
+/* Grano fino: evita el "banding" de los degradados y da textura de vidrio esmerilado. */
+.ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes nx-deriva-1 {
+  to {
+    transform: translate3d(18vw, 14vh, 0) scale(1.15);
+  }
+}
+@keyframes nx-deriva-2 {
+  to {
+    transform: translate3d(-16vw, -12vh, 0) scale(1.1);
+  }
+}
+@keyframes nx-deriva-3 {
+  to {
+    transform: translate3d(-22vw, 20vh, 0) scale(0.85);
+  }
+}
+
+/* ---------- Superficie de vidrio ---------- */
+.side,
+.card,
+.modal,
+.toast,
+.net-aviso,
+.theme-toggle,
+.tabs,
+.cal {
+  background: linear-gradient(160deg, var(--glass-tint), transparent 55%), var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+
+/* Borde de luz superior (el "canto" del vidrio) y reflejo que sigue al puntero (--mx/--my, ver GlassPointer). */
+.card,
+.modal {
+  position: relative;
+}
+.card,
+.side,
+.modal {
+  isolation: isolate;
+}
+.card::before,
+.side::before,
+.modal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, var(--glass-edge), transparent 38%, transparent 70%, color-mix(in srgb, var(--glass-edge) 35%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+  z-index: -1;
+}
+.card::after,
+.side::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, -40%), var(--glass-shine), transparent 42%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+  pointer-events: none;
+  z-index: -1;
+}
+.card:hover::after,
+.side:hover::after {
+  opacity: 1;
+}
+
+.card {
+  border-radius: var(--radius-glass);
+  transition:
+    transform 0.5s var(--ease-spring),
+    box-shadow 0.5s var(--ease-out),
+    border-color 0.5s var(--ease-out);
+  animation: nx-aparecer 0.7s var(--ease-out) backwards;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover);
+}
+/* Tarjetas grandes con tablas o gráficos: solo brillo, sin levantarse (se sentiría inestable al leer). */
+.card:has(table, svg, .gd-lienzo, form):hover {
+  transform: none;
+}
+
+/* Entrada en cascada: cada hijo directo de la cuadrícula aparece un poco después del anterior. */
+:is(.grid4, .grid3, .grid2, .cols, .col, .pgrid, .cfg-datos) > :nth-child(2) {
+  animation-delay: 60ms;
+}
+:is(.grid4, .grid3, .grid2, .cols, .col, .pgrid, .cfg-datos) > :nth-child(3) {
+  animation-delay: 120ms;
+}
+:is(.grid4, .grid3, .grid2, .cols, .col, .pgrid, .cfg-datos) > :nth-child(4) {
+  animation-delay: 180ms;
+}
+:is(.grid4, .grid3, .grid2, .cols, .col, .pgrid, .cfg-datos) > :nth-child(n + 5) {
+  animation-delay: 240ms;
+}
+.topbar,
+.tabs {
+  animation: nx-aparecer 0.6s var(--ease-out) backwards;
+}
+
+/* Sin "forwards": al terminar, transform/filter vuelven a none y no afectan a nada posicionado dentro. */
+@keyframes nx-aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(6px);
+  }
+}
+
+/* ---------- Barra lateral flotante ---------- */
+.side {
+  margin: 12px 0 12px 12px;
+  top: 12px;
+  height: calc(100vh - 24px);
+  border-radius: 24px;
+  padding: 22px 14px;
+}
+.biz {
+  border-top-color: var(--glass-border);
+}
+.nav a {
+  position: relative;
+  isolation: isolate;
+  border-radius: 12px;
+  transition:
+    color 0.3s var(--ease-out),
+    background-color 0.3s var(--ease-out),
+    transform 0.4s var(--ease-spring);
+}
+.nav a:hover {
+  color: var(--ink);
+  background: var(--glass-tint);
+}
+.nav a:active {
+  transform: scale(0.97);
+}
+.nav a.on {
+  background: none;
+  border: 0;
+}
+/* Píldora del ítem activo: se desplaza entre ítems al navegar (ViewTransition "nav-pill"). */
+.nav-pill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--glass-edge), transparent 120%), var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 6px 18px -8px rgba(0, 0, 0, 0.35),
+    0 1px 0 var(--glass-edge) inset;
+  opacity: 0.9;
+}
+:root[data-theme="oscuro"] .nav-pill {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)), var(--glass-bg-strong);
+}
+.nav a.on .dot {
+  opacity: 1;
+  color: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  padding: 26px 32px 26px 28px;
+}
+/* Contenedor de la página (lo anima la ViewTransition de AppShell); recibe mainClassName. */
+.main-in {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- Pestañas (SubNav): control segmentado de vidrio ---------- */
+.tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  margin: -4px 0 20px;
+  border-radius: 14px;
+  border-bottom: 1px solid var(--glass-border);
+  max-width: 100%;
+}
+.tabs a {
+  position: relative;
+  isolation: isolate;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border-bottom: 0;
+  margin-bottom: 0;
+  transition: color 0.3s var(--ease-out);
+}
+.tabs a:hover {
+  color: var(--ink);
+}
+.tabs a.on {
+  border-bottom: 0;
+}
+.tabs a .nav-pill {
+  border-radius: 10px;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  border-radius: 11px;
+  transition:
+    transform 0.45s var(--ease-spring),
+    box-shadow 0.35s var(--ease-out),
+    background-color 0.3s var(--ease-out),
+    filter 0.3s var(--ease-out);
+}
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+.btn:not(:disabled):active {
+  transform: scale(0.96);
+  transition-duration: 0.12s;
+}
+.btn.primary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%),
+    var(--accent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 8px 20px -8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.btn.primary:not(:disabled):hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 12px 26px -8px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+.btn.ghost {
+  background: var(--glass-tint);
+  border-color: var(--glass-border);
+  box-shadow: 0 1px 0 var(--glass-edge) inset;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.btn.ghost:not(:disabled):hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.btn.danger {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%),
+    var(--quiebre);
+}
+
+.chip,
+.xbtn,
+.gd-btn {
+  transition:
+    transform 0.45s var(--ease-spring),
+    background-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out),
+    border-color 0.3s var(--ease-out);
+}
+.chip {
+  border-color: var(--glass-border);
+  background: var(--glass-tint);
+}
+.chip:hover,
+.xbtn:hover {
+  color: var(--ink);
+}
+.chip:active,
+.xbtn:active,
+.gd-btn:active {
+  transform: scale(0.94);
+}
+.xbtn {
+  border-color: var(--glass-border);
+  background: var(--glass-tint);
+}
+.xbtn:hover {
+  transform: rotate(90deg);
+}
+
+/* ---------- Campos ---------- */
+.input,
+.searchbox input {
+  border-color: var(--glass-border);
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) inset;
+  border-radius: 11px;
+  transition:
+    border-color 0.25s var(--ease-out),
+    box-shadow 0.35s var(--ease-out),
+    background-color 0.25s var(--ease-out);
+}
+.input.ro {
+  background: var(--glass-tint);
+}
+.input:focus-visible,
+.searchbox input:focus-visible {
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+select.input option {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.switch {
+  transition: background-color 0.3s var(--ease-out);
+}
+.switch .knob {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Tablas, notas y piezas internas ---------- */
+table.tbl td {
+  border-top-color: var(--glass-border);
+  transition: background-color 0.25s var(--ease-out);
+}
+table.tbl tbody tr:hover td {
+  background: color-mix(in srgb, var(--ink) 3.5%, transparent);
+}
+.rowline,
+.toggrow,
+.kv {
+  border-top-color: var(--glass-border);
+}
+.note,
+.callout,
+.badge.neutral {
+  background: var(--glass-tint);
+  border-color: var(--glass-border);
+}
+.badge {
+  border-radius: 7px;
+}
+.bar {
+  background: var(--glass-tint);
+  border-color: var(--glass-border);
+}
+.bar i {
+  transform-origin: left;
+  animation: nx-llenar 1s var(--ease-out) 0.2s backwards;
+}
+@keyframes nx-llenar {
+  from {
+    transform: scaleX(0);
+  }
+}
+.cal {
+  border-radius: 16px;
+}
+.calh {
+  background: var(--glass-tint);
+}
+.cell,
+.calh {
+  border-color: var(--glass-border);
+}
+
+/* ---------- Modales y avisos ---------- */
+.scrim {
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(6px) saturate(120%);
+  animation: nx-fundido 0.35s var(--ease-out) backwards;
+}
+.modal {
+  background: linear-gradient(160deg, var(--glass-tint), transparent 55%), var(--glass-bg-strong);
+  border-radius: 24px;
+  animation: nx-modal 0.55s var(--ease-spring) backwards;
+}
+@keyframes nx-modal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+}
+@keyframes nx-fundido {
+  from {
+    opacity: 0;
+  }
+}
+
+.toast {
+  border-radius: 14px;
+  background: var(--glass-bg-strong);
+  color: var(--ink);
+  animation: nx-toast 0.5s var(--ease-spring) backwards;
+}
+.toast.error {
+  background: color-mix(in srgb, var(--quiebre) 80%, transparent);
+}
+@keyframes nx-toast {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+  }
+}
+
+.net-aviso {
+  border-radius: 16px;
+}
+
+.theme-toggle {
+  width: 42px;
+  height: 42px;
+  transition: transform 0.45s var(--ease-spring);
+}
+.theme-toggle:hover {
+  transform: scale(1.08) rotate(-8deg);
+}
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+/* ---------- Pantallas de acceso ---------- */
+.authleft {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-right-color: var(--glass-border);
+}
+.authright,
+.backdrop {
+  background: transparent;
+}
+
+/* ---------- Transiciones entre páginas (React <ViewTransition>, ver AppShell y Sidebar) ---------- */
+::view-transition-group(.nx-pill) {
+  animation-duration: 0.55s;
+  animation-timing-function: var(--ease-spring);
+}
+::view-transition-old(.nx-pagina) {
+  animation: nx-pagina-sale 0.18s var(--ease-out) both;
+}
+::view-transition-new(.nx-pagina) {
+  animation: nx-pagina-entra 0.5s var(--ease-out) 0.08s both;
+}
+@keyframes nx-pagina-sale {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.995);
+    filter: blur(4px);
+  }
+}
+@keyframes nx-pagina-entra {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(6px);
+  }
+}
+
+/* ---------- Respaldo y accesibilidad ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .side,
+  .card,
+  .modal,
+  .toast,
+  .net-aviso,
+  .theme-toggle,
+  .tabs,
+  .cal {
+    background: var(--glass-bg-strong);
+  }
+}
+
+@media (max-width: 900px) {
+  .side {
+    position: relative;
+    margin: 10px 10px 0;
+    height: auto;
+    border-radius: 20px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .main {
+    padding: 18px 16px 80px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient i,
+  .card,
+  .topbar,
+  .tabs,
+  .modal,
+  .scrim,
+  .toast,
+  .bar i {
+    animation: none;
+  }
+  .card:hover,
+  .btn:not(:disabled):hover,
+  .xbtn:hover,
+  .theme-toggle:hover {
+    transform: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
