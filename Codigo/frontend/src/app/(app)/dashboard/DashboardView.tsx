@@ -232,7 +232,7 @@ export function DashboardView() {
               ] as const).map(([k, nombre, desc, color]) => (
                 <div className={c("sem")} key={k}>
                   <div className={c("semleft")}>
-                    <span className={c("semdot")} style={{ background: color }} />
+                    <span className={c("semdot")} style={{ background: color, color }} />
                     <div>
                       <div style={{ fontSize: "13px" }}>{nombre}</div>
                       <div className={c("hint")}>{desc}</div>

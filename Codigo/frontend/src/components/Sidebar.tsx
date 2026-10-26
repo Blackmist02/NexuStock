@@ -1,5 +1,6 @@
 "use client";
 
+import { ViewTransition } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { useAuth } from "@/lib/auth";
@@ -39,6 +40,11 @@ export function Sidebar({ active }: { active: NavKey }) {
             className={item.key === active ? "on" : undefined}
             aria-current={item.key === active ? "page" : undefined}
           >
+            {item.key === active ? (
+              <ViewTransition name="nav-pill" share="nx-pill" default="none">
+                <span className="nav-pill" aria-hidden="true" />
+              </ViewTransition>
+            ) : null}
             <span className="dot" />
             {item.label}
           </Link>

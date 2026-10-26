@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, ViewTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar, type NavKey } from "./Sidebar";
 import { useAuth } from "@/lib/auth";
@@ -36,9 +36,12 @@ export function AppShell({ active, children, mainClassName }: AppShellProps) {
   return (
     <div className="app">
       <Sidebar active={active} />
-      <main className={["main", mainClassName].filter(Boolean).join(" ")}>
+      <main className="main">
         <ConexionAviso />
-        {children}
+        {/* Al navegar, el contenido saliente se desvanece y el nuevo sube con desenfoque (glass.css, .nx-pagina) */}
+        <ViewTransition enter="nx-pagina" exit="nx-pagina" default="none">
+          <div className={["main-in", mainClassName].filter(Boolean).join(" ")}>{children}</div>
+        </ViewTransition>
       </main>
     </div>
   );

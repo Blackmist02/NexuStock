@@ -48,12 +48,91 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
+/* Vidrio: mismo tratamiento que .card de glass.css (el brillo del puntero lo pone Ambiente.tsx). */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(160deg, var(--glass-tint), transparent 55%), var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-glass);
   padding: 16px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  transition:
+    transform 0.5s var(--ease-spring),
+    box-shadow 0.5s var(--ease-out);
+  animation: aparecer 0.7s var(--ease-out) backwards;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, var(--glass-edge), transparent 38%, transparent 70%, color-mix(in srgb, var(--glass-edge) 35%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+  z-index: -1;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, -40%), var(--glass-shine), transparent 42%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+  pointer-events: none;
+  z-index: -1;
+}
+.card:hover::after {
+  opacity: 1;
+}
+.stat:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glass-shadow-hover);
+}
+.grid4 > :nth-child(2),
+.row2 > :nth-child(2) {
+  animation-delay: 60ms;
+}
+.grid4 > :nth-child(3) {
+  animation-delay: 120ms;
+}
+.grid4 > :nth-child(4) {
+  animation-delay: 180ms;
+}
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(6px);
+  }
+}
+/* Barra del semáforo: cada tramo crece desde la izquierda. */
+.stack i {
+  transform-origin: left;
+  animation: llenar 0.9s var(--ease-out) 0.25s backwards;
+}
+@keyframes llenar {
+  from {
+    transform: scaleX(0);
+  }
+}
+.semdot {
+  box-shadow: 0 0 12px currentColor;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .stack i {
+    animation: none;
+  }
+  .stat:hover {
+    transform: none;
+  }
 }
 .stat .lbl {
   font-family: "IBM Plex Mono", monospace;

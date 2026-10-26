@@ -21,6 +21,19 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.4);
   --scrim: rgba(0, 0, 0, 0.45);
+  /* Vidrio (liquid glass) */
+  --glass-bg: rgba(40, 36, 31, 0.42);
+  --glass-bg-strong: rgba(30, 28, 25, 0.72);
+  --glass-tint: rgba(255, 255, 255, 0.045);
+  --glass-border: rgba(255, 255, 255, 0.085);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  --glass-shine: rgba(255, 255, 255, 0.07);
+  --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 18px 40px -18px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.22);
+  --glass-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 28px 56px -20px rgba(0, 0, 0, 0.8), 0 4px 14px rgba(0, 0, 0, 0.28);
+  --amb-1: rgba(221, 128, 100, 0.34);
+  --amb-2: rgba(134, 169, 146, 0.26);
+  --amb-3: rgba(227, 177, 90, 0.18);
+  --amb-base: radial-gradient(120% 90% at 50% 0%, #1f1c18 0%, #141311 60%, #100f0d 100%);
 }
 
 :root[data-theme="crema"] {
@@ -44,6 +57,19 @@
   --shadow-card: 0 1px 3px rgba(28, 27, 25, 0.07), 0 1px 2px rgba(28, 27, 25, 0.04);
   --shadow-pop: 0 12px 32px rgba(28, 27, 25, 0.15);
   --scrim: rgba(28, 27, 25, 0.28);
+  /* Vidrio (liquid glass) */
+  --glass-bg: rgba(255, 253, 249, 0.5);
+  --glass-bg-strong: rgba(255, 253, 249, 0.82);
+  --glass-tint: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(120, 100, 70, 0.14);
+  --glass-edge: rgba(255, 255, 255, 0.9);
+  --glass-shine: rgba(255, 255, 255, 0.55);
+  --glass-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 18px 40px -20px rgba(90, 60, 30, 0.28), 0 2px 8px rgba(90, 60, 30, 0.06);
+  --glass-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.95) inset, 0 28px 56px -22px rgba(90, 60, 30, 0.36), 0 4px 14px rgba(90, 60, 30, 0.09);
+  --amb-1: rgba(214, 120, 90, 0.26);
+  --amb-2: rgba(110, 150, 120, 0.22);
+  --amb-3: rgba(232, 184, 100, 0.3);
+  --amb-base: radial-gradient(120% 90% at 50% 0%, #fbf8f2 0%, #f4eee3 60%, #efe7d9 100%);
 }
 
 :root {
@@ -61,4 +87,18 @@
   --font-display: "Bricolage Grotesque", sans-serif;
   --font-body: "IBM Plex Sans", ui-sans-serif, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
+  /* Vidrio y movimiento */
+  --glass-blur: 22px;
+  --glass-sat: 165%;
+  --radius-glass: 18px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Resorte suave (sobrepasa apenas y se asienta); navegadores sin linear() usan --ease-out. */
+  --ease-spring: var(--ease-out);
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.067, 1.077 24.3%, 1.065 26.8%, 1.026 31.7%, 1.003 36.4%, 0.993 42.4%, 1.001 58.6%, 1);
+  }
 }
