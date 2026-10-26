@@ -6,7 +6,7 @@ import { useEffect } from "react";
 const SUPERFICIES = ".card, [class*='card'], .side";
 
 /**
- * Fondo ambiental del vidrio (manchas de color que derivan lentamente, ver glass.css) y reflejo que sigue al puntero:
+ * Fondo ambiental del vidrio (manchas de color fijas, ver glass.css) y reflejo que sigue al puntero:
  * fija --mx/--my en la superficie bajo el cursor. Vive en el layout raíz para no reiniciarse al navegar.
  */
 export function Ambiente() {
@@ -35,11 +35,5 @@ export function Ambiente() {
     };
   }, []);
 
-  return (
-    <div className="ambient" aria-hidden="true">
-      <i />
-      <i />
-      <i />
-    </div>
-  );
+  return <div className="ambient" aria-hidden="true" />;
 }

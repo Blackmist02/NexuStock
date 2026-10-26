@@ -108,8 +108,7 @@
 @keyframes aparecer {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.985);
-    filter: blur(6px);
+    transform: translateY(12px);
   }
 }
 /* Barra del semáforo: cada tramo crece desde la izquierda. */

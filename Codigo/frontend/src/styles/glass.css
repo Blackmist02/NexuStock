@@ -1,5 +1,5 @@
 /*
- * Capa "liquid glass": superficies translúcidas sobre un fondo ambiental en movimiento, con brillo que sigue al puntero
+ * Capa "liquid glass": superficies translúcidas sobre un fondo ambiental de color, con brillo que sigue al puntero
  * y animaciones de entrada. Se carga al final para sobrescribir ui.css / shell.css / views.css sin cambiar su estructura.
  * Los colores salen de tokens.css (--glass-*, --amb-*), así que funciona en los dos temas.
  */
@@ -16,35 +16,12 @@ body {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  background: var(--amb-base);
-}
-.ambient i {
-  position: absolute;
-  width: 62vmax;
-  height: 62vmax;
-  border-radius: 50%;
-  filter: blur(70px);
-  will-change: transform;
-}
-.ambient i:nth-child(1) {
-  top: -24vmax;
-  left: -14vmax;
-  background: radial-gradient(circle at 50% 50%, var(--amb-1), transparent 65%);
-  animation: nx-deriva-1 38s var(--ease-in-out) infinite alternate;
-}
-.ambient i:nth-child(2) {
-  bottom: -30vmax;
-  right: -18vmax;
-  background: radial-gradient(circle at 50% 50%, var(--amb-2), transparent 65%);
-  animation: nx-deriva-2 46s var(--ease-in-out) infinite alternate;
-}
-.ambient i:nth-child(3) {
-  top: 18vh;
-  left: 38vw;
-  width: 44vmax;
-  height: 44vmax;
-  background: radial-gradient(circle at 50% 50%, var(--amb-3), transparent 65%);
-  animation: nx-deriva-3 32s var(--ease-in-out) infinite alternate;
+  /* Fondo estático a propósito: si se moviera, cada tarjeta de vidrio tendría que volver a difuminarse en cada cuadro. */
+  background:
+    radial-gradient(70vmax 55vmax at 0% 0%, var(--amb-1), transparent 70%),
+    radial-gradient(70vmax 60vmax at 100% 100%, var(--amb-2), transparent 70%),
+    radial-gradient(50vmax 40vmax at 100% 0%, var(--amb-3), transparent 70%),
+    var(--amb-base);
 }
 /* Grano fino: evita el "banding" de los degradados y da textura de vidrio esmerilado. */
 .ambient::after {
@@ -54,22 +31,6 @@ body {
   opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-@keyframes nx-deriva-1 {
-  to {
-    transform: translate3d(18vw, 14vh, 0) scale(1.15);
-  }
-}
-@keyframes nx-deriva-2 {
-  to {
-    transform: translate3d(-16vw, -12vh, 0) scale(1.1);
-  }
-}
-@keyframes nx-deriva-3 {
-  to {
-    transform: translate3d(-22vw, 20vh, 0) scale(0.85);
-  }
-}
-
 /* ---------- Superficie de vidrio ---------- */
 .side,
 .card,
@@ -137,12 +98,11 @@ body {
   animation: nx-aparecer 0.7s var(--ease-out) backwards;
 }
 .card:hover {
-  transform: translateY(-3px);
   box-shadow: var(--glass-shadow-hover);
 }
-/* Tarjetas grandes con tablas o gráficos: solo brillo, sin levantarse (se sentiría inestable al leer). */
-.card:has(table, svg, .gd-lienzo, form):hover {
-  transform: none;
+/* Solo las tarjetas de indicadores se levantan; las de tablas y gráficos solo brillan (más estable al leer). */
+.card.stat:hover {
+  transform: translateY(-3px);
 }
 
 /* Entrada en cascada: cada hijo directo de la cuadrícula aparece un poco después del anterior. */
@@ -163,12 +123,11 @@ body {
   animation: nx-aparecer 0.6s var(--ease-out) backwards;
 }
 
-/* Sin "forwards": al terminar, transform/filter vuelven a none y no afectan a nada posicionado dentro. */
+/* Sin "forwards": al terminar, transform vuelve a none y no afectan a nada posicionado dentro. */
 @keyframes nx-aparecer {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.985);
-    filter: blur(6px);
+    transform: translateY(12px);
   }
 }
 
@@ -299,8 +258,6 @@ body {
   background: var(--glass-tint);
   border-color: var(--glass-border);
   box-shadow: 0 1px 0 var(--glass-edge) inset;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
 }
 .btn.ghost:not(:disabled):hover {
   background: color-mix(in srgb, var(--ink) 8%, transparent);
@@ -376,7 +333,6 @@ select.input option {
 /* ---------- Tablas, notas y piezas internas ---------- */
 table.tbl td {
   border-top-color: var(--glass-border);
-  transition: background-color 0.25s var(--ease-out);
 }
 table.tbl tbody tr:hover td {
   background: color-mix(in srgb, var(--ink) 3.5%, transparent);
@@ -501,15 +457,13 @@ table.tbl tbody tr:hover td {
 @keyframes nx-pagina-sale {
   to {
     opacity: 0;
-    transform: translateY(-6px) scale(0.995);
-    filter: blur(4px);
+    transform: translateY(-6px);
   }
 }
 @keyframes nx-pagina-entra {
   from {
     opacity: 0;
     transform: translateY(12px);
-    filter: blur(6px);
   }
 }
 
@@ -541,7 +495,6 @@ table.tbl tbody tr:hover td {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ambient i,
   .card,
   .topbar,
   .tabs,
