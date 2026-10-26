@@ -23,8 +23,7 @@ body {
   width: 62vmax;
   height: 62vmax;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.9;
+  filter: blur(70px);
   will-change: transform;
 }
 .ambient i:nth-child(1) {
@@ -215,10 +214,10 @@ body {
   box-shadow:
     0 6px 18px -8px rgba(0, 0, 0, 0.35),
     0 1px 0 var(--glass-edge) inset;
-  opacity: 0.9;
+  transform-origin: 0 0;
 }
 :root[data-theme="oscuro"] .nav-pill {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)), var(--glass-bg-strong);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04));
 }
 .nav a.on .dot {
   opacity: 1;
@@ -488,9 +487,10 @@ table.tbl tbody tr:hover td {
 }
 
 /* ---------- Transiciones entre páginas (React <ViewTransition>, ver AppShell y Sidebar) ---------- */
-::view-transition-group(.nx-pill) {
-  animation-duration: 0.55s;
-  animation-timing-function: var(--ease-spring);
+/* La raíz no se funde al navegar (evita una píldora "fantasma"); el cambio de tema usa html.nx-tema en globals.css. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
 }
 ::view-transition-old(.nx-pagina) {
   animation: nx-pagina-sale 0.18s var(--ease-out) both;
