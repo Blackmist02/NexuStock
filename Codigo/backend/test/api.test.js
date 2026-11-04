@@ -349,6 +349,9 @@ describe('API de NexuStock', { skip: omitir }, () => {
     assert.equal(guardada.rows[0].valor.fecha, real);
     const libre = await llamar('admin', 'PUT', '/config/fecha', { fecha: null });
     assert.equal(libre.json.data.fecha.origen, 'real');
+    // Al pasar a la fecha real se recuerda la referencia anterior para poder volver a ella
+    assert.equal(libre.json.data.fecha.ultima_referencia, real);
+    assert.equal((await db.query("SELECT valor FROM configuracion WHERE clave = 'fecha_referencia'")).rows[0].valor.ultima, real);
   });
 
   test('carga de ventas, compras y mermas por CSV: valida, aplica en orden cronológico y no duplica', async () => {

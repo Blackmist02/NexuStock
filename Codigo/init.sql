@@ -275,7 +275,7 @@ CREATE TABLE IF NOT EXISTS CONFIGURACION (
 
 COMMENT ON TABLE  CONFIGURACION       IS 'Parámetros de la instalación (una por carnicería), clave/valor.';
 COMMENT ON COLUMN CONFIGURACION.clave IS 'negocio = { nombre, alertas: { quiebre, bajo } } | fecha_referencia = { fecha: AAAA-MM-DD o null }.';
-COMMENT ON COLUMN CONFIGURACION.valor IS 'Valor en JSON. fecha_referencia.fecha = null: el sistema usa la fecha real.';
+COMMENT ON COLUMN CONFIGURACION.valor IS 'Valor en JSON. fecha_referencia.fecha = null: el sistema usa la fecha real; fecha_referencia.ultima = última referencia usada.';
 
 -- 12. MERMAS (producto dado de baja: vencimiento, deterioro u otro)
 CREATE TABLE IF NOT EXISTS MERMAS (

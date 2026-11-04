@@ -43,6 +43,8 @@ async function respuesta() {
       hoy: hoy(),
       referencia: fechaSistema.referencia() || null,
       origen: fechaSistema.origenReferencia(),
+      // A la que vuelve el interruptor «Referencia» desde la fecha real (null si nunca hubo una)
+      ultima_referencia: fechaSistema.ultimaReferencia() || null,
       real: fechaReal(),
       ultimos_movimientos: ultimos,
       minima: ultimoDe(ultimos)
