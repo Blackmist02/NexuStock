@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { SubNav } from "@/components/SubNav";
 import { GraficoDemanda, type DiaSerie, type SemanaSerie } from "@/components/charts/GraficoDemanda";
 import { Button } from "@/components/ui/Field";
@@ -114,6 +115,7 @@ export function PrediccionView() {
           <div className="subtitle">Demanda proyectada a 7 días, cuánto pedir y hasta cuándo</div>
         </div>
         <div className="topbar-right">
+          <FechaBoton />
           <select className="input surface" style={{ height: 32, width: "auto" }} aria-label="Categoría" value={categoria} onChange={(e) => { setCategoria(e.target.value); setSel(null); }}>
             <option value="">Todas las categorías</option>
             {(cats.data?.data ?? []).map((c) => <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>)}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { SubNav } from "@/components/SubNav";
 import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
@@ -67,6 +68,9 @@ export function ProveedoresView() {
         <div>
           <h1 className="h1">Inventario</h1>
           <div className="subtitle">Proveedores, tiempos de entrega y categorías</div>
+        </div>
+        <div className="topbar-right">
+          <FechaBoton />
         </div>
       </div>
       <SubNav items={TABS_INVENTARIO} activa="/inventario/proveedores" />

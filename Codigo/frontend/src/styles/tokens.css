@@ -21,20 +21,6 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.4);
   --scrim: rgba(0, 0, 0, 0.45);
-  /* Vidrio (liquid glass): velo blanco casi transparente, el color lo pone el fondo ambiental */
-  --glass-bg: rgba(255, 255, 255, 0.035);
-  --glass-bg-strong: rgba(30, 28, 25, 0.68);
-  --glass-tint: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-edge: rgba(255, 255, 255, 0.32);
-  --glass-shine: rgba(255, 255, 255, 0.1);
-  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(255, 255, 255, 0.03), 0 24px 50px -24px rgba(0, 0, 0, 0.75);
-  --glass-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.05), 0 32px 64px -24px rgba(0, 0, 0, 0.85);
-  /* Oscuro: tonos apagados para que no se mezclen en un café turbio; sin ámbar. */
-  --amb-1: rgba(205, 110, 84, 0.2);
-  --amb-2: rgba(106, 150, 124, 0.16);
-  --amb-3: rgba(205, 110, 84, 0.06);
-  --amb-base: linear-gradient(180deg, #151413 0%, #0e0d0c 100%);
 }
 
 :root[data-theme="crema"] {
@@ -58,19 +44,6 @@
   --shadow-card: 0 1px 3px rgba(28, 27, 25, 0.07), 0 1px 2px rgba(28, 27, 25, 0.04);
   --shadow-pop: 0 12px 32px rgba(28, 27, 25, 0.15);
   --scrim: rgba(28, 27, 25, 0.28);
-  /* Vidrio (liquid glass): blanco translúcido con canto brillante sobre un fondo con más color */
-  --glass-bg: rgba(255, 255, 255, 0.26);
-  --glass-bg-strong: rgba(255, 252, 247, 0.72);
-  --glass-tint: rgba(255, 255, 255, 0.32);
-  --glass-border: rgba(255, 255, 255, 0.65);
-  --glass-edge: rgba(255, 255, 255, 1);
-  --glass-shine: rgba(255, 255, 255, 0.6);
-  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.4), 0 0 0 0.5px rgba(110, 80, 50, 0.12), 0 22px 44px -26px rgba(110, 60, 30, 0.38);
-  --glass-shadow-hover: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(255, 255, 255, 0.5), 0 0 0 0.5px rgba(110, 80, 50, 0.14), 0 30px 60px -26px rgba(110, 60, 30, 0.48);
-  --amb-1: rgba(225, 108, 78, 0.48);
-  --amb-2: rgba(92, 152, 116, 0.4);
-  --amb-3: rgba(242, 178, 72, 0.34);
-  --amb-base: radial-gradient(120% 90% at 50% 0%, #f8f3ea 0%, #f1e9dc 60%, #ebe1d1 100%);
 }
 
 :root {
@@ -88,18 +61,4 @@
   --font-display: "Bricolage Grotesque", sans-serif;
   --font-body: "IBM Plex Sans", ui-sans-serif, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
-  /* Vidrio y movimiento */
-  --glass-blur: 18px;
-  --glass-sat: 180%;
-  --radius-glass: 18px;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  /* Resorte suave (sobrepasa apenas y se asienta); navegadores sin linear() usan --ease-out. */
-  --ease-spring: var(--ease-out);
-}
-
-@supports (transition-timing-function: linear(0, 1)) {
-  :root {
-    --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.067, 1.077 24.3%, 1.065 26.8%, 1.026 31.7%, 1.003 36.4%, 0.993 42.4%, 1.001 58.6%, 1);
-  }
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Ambiente } from "@/components/Ambiente";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Providers } from "@/components/Providers";
 import "@/styles/globals.css";
@@ -27,7 +26,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body>
-        <Ambiente />
         <Providers>{children}</Providers>
         <ThemeToggle />
       </body>

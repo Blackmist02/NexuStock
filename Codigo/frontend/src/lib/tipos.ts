@@ -139,6 +139,8 @@ export interface ConfigFecha {
   hoy: string;
   referencia: string | null;
   origen: "real" | "base" | "entorno";
+  /** Última fecha de referencia usada: a la que vuelve el interruptor desde la fecha real. */
+  ultima_referencia: string | null;
   real: string;
   ultimos_movimientos: { venta: string | null; compra: string | null; merma: string | null };
   minima: string | null;

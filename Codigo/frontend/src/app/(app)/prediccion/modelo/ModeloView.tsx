@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { SubNav } from "@/components/SubNav";
 import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
@@ -79,7 +80,10 @@ export function ModeloView() {
           <h1 className="h1">Precisión del modelo</h1>
           <div className="subtitle">Qué tan cerca está la proyección de las ventas reales (error medio absoluto, en kg)</div>
         </div>
-        <div className="topbar-right">{gestiona ? <Button size="sm" variant="primary" onClick={() => setRegistrar(true)}>Registrar versión</Button> : null}</div>
+        <div className="topbar-right">
+          <FechaBoton />
+          {gestiona ? <Button size="sm" variant="primary" onClick={() => setRegistrar(true)}>Registrar versión</Button> : null}
+        </div>
       </div>
       <SubNav items={tabsPrediccion(user?.rol)} activa="/prediccion/modelo" />
 

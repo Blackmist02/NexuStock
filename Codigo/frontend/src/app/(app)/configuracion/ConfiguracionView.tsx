@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { Button, Switch, TextField } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
 import { Modal } from "@/components/ui/Modal";
@@ -112,6 +113,9 @@ export function ConfiguracionView() {
         <div>
           <h1 className="h1">Configuración</h1>
           <div className="subtitle">Negocio, alertas, fecha del sistema, carga de datos, equipo y permisos</div>
+        </div>
+        <div className="topbar-right">
+          <FechaBoton />
         </div>
       </div>
 

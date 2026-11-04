@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Pildora } from "./Pildora";
+import { FechaSistemaToggle } from "./FechaSistema";
 import { Logo } from "./Logo";
 import { useAuth } from "@/lib/auth";
 import { useConexion } from "@/lib/conexion";
@@ -40,7 +40,6 @@ export function Sidebar({ active }: { active: NavKey }) {
             className={item.key === active ? "on" : undefined}
             aria-current={item.key === active ? "page" : undefined}
           >
-            {item.key === active ? <Pildora grupo="menu" /> : null}
             <span className="dot" />
             {item.label}
           </Link>
@@ -52,6 +51,7 @@ export function Sidebar({ active }: { active: NavKey }) {
           <i className={enLinea ? "biz-dot" : "biz-dot off"} />
           {enLinea ? "Sistema en línea" : "Sin conexión · datos guardados"}
         </span>
+        <FechaSistemaToggle />
         {user ? (
           <div className="who">
             {user.nombre}

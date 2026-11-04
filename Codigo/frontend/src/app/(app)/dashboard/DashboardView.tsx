@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { MovimientoModal } from "@/components/modales/MovimientoModal";
 import { Button } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
@@ -141,13 +142,17 @@ export function DashboardView() {
         <div>
           <h1 className={c("h1")}>Dashboard</h1>
           <div className={c("subtitle")}>
-            {data?.fecha_demo
-              ? `Resumen general · ${fechaLarga(hoy, true)} (fecha de referencia)`
-              : `Resumen general · hoy, ${fechaLarga(hoy)}`}
+            {/* Hasta que responda la API no se sabe si «hoy» es la fecha de referencia: no se muestra la del navegador */}
+            {!data
+              ? "Resumen general"
+              : data.fecha_demo
+                ? `Resumen general · ${fechaLarga(hoy, true)} (fecha de referencia)`
+                : `Resumen general · hoy, ${fechaLarga(hoy)}`}
             {data && obsoleto ? ` · Datos guardados el ${fechaHoraLocal(data.generado_en)}` : ""}
           </div>
         </div>
         <div className="topbar-right">
+          <FechaBoton />
           <label className="searchbox">
             <span className="sr-only">Buscar producto</span>
             <input type="search" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -232,7 +237,7 @@ export function DashboardView() {
               ] as const).map(([k, nombre, desc, color]) => (
                 <div className={c("sem")} key={k}>
                   <div className={c("semleft")}>
-                    <span className={c("semdot")} style={{ background: color, color }} />
+                    <span className={c("semdot")} style={{ background: color }} />
                     <div>
                       <div style={{ fontSize: "13px" }}>{nombre}</div>
                       <div className={c("hint")}>{desc}</div>

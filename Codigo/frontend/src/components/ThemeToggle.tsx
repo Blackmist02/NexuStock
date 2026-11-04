@@ -39,10 +39,7 @@ export function ThemeToggle() {
       return;
     }
     if (typeof document.startViewTransition === "function") {
-      // La clase limita el barrido al cambio de tema (las navegaciones tienen su propia transición)
-      root.classList.add("nx-tema");
-      const vt = document.startViewTransition(() => aplicar(next));
-      void vt.finished.finally(() => root.classList.remove("nx-tema"));
+      document.startViewTransition(() => aplicar(next));
       return;
     }
     root.classList.add("theme-fade");

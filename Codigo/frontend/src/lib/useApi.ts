@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, errorMessage, esSinConexion } from "./api";
 import { guardarCache, leerCache } from "./cacheLocal";
 import { alVolverConexion } from "./conexion";
+import { alCambiarFecha } from "./fechaSistema";
 
 type Query = Record<string, string | number | boolean | null | undefined>;
 
@@ -78,6 +79,8 @@ export function useApi<T>(path: string | null, query?: Query, opciones?: ApiOpci
 
   // Al volver la conexión, se piden de nuevo los datos para reemplazar los guardados.
   useEffect(() => alVolverConexion(() => setIntento((n) => n + 1)), []);
+  // Al cambiar la fecha del sistema cambia «hoy» en todas las vistas: se vuelven a pedir los datos.
+  useEffect(() => alCambiarFecha(() => setIntento((n) => n + 1)), []);
 
   const reload = useCallback(async () => setIntento((n) => n + 1), []);
 

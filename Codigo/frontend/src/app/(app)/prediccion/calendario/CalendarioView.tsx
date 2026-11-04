@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { SubNav } from "@/components/SubNav";
 import { Modal } from "@/components/ui/Modal";
 import { Button, SelectField, TextField } from "@/components/ui/Field";
@@ -87,7 +88,10 @@ export function CalendarioView() {
           <h1 className="h1">Calendario de eventos</h1>
           <div className="subtitle">Feriados, fiestas y fechas de mayor demanda que el motor tiene en cuenta</div>
         </div>
-        <div className="topbar-right">{edita ? <Button size="sm" variant="primary" onClick={() => setNuevo(true)}>Agregar evento</Button> : null}</div>
+        <div className="topbar-right">
+          <FechaBoton />
+          {edita ? <Button size="sm" variant="primary" onClick={() => setNuevo(true)}>Agregar evento</Button> : null}
+        </div>
       </div>
       <SubNav items={tabsPrediccion(user?.rol)} activa="/prediccion/calendario" />
 
