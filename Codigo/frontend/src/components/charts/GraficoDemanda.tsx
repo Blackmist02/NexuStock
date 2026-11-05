@@ -144,7 +144,11 @@ export function GraficoDemanda({ dias, semanas, eventos, unidad, hoy }: { dias: 
   // La predicción registrada (pasado) y la proyección (desde la semana en curso) se dibujan por separado
   const esPasado = (p: Punto) => p.hasta < lunesHoy;
   const tramoRegistrada = tramos("proyectada", esPasado);
-  const tramoProyeccion = tramos("proyectada", (p) => !esPasado(p));
+  // La proyección parte desde la última predicción registrada para que no quede un hueco entre ambas
+  const tramoProyeccion = tramos("proyectada", (p) => !esPasado(p)).map((t) => {
+    const previo = puntos[t[0].i - 1];
+    return previo?.proyectada != null && esPasado(previo) ? [{ i: t[0].i - 1, v: previo.proyectada }, ...t] : t;
+  });
 
   const eventosPorDia = useMemo(() => {
     const m = new Map<string, Evento[]>();

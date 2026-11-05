@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { BarrasMovimientos } from "@/components/charts/BarrasMovimientos";
 import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
@@ -79,6 +80,7 @@ export function DetalleProductoView({ id }: { id: string }) {
               </div>
             </div>
             <div className="topbar-right">
+              <FechaBoton />
               {prod.activo && puede(user?.rol, "movimientos") ? (
                 <>
                   <Button size="sm" onClick={() => setModal("compra")}>Registrar compra</Button>

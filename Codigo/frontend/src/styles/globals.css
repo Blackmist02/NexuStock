@@ -2,7 +2,6 @@
 @import "./shell.css";
 @import "./ui.css";
 @import "./views.css";
-@import "./glass.css";
 
 *,
 *::before,
@@ -84,17 +83,16 @@ a {
 }
 
 /* ---------- Transición de tema ---------- */
-/* Barrido suave de izquierda a derecha: la captura nueva se revela con una máscara de borde difuminado.
-   Solo durante el cambio de tema (clase nx-tema); las navegaciones usan las transiciones de glass.css. */
-html.nx-tema::view-transition-old(root),
-html.nx-tema::view-transition-new(root) {
+/* Barrido suave de izquierda a derecha: la captura nueva se revela con una máscara de borde difuminado. */
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-html.nx-tema::view-transition-old(root) {
+::view-transition-old(root) {
   z-index: 1;
 }
-html.nx-tema::view-transition-new(root) {
+::view-transition-new(root) {
   z-index: 2;
   -webkit-mask-image: linear-gradient(to right, #000 0%, #000 45%, transparent 55%);
   mask-image: linear-gradient(to right, #000 0%, #000 45%, transparent 55%);

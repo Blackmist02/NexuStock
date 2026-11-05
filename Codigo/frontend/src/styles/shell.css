@@ -89,6 +89,80 @@
   background: var(--alerta);
 }
 
+/* Fecha del sistema: interruptor Referencia / Real */
+.fecha-sis {
+  margin: 12px 0 2px;
+}
+.fecha-sis-lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.seg {
+  display: flex;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.seg button {
+  flex: 1;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.seg button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+.seg button:disabled {
+  cursor: not-allowed;
+}
+.seg button:disabled:not([aria-pressed="true"]) {
+  opacity: 0.5;
+}
+.seg button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.fecha-sis-val {
+  margin-top: 6px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.fecha-sis-val span {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+.fecha-sis-pend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Botón de la barra superior con la fecha vigente (solo indicador para quien no puede cambiarla) */
+.fecha-btn-fija {
+  cursor: default;
+}
+.fecha-btn-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
 .main {
   flex: 1;
   min-width: 0;
@@ -169,4 +243,14 @@
     width: 100%;
     justify-content: flex-end;
   }
+}
+
+/* Aviso al elegir una fecha anterior a los datos */
+.aviso-lista {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
 }

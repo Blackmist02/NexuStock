@@ -1,7 +1,7 @@
 "use client";
 
-import { ViewTransition } from "react";
 import Link from "next/link";
+import { FechaSistemaToggle } from "./FechaSistema";
 import { Logo } from "./Logo";
 import { useAuth } from "@/lib/auth";
 import { useConexion } from "@/lib/conexion";
@@ -40,11 +40,6 @@ export function Sidebar({ active }: { active: NavKey }) {
             className={item.key === active ? "on" : undefined}
             aria-current={item.key === active ? "page" : undefined}
           >
-            {item.key === active ? (
-              <ViewTransition name="nav-pill" share="nx-pill" default="none">
-                <span className="nav-pill" aria-hidden="true" />
-              </ViewTransition>
-            ) : null}
             <span className="dot" />
             {item.label}
           </Link>
@@ -56,6 +51,7 @@ export function Sidebar({ active }: { active: NavKey }) {
           <i className={enLinea ? "biz-dot" : "biz-dot off"} />
           {enLinea ? "Sistema en línea" : "Sin conexión · datos guardados"}
         </span>
+        <FechaSistemaToggle />
         {user ? (
           <div className="who">
             {user.nombre}

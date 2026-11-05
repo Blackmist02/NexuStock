@@ -1,7 +1,8 @@
 /**
  * Parámetros de la instalación (una instalación por carnicería), guardados en la tabla CONFIGURACION (modelo v5):
  *  - negocio:          { nombre, alertas: { quiebre, bajo } }
- *  - fecha_referencia: { fecha: AAAA-MM-DD | null }  («hoy» del sistema; null = fecha real)
+ *  - fecha_referencia: { fecha: AAAA-MM-DD | null, ultima: AAAA-MM-DD | null }  («hoy» del sistema; null = fecha real;
+ *                      ultima = última referencia usada, para volver a ella desde la fecha real)
  * Se mantienen en memoria: `leer()` es síncrono y `cargar()` los trae de la base al iniciar. Si la base aún no tiene
  * la tabla (modelo v4, sin migracion_v5.sql), se usa el archivo data/negocio.json como antes; al migrar, ese archivo
  * se copia a la tabla la primera vez.
@@ -66,7 +67,10 @@ async function cargar() {
       cache = leerArchivo() || structuredClone(POR_DEFECTO);
       await upsert('negocio', cache); // migra data/negocio.json a la base
     }
-    if (porClave.has('fecha_referencia')) fechaSistema.fijar(porClave.get('fecha_referencia').fecha, 'base');
+    if (porClave.has('fecha_referencia')) {
+      const f = porClave.get('fecha_referencia');
+      fechaSistema.fijar(f.fecha, 'base', f.ultima);
+    }
     return true;
   } catch (e) {
     if (sinTabla(e)) {
@@ -97,8 +101,9 @@ async function guardar(parcial, idUsuario = null) {
 
 /** Guarda la fecha de referencia (AAAA-MM-DD) o null para volver a la fecha real. Requiere la tabla CONFIGURACION. */
 async function guardarFechaReferencia(fecha, idUsuario = null) {
-  await upsert('fecha_referencia', { fecha: fecha || null }, idUsuario);
-  fechaSistema.fijar(fecha, 'base');
+  const ultima = fecha || fechaSistema.ultimaReferencia() || null;
+  await upsert('fecha_referencia', { fecha: fecha || null, ultima }, idUsuario);
+  fechaSistema.fijar(fecha, 'base', ultima);
 }
 
 /** Solo para pruebas. */

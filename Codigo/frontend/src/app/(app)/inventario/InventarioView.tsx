@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { SubNav } from "@/components/SubNav";
 import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
@@ -64,6 +65,7 @@ export function InventarioView() {
           </div>
         </div>
         <div className="topbar-right">
+          <FechaBoton />
           <label className="searchbox">
             <span className="sr-only">Buscar producto</span>
             <input type="search" placeholder="Buscar producto…" value={q} onChange={(e) => setQ(e.target.value)} />

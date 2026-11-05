@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { ErrorState, Loading } from "@/components/ui/States";
 import { useToast } from "@/components/ui/Toast";
 import { api, errorMessage } from "@/lib/api";
@@ -70,6 +71,9 @@ export function AlertasView() {
         <div>
           <h1 className={c("h1")}>Alertas de inventario</h1>
           <div className={c("subtitle")}>Productos que entraron en quiebre o stock bajo, con la causa y la sugerencia de ese momento</div>
+        </div>
+        <div className="topbar-right">
+          <FechaBoton />
         </div>
       </div>
 

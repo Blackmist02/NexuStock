@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { AvisoFechaPasada, AvisoSinDatos, diasSinDatos } from "@/components/FechaSistema";
 import { Button } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import { api, errorMessage } from "@/lib/api";
+import { avisarCambioFecha, cambiarFechaSistema, mensajeCambioFecha } from "@/lib/fechaSistema";
 import { fmtCLP, fmtFecha, fmtNum } from "@/lib/format";
 import type { ConfigFecha } from "@/lib/tipos";
+import type { Evaluacion } from "@/lib/fechaSistema";
 
 const sumarDias = (iso: string, n: number) => {
   const [y, m, d] = iso.split("-").map(Number);
@@ -18,23 +21,25 @@ const ORIGEN: Record<ConfigFecha["origen"], string> = {
   entorno: "Fecha de referencia (variable FECHA_REFERENCIA)",
 };
 
-type Evaluacion = { evaluados: number; creadas: number; cerradas: number } | null;
-
 /** Fecha del sistema («hoy»): se guarda en la base y cambia sin reiniciar; recalcula proyecciones y alertas. */
 export function FechaSistemaCard({ fecha, onCambio }: { fecha: ConfigFecha; onCambio: () => void }) {
   const toast = useToast();
   const [valor, setValor] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<null | "pasada" | "sinDatos">(null);
   const elegido = valor ?? fecha.hoy;
 
-  async function guardar(nueva: string | null) {
+  /** Guarda la fecha; antes avisa si es anterior a los datos o deja días sin datos (`confirmada` salta este último). */
+  async function guardar(nueva: string | null, confirmada = false) {
+    if (nueva && fecha.minima && nueva < fecha.minima) return setAviso("pasada");
+    if (nueva && !confirmada && diasSinDatos(fecha, nueva) > 0) return setAviso("sinDatos");
+    setAviso(null);
     setGuardando(true);
     setError(null);
     try {
-      const r = await api.put<{ data: { fecha: ConfigFecha; evaluacion: Evaluacion } }>("/config/fecha", { fecha: nueva });
-      const ev = r.data.evaluacion;
-      toast.ok(`Fecha del sistema: ${fmtFecha(r.data.fecha.hoy)}${ev ? ` · alertas: ${ev.creadas} nuevas, ${ev.cerradas} cerradas` : ""}`);
+      const r = await cambiarFechaSistema(nueva);
+      toast.ok(mensajeCambioFecha(r));
       setValor(null);
       onCambio();
     } catch (e) {
@@ -69,7 +74,6 @@ export function FechaSistemaCard({ fecha, onCambio }: { fecha: ConfigFecha; onCa
           type="date"
           style={{ height: 32, width: "auto" }}
           value={elegido}
-          min={fecha.minima ?? undefined}
           max={fecha.real}
           onChange={(e) => setValor(e.target.value)}
         />
@@ -82,6 +86,18 @@ export function FechaSistemaCard({ fecha, onCambio }: { fecha: ConfigFecha; onCa
         ) : null}
       </div>
       {error ? <div className="form-err" role="alert" style={{ marginTop: 10 }}>{error}</div> : null}
+      {aviso === "pasada" && fecha.minima ? (
+        <AvisoFechaPasada
+          ultimoMovimiento={fecha.minima}
+          onClose={() => {
+            setAviso(null);
+            setValor(null);
+          }}
+        />
+      ) : null}
+      {aviso === "sinDatos" ? (
+        <AvisoSinDatos fecha={fecha} elegida={elegido} ocupado={guardando} onUsar={(f) => void guardar(f, true)} onClose={() => setAviso(null)} />
+      ) : null}
       <p className="hint" style={{ margin: "10px 0 0" }}>
         Con datos históricos, «hoy» es el día siguiente al último movimiento cargado. Al cambiarla se recalculan la proyección de la semana y las alertas.
         No puede ser futura ni anterior al último movimiento.
@@ -173,6 +189,7 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
       setArchivos({});
       setHasta("");
       setRevision(null);
+      if (r.data.fecha_sistema.nueva) avisarCambioFecha();
       onCambio();
     } catch (e) {
       setError(errorMessage(e));

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { FechaBoton } from "@/components/FechaSistema";
 import { BarrasSemanas, type SemanaVenta } from "@/components/charts/BarrasSemanas";
 import { Button } from "@/components/ui/Field";
 import { EmptyState, ErrorState, Loading, Pagination } from "@/components/ui/States";
@@ -64,6 +65,7 @@ export function HistorialView() {
           <div className="subtitle">Ventas, compras y mermas del período{obsoleto ? " · datos guardados en este dispositivo" : ""}</div>
         </div>
         <div className="topbar-right">
+          <FechaBoton />
           <Button size="sm" onClick={() => void exportar()} disabled={!rangoOk}>Exportar CSV</Button>
         </div>
       </div>

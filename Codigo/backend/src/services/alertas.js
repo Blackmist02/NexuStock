@@ -106,6 +106,51 @@ async function registrarPrediccion(client, { id_producto, id_modelo = null, hori
 }
 
 /**
+ * registrarPrediccion para varios productos (horizonte semana) en dos consultas: actualiza la última predicción de la
+ * semana objetivo de cada producto e inserta las que faltan. Devuelve Map id_producto (texto) → id_prediccion.
+ */
+async function registrarPredicciones(client, filas, horizonte = 'semana') {
+  const objetivo = fechaObjetivo(horizonte);
+  const col = (f) => filas.map(f);
+  const params = [
+    col((f) => f.id_producto),
+    col((f) => (f.origen === 'modelo' ? f.id_modelo ?? null : null)),
+    col((f) => Math.max(0, Math.round(f.demanda * 100) / 100)),
+    col((f) => f.origen),
+    col((f) => (f.latencia_ms == null ? null : Math.round(f.latencia_ms))),
+    horizonte,
+    objetivo
+  ];
+  const valores = `SELECT * FROM unnest($1::bigint[], $2::bigint[], $3::numeric[], $4::varchar[], $5::int[])
+                     AS v(id_producto, id_modelo, demanda, origen, latencia)`;
+  const upd = await client.query(
+    `WITH v AS (${valores}),
+          ult AS (SELECT DISTINCT ON (id_producto) id_prediccion, id_producto FROM predicciones
+                   WHERE id_producto = ANY($1::bigint[]) AND horizonte = $6 AND fecha_objetivo = $7::date
+                   ORDER BY id_producto, generada_en DESC)
+     UPDATE predicciones pr
+        SET id_modelo = v.id_modelo, demanda_pred = v.demanda, origen = v.origen, latencia_ms = v.latencia, generada_en = NOW()
+       FROM ult JOIN v USING (id_producto)
+      WHERE pr.id_prediccion = ult.id_prediccion
+     RETURNING pr.id_producto, pr.id_prediccion`,
+    params
+  );
+  const ids = new Map(upd.rows.map((r) => [String(r.id_producto), r.id_prediccion]));
+  if (ids.size < filas.length) {
+    const ins = await client.query(
+      `WITH v AS (${valores})
+       INSERT INTO predicciones (id_producto, id_modelo, horizonte, fecha_objetivo, demanda_pred, origen, latencia_ms)
+       SELECT v.id_producto, v.id_modelo, $6, $7::date, v.demanda, v.origen, v.latencia FROM v
+        WHERE v.id_producto <> ALL($8::bigint[])
+       RETURNING id_producto, id_prediccion`,
+      [...params, [...ids.keys()]]
+    );
+    for (const r of ins.rows) ids.set(String(r.id_producto), r.id_prediccion);
+  }
+  return ids;
+}
+
+/**
  * Evalúa los productos indicados (o todos los activos): registra la proyección (RF-10) y actualiza las alertas (RF-09).
  *  - producto en quiebre/bajo → crea la alerta activa o actualiza la existente (no se duplica);
  *  - producto óptimo → sus alertas activas se cierran como «atendida» (el riesgo ya no existe);
@@ -121,20 +166,44 @@ async function evaluar({ productoIds = null } = {}) {
   await withTransaction(async (client) => {
     await client.query('SELECT pg_advisory_xact_lock(7001)'); // evita evaluaciones simultáneas duplicando alertas
     const ahora = await momento(client);
-    for (const p of inventario) {
-      const idPred = await registrarPrediccion(client, {
-        id_producto: p.id_producto,
-        id_modelo: p.id_modelo,
-        demanda: p.demanda_semana,
-        origen: p.origen_demanda,
-        latencia_ms: p.latencia_ms
-      });
-      const activa = (
+    // Alertas activas y descartadas en las últimas 24 h de todos los productos en una sola lectura cada una
+    // (consultarlas por producto suma un viaje a la base por producto, lento con una base remota)
+    const ids = inventario.map((p) => p.id_producto);
+    const activasPor = new Map();
+    for (const a of (
+      await client.query(
+        `SELECT id_alerta, id_producto FROM alertas_inventario
+          WHERE id_producto = ANY($1::bigint[]) AND estado = 'activa' ORDER BY creada_en DESC`,
+        [ids]
+      )
+    ).rows) {
+      activasPor.set(String(a.id_producto), [...(activasPor.get(String(a.id_producto)) ?? []), a]);
+    }
+    const descartadaPor = new Map(
+      (
         await client.query(
-          `SELECT id_alerta FROM alertas_inventario WHERE id_producto = $1 AND estado = 'activa' ORDER BY creada_en DESC`,
-          [p.id_producto]
+          `SELECT DISTINCT ON (id_producto) id_producto, nivel FROM alertas_inventario
+            WHERE id_producto = ANY($1::bigint[]) AND estado = 'descartada' AND resuelta_en > $2::timestamptz - interval '24 hours'
+            ORDER BY id_producto, resuelta_en DESC`,
+          [ids, ahora]
         )
-      ).rows;
+      ).rows.map((d) => [String(d.id_producto), d])
+    );
+    const predPor = inventario.length
+      ? await registrarPredicciones(
+          client,
+          inventario.map((p) => ({
+            id_producto: p.id_producto,
+            id_modelo: p.id_modelo,
+            demanda: p.demanda_semana,
+            origen: p.origen_demanda,
+            latencia_ms: p.latencia_ms
+          }))
+        )
+      : new Map();
+    for (const p of inventario) {
+      const idPred = predPor.get(String(p.id_producto));
+      const activa = activasPor.get(String(p.id_producto)) ?? [];
 
       if (p.nivel === 'optimo') {
         if (activa.length) {
@@ -176,14 +245,7 @@ async function evaluar({ productoIds = null } = {}) {
         resumen.productos.push({ id_producto: p.id_producto, nivel: p.nivel, alerta: null });
         continue;
       }
-      const descartada = (
-        await client.query(
-          `SELECT nivel FROM alertas_inventario
-            WHERE id_producto = $1 AND estado = 'descartada' AND resuelta_en > $2::timestamptz - interval '24 hours'
-            ORDER BY resuelta_en DESC LIMIT 1`,
-          [p.id_producto, ahora]
-        )
-      ).rows[0];
+      const descartada = descartadaPor.get(String(p.id_producto));
       if (descartada && ORDEN[p.nivel] <= ORDEN[descartada.nivel]) {
         resumen.productos.push({ id_producto: p.id_producto, nivel: p.nivel, alerta: null });
         continue;

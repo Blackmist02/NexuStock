@@ -1,0 +1,108 @@
+# Integración continua de NexuStock (tarea 19).
+# En cada push a main o a una rama Features/* y en cada pull request hacia main se ejecuta:
+#   backend   · pruebas unitarias y de la API contra un PostgreSQL 16 descartable (esquema de Codigo/init.sql)
+#   ml-engine · validación de predict.py con el modelo versionado (MAE, horizontes, modo servidor)
+#   frontend  · tipos (tsc), eslint y compilación de producción (next build)
+#   imagen    · construcción de la imagen Docker de producción del backend (API + motor ML), sin publicarla
+# El despliegue (CD) se agrega cuando se defina el proveedor (tareas 8 y 30).
+
+name: CI
+
+on:
+  push:
+    branches: [main, "Features/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (pruebas unitarias y de API)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: nexustock
+          POSTGRES_PASSWORD: nexustock_ci
+          POSTGRES_DB: nexustock_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U nexustock -d nexustock_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: Codigo/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Codigo/backend/package-lock.json
+      - run: npm ci
+      - name: Pruebas (la base debe terminar en _test; ver test/api.test.js)
+        run: npm test
+        env:
+          TEST_DATABASE_URL: postgres://nexustock:nexustock_ci@localhost:5432/nexustock_test
+
+  ml-engine:
+    name: Motor ML (validar_predict.py)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Codigo/ml-engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: Codigo/ml-engine/requirements.txt
+      # scikit-learn va fijo en requirements.txt: debe ser la versión con la que se serializó el modelo
+      - run: pip install -r requirements.txt
+      - run: python tests/validar_predict.py
+        env:
+          PYTHONIOENCODING: utf-8
+
+  frontend:
+    name: Frontend (tipos, lint y build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Codigo/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Codigo/frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx eslint src
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  imagen:
+    name: Imagen Docker del backend
+    runs-on: ubuntu-latest
+    needs: [backend, ml-engine]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: Codigo
+          file: Codigo/backend/Dockerfile
+          target: prod
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
