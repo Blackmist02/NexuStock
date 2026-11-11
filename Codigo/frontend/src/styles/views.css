@@ -277,41 +277,49 @@
   }
 }
 
-/* Teléfono y tableta: la barra lateral pasa a ser una barra superior con desplazamiento horizontal */
+/* Teléfono y tableta: la barra lateral pasa a ser un panel que se abre con el botón de menú (hamburguesa) */
 @media (max-width: 900px) {
-  .app {
-    flex-direction: column;
-  }
   .side {
-    position: static;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 14px;
-    padding: 12px 16px;
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    width: min(280px, 85vw);
+    height: 100vh;
+    height: 100dvh;
+    padding-top: 10px;
+    overflow-y: auto;
+    box-shadow: var(--shadow-pop);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0.22s;
   }
-  .side .nav {
-    flex-direction: row;
-    overflow-x: auto;
-    flex: 1 1 100%;
-    order: 3;
+  .menu-abierto .side {
+    transform: none;
+    visibility: visible;
   }
-  .side .nav a {
-    white-space: nowrap;
+  .side-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: var(--scrim);
   }
-  .biz {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: 0;
-    margin-left: auto;
-    text-align: right;
+  .menu-btn {
+    top: 16px;
+  }
+  /* Con el panel abierto, la hamburguesa se convierte en una X */
+  .menu-abierto .menu-btn span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .menu-abierto .menu-btn span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-abierto .menu-btn span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
   }
   .main {
-    padding: 18px 16px 80px;
+    padding: 66px 16px 80px;
   }
   .grid4 {
     grid-template-columns: repeat(2, 1fr);

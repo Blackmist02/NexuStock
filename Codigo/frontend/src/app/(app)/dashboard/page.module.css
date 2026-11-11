@@ -304,3 +304,40 @@ table.tbl th[scope] {
     width: 100%;
   }
 }
+/* Vista para proyección (zoom ≈140 %): mismo corte que styles/proyeccion.css; el diseño a zoom normal no cambia */
+@media (min-width: 901px) and (max-width: 1300px) and (min-resolution: 1.35dppx) {
+  .topbar {
+    margin-bottom: 16px;
+  }
+  .grid4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .row2 {
+    flex-direction: row;
+    gap: 12px;
+  }
+  .card {
+    padding: 14px;
+  }
+  .stat .val {
+    font-size: 22px;
+  }
+  table.tbl {
+    font-size: 12px;
+  }
+  table.tbl th {
+    padding: 0 6px 8px;
+  }
+  table.tbl td {
+    padding: 8px 6px;
+  }
+  table.tbl td.mono,
+  table.tbl .btn {
+    white-space: nowrap;
+  }
+  /* La nota bajo la cantidad sí puede bajar de línea: si no, ensancha la columna y aprieta las demás */
+  table.tbl td.mono .hint {
+    white-space: normal;
+  }
+}
