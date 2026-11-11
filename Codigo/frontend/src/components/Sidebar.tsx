@@ -20,15 +20,16 @@ export const NAV_ITEMS = [
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];
 
-export function Sidebar({ active }: { active: NavKey }) {
+/** `onNavegar`: al elegir una sección (cierra el panel del menú en teléfono). */
+export function Sidebar({ active, onNavegar }: { active: NavKey; onNavegar?: () => void }) {
   const { user, logout } = useAuth();
   const { enLinea } = useConexion();
   const { data: cfg } = useApi<{ data: ConfigNegocio }>("/config", undefined, { resguardo: true });
   const items = NAV_ITEMS.filter((i) => i.key !== "configuracion" || puede(user?.rol, "usuarios"));
   return (
-    <aside className="side">
+    <aside className="side" id="menu-lateral">
       <div className="brand">
-        <Link href="/dashboard" aria-label="NexuStock — ir al Dashboard">
+        <Link href="/dashboard" aria-label="NexuStock — ir al Dashboard" onClick={onNavegar}>
           <Logo width={132} height={48} />
         </Link>
       </div>
@@ -39,6 +40,7 @@ export function Sidebar({ active }: { active: NavKey }) {
             href={item.href}
             className={item.key === active ? "on" : undefined}
             aria-current={item.key === active ? "page" : undefined}
+            onClick={onNavegar}
           >
             <span className="dot" />
             {item.label}
