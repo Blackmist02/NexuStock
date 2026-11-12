@@ -278,108 +278,46 @@
   }
 }
 
-/* Teléfono y tableta: la barra lateral pasa a ser una barra superior compacta de tres filas:
-   logo + usuario · pestañas (desplazables) · negocio + fecha del sistema */
+/* Teléfono y tableta: la barra lateral pasa a ser un panel que se abre con el botón de menú (hamburguesa) */
 @media (max-width: 900px) {
-  .app {
-    flex-direction: column;
-  }
   .side {
-    position: static;
-    width: 100%;
-    height: auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "brand user"
-      "nav   nav"
-      "info  fecha";
-    align-items: center;
-    gap: 10px 12px;
-    padding: 10px 16px 12px;
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    width: min(280px, 85vw);
+    height: 100vh;
+    height: 100dvh;
+    padding-top: 10px;
+    overflow-y: auto;
+    box-shadow: var(--shadow-pop);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0.22s;
   }
-  .brand {
-    grid-area: brand;
+  .menu-abierto .side {
+    transform: none;
+    visibility: visible;
   }
-  .brand svg {
-    width: auto;
-    height: 36px;
+  .side-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: var(--scrim);
   }
-  .side .nav {
-    grid-area: nav;
-    flex-direction: row;
-    gap: 2px;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-    /* Desvanecido en el borde derecho: indica que hay más pestañas al deslizar */
-    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  .menu-btn {
+    top: 16px;
   }
-  .side .nav::-webkit-scrollbar {
-    display: none;
+  /* Con el panel abierto, la hamburguesa se convierte en una X */
+  .menu-abierto .menu-btn span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
   }
-  .side .nav a {
-    white-space: nowrap;
-    padding: 7px 11px;
-    flex: none;
+  .menu-abierto .menu-btn span:nth-child(2) {
+    opacity: 0;
   }
-  .side .nav a:last-child {
-    margin-right: 24px;
-  }
-  .biz {
-    display: contents;
-  }
-  .biz-info {
-    grid-area: info;
-    min-width: 0;
-    font-size: 11.5px;
-    color: var(--ink-muted);
-  }
-  .biz-info .who {
-    margin-top: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .biz-info .biz-status {
-    margin-top: 2px;
-  }
-  .side .fecha-sis {
-    grid-area: fecha;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11.5px;
-  }
-  .side .fecha-sis-lbl {
-    display: none;
-  }
-  .side .seg button {
-    padding: 0 10px;
-  }
-  .side .fecha-sis-val {
-    margin-top: 0;
-    white-space: nowrap;
-  }
-  .biz-user {
-    grid-area: user;
-    text-align: right;
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  .biz-user .who {
-    margin-top: 0;
-    color: var(--ink);
-    font-weight: 500;
-  }
-  .biz-user .biz-rol {
-    display: none;
-  }
-  .biz-user .logout {
-    margin-top: 2px;
+  .menu-abierto .menu-btn span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
   }
   /* Sub-pestañas: se deslizan sin barra de scroll visible; el desvanecido indica que hay más */
   .tabs {
@@ -393,7 +331,7 @@
     margin-right: 20px;
   }
   .main {
-    padding: 18px 16px 80px;
+    padding: 66px 16px 80px;
   }
   .grid4 {
     grid-template-columns: repeat(2, 1fr);

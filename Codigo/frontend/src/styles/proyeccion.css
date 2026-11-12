@@ -1,0 +1,91 @@
+/*
+ * Vista para proyección: navegador con zoom alto (≈140 %) en pantallas de notebook o proyector.
+ * Con ese zoom el área útil queda en ~900–1300 px de ancho y poca altura, entre el diseño de escritorio y el de teléfono.
+ * Solo aplica con densidad de píxeles alta (zoom ≥ 135 % sobre escala 100 %, o ≥ 110 % sobre escala 125 %),
+ * así el diseño original a zoom normal no cambia. El mismo corte se repite en dashboard/page.module.css.
+ */
+@media (min-width: 901px) and (max-width: 1300px) and (min-resolution: 1.35dppx) {
+  /* Barra lateral más angosta y con desplazamiento propio: en poca altura no se esconde ninguna sección */
+  .side {
+    width: 200px;
+    padding: 14px 12px;
+    gap: 14px;
+    overflow-y: auto;
+  }
+  .side .nav {
+    overflow: visible;
+    min-height: auto;
+  }
+  .nav a {
+    padding: 7px 10px;
+  }
+  .side .brand {
+    padding-left: 44px;
+  }
+  .menu-btn {
+    top: 20px;
+    left: 12px;
+  }
+  .biz {
+    padding-top: 10px;
+  }
+  .menu-oculto .side {
+    margin-left: -200px;
+  }
+
+  .main {
+    padding: 18px 22px 28px;
+  }
+  .menu-oculto .main {
+    padding-left: 64px;
+  }
+
+  /* Encabezado: los botones bajan a una segunda línea en vez de salirse de la pantalla */
+  .topbar {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .topbar-right {
+    flex-wrap: wrap;
+  }
+
+  /* Indicadores en una sola fila */
+  .grid4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .grid3 {
+    gap: 12px;
+  }
+  .card {
+    padding: 14px;
+  }
+
+  /* Tablas: celdas más compactas; cantidades, montos, fechas y botones no se parten en dos líneas */
+  table.tbl {
+    font-size: 12px;
+  }
+  table.tbl th {
+    padding: 0 6px 8px;
+  }
+  table.tbl td {
+    padding: 8px 6px;
+  }
+  table.tbl td.mono,
+  table.tbl .badge,
+  table.tbl .btn {
+    white-space: nowrap;
+  }
+  table.tbl td.mono .sub,
+  table.tbl td.mono .mini {
+    white-space: normal;
+  }
+  .row-actions {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .scrollx table.tbl {
+    min-width: 0;
+  }
+}

@@ -18,8 +18,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   allowedDevOrigins,
   poweredByHeader: false,
-  // El indicador de desarrollo de Next tapaba «Cerrar sesión» (abajo a la izquierda en escritorio,
-  // arriba a la derecha en móvil) y abajo a la derecha está el botón de tema. Los errores siguen mostrándose.
+  // El indicador de desarrollo de Next tapaba controles en cualquier esquina («Cerrar sesión» abajo a la izquierda,
+  // botones del encabezado arriba a la derecha, botón de tema abajo a la derecha). Los errores siguen mostrándose.
   devIndicators: false,
   // /api/* se reenvía al backend en src/proxy.ts (URL leída de API_URL; por defecto http://localhost:4000)
   async headers() {
