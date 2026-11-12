@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Paginador, usePaginado } from "@/components/ui/Paginador";
 import { AppShell } from "@/components/AppShell";
 import { FechaBoton } from "@/components/FechaSistema";
 import { ErrorState, Loading } from "@/components/ui/States";
@@ -50,6 +51,8 @@ export function AlertasView() {
 
   const todas = useMemo(() => data?.data ?? [], [data]);
   const visibles = todas.filter((a) => (!estado || a.estado === estado) && (!nivel || a.nivel === nivel));
+  // Historial largo: 15 por página; vuelve a la primera al cambiar los filtros
+  const pag = usePaginado(visibles, 15, `${estado}|${nivel}`);
   const conteo = (e: Estado) => todas.filter((a) => a.estado === e).length;
 
   async function resolver(a: Alerta, nuevo: "atendida" | "descartada") {
@@ -128,7 +131,7 @@ export function AlertasView() {
                 </tr>
               </thead>
               <tbody>
-                {visibles.map((a) => (
+                {pag.visibles.map((a) => (
                   <tr key={a.id_alerta}>
                     <td className={c("mono")}>{fmtFechaHora(a.creada_en)}</td>
                     <td>
@@ -174,6 +177,7 @@ export function AlertasView() {
             </table>
           </div>
         ) : null}
+        <Paginador {...pag} unidad="alertas" />
       </div>
     </AppShell>
   );

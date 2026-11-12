@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { FechaBoton } from "@/components/FechaSistema";
 import { MovimientoModal } from "@/components/modales/MovimientoModal";
 import { Button } from "@/components/ui/Field";
+import { Paginador, usePaginado } from "@/components/ui/Paginador";
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/lib/auth";
 import { api, errorMessage } from "@/lib/api";
@@ -95,6 +96,11 @@ export function DashboardView() {
   const [movimiento, setMovimiento] = useState<null | { tipo: "venta" | "compra"; id?: number; cantidad?: number }>(null);
   const puedeMover = puede(user?.rol, "movimientos");
   const coincide = (nombre: string) => !q.trim() || nombre.toLowerCase().includes(q.trim().toLowerCase());
+  // Tablas paginadas: el dashboard es un resumen y no debe obligar a bajar por todos los productos
+  const sugerencias = (data?.sugerencias ?? []).filter((a) => coincide(a.producto));
+  const criticos = (data?.productos_criticos ?? []).filter((p) => coincide(p.producto));
+  const pagSug = usePaginado(sugerencias, 6, q);
+  const pagCri = usePaginado(criticos, 6, q);
 
   async function exportar() {
     try {
@@ -261,7 +267,7 @@ export function DashboardView() {
 
           <div className={c("card")} style={{ marginBottom: 16 }}>
             <div className={c("title")}>Sugerencias de compra</div>
-            {data.sugerencias.filter((a) => coincide(a.producto)).length === 0 ? (
+            {sugerencias.length === 0 ? (
               <div className={c("vacio")}>{q.trim() ? "Ninguna sugerencia coincide con la búsqueda." : "No hay sugerencias de compra pendientes: el stock está acorde con la demanda proyectada."}</div>
             ) : (
               <div className={c("scroll")}>
@@ -278,7 +284,7 @@ export function DashboardView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.sugerencias.filter((a) => coincide(a.producto)).map((a) => {
+                    {pagSug.visibles.map((a) => {
                       const lim = fechaLimite(a.fecha_limite_pedido, hoy);
                       return (
                         <tr key={a.id_producto}>
@@ -309,11 +315,12 @@ export function DashboardView() {
                 </table>
               </div>
             )}
+            <Paginador {...pagSug} unidad="sugerencias" />
           </div>
 
           <div className={c("card")}>
             <div className={c("title")}>Productos críticos</div>
-            {data.productos_criticos.filter((p) => coincide(p.producto)).length === 0 ? (
+            {criticos.length === 0 ? (
               <div className={c("vacio")}>{q.trim() ? "Ningún producto crítico coincide con la búsqueda." : "Ningún producto en quiebre ni con stock bajo."}</div>
             ) : (
               <div className={c("scroll")}>
@@ -330,7 +337,7 @@ export function DashboardView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.productos_criticos.filter((p) => coincide(p.producto)).map((p) => (
+                    {pagCri.visibles.map((p) => (
                       <tr key={p.id_producto}>
                         <td>
                           <Link href={`/inventario/${p.id_producto}`} className={c("plink")}>{p.producto}</Link>
@@ -350,6 +357,7 @@ export function DashboardView() {
                 </table>
               </div>
             )}
+            <Paginador {...pagCri} unidad="productos" />
           </div>
         </>
       ) : null}

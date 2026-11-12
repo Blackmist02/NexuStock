@@ -242,6 +242,7 @@ table.tbl td {
   margin: -6px 0 10px;
 }
 .scroll {
+  position: relative;
   overflow-x: auto;
 }
 .plink {
@@ -297,8 +298,22 @@ table.tbl th[scope] {
   }
 }
 @media (max-width: 640px) {
+  /* Indicadores de a dos por fila: menos desplazamiento vertical en el teléfono */
   .grid4 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .grid4 .stat {
+    padding: 12px;
+  }
+  .grid4 .stat .val {
+    font-size: 19px;
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+  }
+  .grid4 .stat .lbl {
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
   }
   .search {
     width: 100%;

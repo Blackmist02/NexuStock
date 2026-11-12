@@ -7,6 +7,7 @@ import { FechaBoton } from "@/components/FechaSistema";
 import { SubNav } from "@/components/SubNav";
 import { GraficoDemanda, type DiaSerie, type SemanaSerie } from "@/components/charts/GraficoDemanda";
 import { Button } from "@/components/ui/Field";
+import { Paginador, usePaginado } from "@/components/ui/Paginador";
 import { EmptyState, ErrorState, Loading } from "@/components/ui/States";
 import { useToast } from "@/components/ui/Toast";
 import { useAuth } from "@/lib/auth";
@@ -78,6 +79,9 @@ export function PrediccionView() {
   const sd = serie.data?.data;
 
   const puedeAlertas = puede(user?.rol, "alertas");
+  // Tablas paginadas para no obligar a bajar por todo el catálogo
+  const pagProd = usePaginado(productos, 10, categoria);
+  const pagAlertas = usePaginado(alertas.data?.data ?? [], 8);
 
   async function resolver(a: Alerta, estado: "atendida" | "descartada") {
     setOcupado(`a${a.id_alerta}`);
@@ -201,15 +205,17 @@ export function PrediccionView() {
             ) : null}
           </div>
 
-          <div className="card" style={{ marginBottom: 16 }}>
-            <div className="title">Cómo se calcula la sugerencia de compra</div>
+          <details className="card plegable" style={{ marginBottom: 16 }}>
+            <summary>
+              <span className="title">Cómo se calcula la sugerencia de compra</span>
+            </summary>
             <ul className="regla-lista">
               <li><b>Demanda hasta el pedido siguiente:</b> la proyección de la semana, repartida por día, desde hoy hasta que llega el pedido siguiente al proveedor (según sus días de atención y su lead time), sin superar lo que se alcanza a vender antes de que venza el producto.</li>
               <li><b>Semáforo:</b> <span className={NIVEL_BADGE.quiebre}>Quiebre</span> si el stock no alcanza esa demanda; <span className={NIVEL_BADGE.bajo}>Bajo</span> si no alcanza la demanda más el margen de seguridad o está bajo el stock mínimo; <span className={NIVEL_BADGE.optimo}>Óptimo</span> en otro caso.</li>
               <li><b>Cantidad sugerida:</b> demanda × (1 + margen) − stock, sin superar lo que se alcanza a vender antes de que venza el producto.</li>
               <li><b>Pedir antes del:</b> fecha estimada de quiebre menos el lead time; si cae en un día sin atención del proveedor, se adelanta al día hábil anterior.</li>
             </ul>
-          </div>
+          </details>
 
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="title">Proyección por producto</div>
@@ -228,7 +234,7 @@ export function PrediccionView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {productos.map((p) => (
+                  {pagProd.visibles.map((p) => (
                     <tr key={p.id_producto}>
                       <td><Link className="heading-link" href={`/inventario/${p.id_producto}`}>{p.producto}</Link><div className="mini">{p.categoria}</div></td>
                       <td><span className={NIVEL_BADGE[p.nivel]}>{NIVEL_LABEL[p.nivel]}</span></td>
@@ -245,6 +251,7 @@ export function PrediccionView() {
                 </tbody>
               </table>
             </div>
+            <Paginador {...pagProd} unidad="productos" />
           </div>
         </>
       ) : null}
@@ -270,7 +277,7 @@ export function PrediccionView() {
                 </tr>
               </thead>
               <tbody>
-                {alertas.data.data.map((a) => (
+                {pagAlertas.visibles.map((a) => (
                   <tr key={a.id_alerta}>
                     <td><Link className="heading-link" href={`/inventario/${a.id_producto}`}>{a.producto}</Link></td>
                     <td><span className={NIVEL_BADGE[a.nivel]}>{NIVEL_LABEL[a.nivel]}</span></td>
@@ -293,6 +300,7 @@ export function PrediccionView() {
             </table>
           </div>
         ) : null}
+        <Paginador {...pagAlertas} unidad="alertas" />
       </div>
     </AppShell>
   );
