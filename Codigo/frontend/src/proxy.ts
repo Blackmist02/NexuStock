@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * Solo comprueba que la cookie exista; la validez real la decide la API (/api/auth/me) y,
  * si el token no sirve, <AppShell> manda a /login.
  */
-const PUBLICAS = ["/login", "/crear-cuenta", "/recuperar-contrasena"];
+const PUBLICAS = ["/login", "/crear-cuenta", "/recuperar-contrasena", "/conoce"];
 
 /** URL interna de la API; se lee en tiempo de EJECUCIÓN (no hace falta recompilar al cambiar de proveedor). */
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/$/, "");

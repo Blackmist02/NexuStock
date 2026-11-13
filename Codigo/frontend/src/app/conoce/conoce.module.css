@@ -1,0 +1,316 @@
+/* Página pública «Conoce NexuStock». Usa los tokens de la guía de estilo (styles/tokens.css): funciona en ambos temas. */
+.page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) clamp(16px, 5vw, 64px);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.hero,
+.section,
+.foot {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: clamp(16px, 5vw, 64px);
+  padding-right: clamp(16px, 5vw, 64px);
+}
+.hero {
+  padding-top: clamp(40px, 9vw, 96px);
+  padding-bottom: clamp(32px, 6vw, 64px);
+}
+.section {
+  padding-top: clamp(32px, 6vw, 56px);
+  padding-bottom: clamp(32px, 6vw, 56px);
+  border-top: 1px solid var(--border);
+}
+.eyebrow,
+.label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 var(--space-3);
+}
+.h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(34px, 7vw, 60px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-4);
+}
+.accent {
+  color: var(--accent);
+}
+.lead {
+  font-size: clamp(16px, 2.2vw, 19px);
+  line-height: 1.55;
+  color: var(--ink-muted);
+  max-width: 640px;
+  margin: 0 0 var(--space-8);
+}
+.h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.15;
+  margin: 0 0 var(--space-6);
+}
+.h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  margin: var(--space-2) 0;
+}
+.p {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+.nota {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  margin: var(--space-4) 0 0;
+}
+
+/* Cifras */
+.impacto {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-4) 0;
+  border-top: 3px solid var(--accent);
+}
+.cifra {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(32px, 6vw, 48px);
+  line-height: 1;
+}
+.statTxt {
+  font-size: 14px;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+.cifraSm {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--accent);
+  margin-bottom: var(--space-2);
+}
+
+/* Tarjetas */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
+  line-height: 1.45;
+}
+.cardDark {
+  background: var(--bg-panel);
+}
+.problema,
+.motor {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.motor {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pasos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+.paso {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.formula {
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Capturas */
+.vistas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+.vista {
+  margin: 0;
+}
+.img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-pop);
+}
+.vista figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-3);
+  font-size: 14px;
+}
+.vista figcaption span {
+  color: var(--ink-muted);
+}
+
+/* Tecnología */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+}
+.chipSoft {
+  background: var(--saludable-bg);
+  border-color: transparent;
+}
+
+/* Equipo */
+.personas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+.persona {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.persona div {
+  display: flex;
+  flex-direction: column;
+}
+.persona span:not(.ini) {
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.ini {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* Botones y pie */
+.btn,
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.btnGhost {
+  border: 1px solid var(--border-strong);
+  color: var(--ink);
+}
+.btn:hover,
+.btnGhost:hover {
+  filter: brightness(1.05);
+}
+.btn:focus-visible,
+.btnGhost:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding-top: var(--space-8);
+  padding-bottom: 96px; /* deja espacio al botón flotante de tema */
+  border-top: 1px solid var(--border);
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .impacto,
+  .problema,
+  .pasos,
+  .vistas {
+    grid-template-columns: 1fr;
+  }
+  .motor {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stat {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+  }
+  .cifra {
+    min-width: 5.2ch;
+    white-space: nowrap;
+  }
+  .card {
+    padding: var(--space-4);
+  }
+}
