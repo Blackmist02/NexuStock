@@ -11,6 +11,10 @@
 #               AZURE_RESOURCE_GROUP, ACA_BACKEND, ACA_FRONTEND (nombres de las Container Apps) y URL_APP (https://…).
 #   Los secretos de la aplicación (DATABASE_URL, JWT_SECRET, SMTP_URL) viven como secretos de cada Container App,
 #   no en GitHub. Mientras falte la configuración de Azure, los despliegues se omiten con un aviso (no fallan).
+#
+#   demo        · entorno gratuito de la defensa (escenario A de la TCO): Vercel (frontend, se despliega solo desde
+#                 GitHub) + Render Free (backend) + Supabase Free. Tras CI en verde sobre main llama al deploy hook de
+#                 Render (secreto RENDER_DEPLOY_HOOK) y prueba /api/health en la URL pública (variable URL_DEMO).
 
 name: CD
 
@@ -35,6 +39,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  demo:
+    name: Redesplegar la demo (Render)
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy hook de Render
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "::notice::Sin RENDER_DEPLOY_HOOK: la demo no se redespliega."; exit 0; fi
+          curl -fsS -X POST "$HOOK&ref=$SHA" > /dev/null && echo "Despliegue de $SHA solicitado a Render."
+      - name: Prueba de humo (/api/health a través de Vercel)
+        if: vars.URL_DEMO != ''
+        run: |
+          # Render Free tarda en arrancar y en construir la imagen: hasta 15 minutos
+          sleep 120
+          for i in $(seq 1 26); do
+            if curl -fsS --max-time 60 "${{ vars.URL_DEMO }}/api/health"; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::La demo no respondió en ${{ vars.URL_DEMO }}/api/health"; exit 1
+
   publicar:
     name: Publicar imágenes (${{ matrix.nombre }})
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
