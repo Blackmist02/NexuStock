@@ -12,9 +12,10 @@
 #   Los secretos de la aplicación (DATABASE_URL, JWT_SECRET, SMTP_URL) viven como secretos de cada Container App,
 #   no en GitHub. Mientras falte la configuración de Azure, los despliegues se omiten con un aviso (no fallan).
 #
-#   demo        · entorno gratuito de la defensa (escenario A de la TCO): Vercel (frontend, se despliega solo desde
-#                 GitHub) + Render Free (backend) + Supabase Free. Tras CI en verde sobre main llama al deploy hook de
-#                 Render (secreto RENDER_DEPLOY_HOOK) y prueba /api/health en la URL pública (variable URL_DEMO).
+#   demo        · entorno gratuito de la defensa (escenario A de la TCO): Vercel (frontend) + Render Free (backend) +
+#                 Supabase Free. Tras CI en verde sobre main llama al deploy hook de Render (secreto RENDER_DEPLOY_HOOK),
+#                 despliega el frontend con la CLI de Vercel (secretos VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID) y
+#                 prueba /api/health en la URL pública (variable URL_DEMO). Sin esos secretos, cada paso se omite.
 
 name: CD
 
@@ -51,6 +52,21 @@ jobs:
         run: |
           if [ -z "$HOOK" ]; then echo "::notice::Sin RENDER_DEPLOY_HOOK: la demo no se redespliega."; exit 0; fi
           curl -fsS -X POST "$HOOK&ref=$SHA" > /dev/null && echo "Despliegue de $SHA solicitado a Render."
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Frontend en Vercel (producción)
+        working-directory: Codigo/frontend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::notice::Sin secretos de Vercel: el frontend de la demo no se redespliega."; exit 0
+          fi
+          # La compilación ocurre en Vercel con sus variables de producción (API_URL)
+          npx --yes vercel@65 deploy --prod --yes --token "$VERCEL_TOKEN"
       - name: Prueba de humo (/api/health a través de Vercel)
         if: vars.URL_DEMO != ''
         run: |
