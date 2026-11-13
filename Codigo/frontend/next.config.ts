@@ -16,6 +16,8 @@ const allowedDevOrigins = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Imagen Docker liviana (frontend/Dockerfile): server.js con solo las dependencias que se usan
+  output: "standalone",
   allowedDevOrigins,
   poweredByHeader: false,
   // El indicador de desarrollo de Next tapaba controles en cualquier esquina («Cerrar sesión» abajo a la izquierda,

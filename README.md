@@ -97,6 +97,25 @@ Con los tres servicios corriendo, abrir `http://localhost:3000`, iniciar sesión
 
 ---
 
+## Integración y despliegue continuo (CI/CD)
+
+Dos workflows de GitHub Actions en [.github/workflows/](.github/workflows/):
+
+| Workflow | Cuándo corre | Qué hace |
+|---|---|---|
+| **CI** ([ci.yml](.github/workflows/ci.yml)) | Cada push a `main` o `Features/*` y cada pull request a `main` | Backend: `npm run lint` (ESLint) y `npm test` (pruebas unitarias y de API contra un PostgreSQL 16 descartable). Motor ML: `validar_predict.py`. Frontend: `tsc`, `eslint` y `next build`. Después construye las imágenes Docker de producción del backend (API + motor ML) y del frontend, sin publicarlas. |
+| **CD** ([cd.yml](.github/workflows/cd.yml)) | Cuando CI termina en verde sobre `main`; producción solo a mano | Publica ambas imágenes en GitHub Container Registry (`ghcr.io/<dueño>/nexustock-backend` y `nexustock-frontend`, etiquetas `<sha>` y `dev`). Despliega automáticamente en el entorno **desarrollo** (Azure Container Apps) y hace una prueba de humo a `/api/health`. **Producción**: *Actions → CD → Run workflow* con el sha a promover; el entorno `produccion` exige la aprobación de un revisor. |
+
+**Configuración para el despliegue** (una sola vez, en *Settings → Environments*):
+
+1. Crear los entornos `desarrollo` y `produccion`. En `produccion`, activar *Required reviewers* con ambos integrantes.
+2. En cada entorno, definir las variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` (identidad de Azure con credencial federada OIDC para este repositorio: no se guarda ninguna contraseña), `AZURE_RESOURCE_GROUP`, `ACA_BACKEND`, `ACA_FRONTEND` y `URL_APP`.
+3. En Azure, cada Container App guarda sus propios secretos (`DATABASE_URL`, `JWT_SECRET`, `SMTP_URL`) y el frontend recibe `API_URL` con la dirección interna del backend. Si los paquetes de GHCR son privados, registrar el registro en cada app (`az containerapp registry set --server ghcr.io …`).
+
+Mientras un entorno no tenga la configuración de Azure, CD publica las imágenes y omite el despliegue con un aviso, sin fallar. Las imágenes leen toda su configuración de variables de entorno, así que la misma imagen sirve en desarrollo y en producción (RNF-25).
+
+Para probar las imágenes localmente: `docker build -f Codigo/backend/Dockerfile --target prod -t nexustock-backend Codigo` y `docker build -t nexustock-frontend Codigo/frontend` (el frontend escucha en el puerto 3000 y reenvía `/api/*` a `API_URL`).
+
 ## Integrantes del equipo con sus roles
 
 | Integrante | Rol | Responsabilidades principales |
