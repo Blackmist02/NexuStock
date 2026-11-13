@@ -186,18 +186,12 @@ export default function ConocePage() {
           <p className={s.label}>Equipo</p>
           <div className={s.personas}>
             <div className={s.persona}>
-              <span className={s.ini}>IM</span>
-              <div>
-                <strong>Ignacio Mella</strong>
-                <span>Software Engineer</span>
-              </div>
+              <strong>Ignacio Mella</strong>
+              <span>Software Engineer</span>
             </div>
             <div className={s.persona}>
-              <span className={s.ini}>MB</span>
-              <div>
-                <strong>Manuel Bustamante</strong>
-                <span>Data Scientist</span>
-              </div>
+              <strong>Manuel Bustamante</strong>
+              <span>Data Scientist</span>
             </div>
           </div>
           <p className={s.nota}>Proyecto Capstone · Ingeniería en Informática · Duoc UC, sede Alameda · 2026</p>
