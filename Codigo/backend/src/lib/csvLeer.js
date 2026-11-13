@@ -37,7 +37,7 @@ function dividir(texto, sep) {
  * Omite las filas vacías; `linea` es el número de línea del archivo (el encabezado es la 1).
  */
 function leerCsv(texto) {
-  const limpio = String(texto || '').replace(/^﻿/, '');
+  const limpio = String(texto || '').replace(/^\uFEFF/, '');
   const primera = limpio.split(/\r?\n/, 1)[0] || '';
   const separador = (primera.match(/;/g) || []).length >= (primera.match(/,/g) || []).length ? ';' : ',';
   const filas = dividir(limpio, separador);

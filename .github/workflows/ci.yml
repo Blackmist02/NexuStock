@@ -1,10 +1,10 @@
 # Integración continua de NexuStock (tarea 19).
 # En cada push a main o a una rama Features/* y en cada pull request hacia main se ejecuta:
-#   backend   · pruebas unitarias y de la API contra un PostgreSQL 16 descartable (esquema de Codigo/init.sql)
+#   backend   · lint (eslint) y pruebas unitarias y de la API contra un PostgreSQL 16 descartable (esquema de Codigo/init.sql)
 #   ml-engine · validación de predict.py con el modelo versionado (MAE, horizontes, modo servidor)
 #   frontend  · tipos (tsc), eslint y compilación de producción (next build)
-#   imagen    · construcción de la imagen Docker de producción del backend (API + motor ML), sin publicarla
-# El despliegue (CD) se agrega cuando se defina el proveedor (tareas 8 y 30).
+#   imagenes  · construcción de las imágenes Docker de producción (backend = API + motor ML; frontend), sin publicarlas
+# El despliegue (publicación de imágenes y Azure Container Apps) está en cd.yml.
 
 name: CI
 
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (pruebas unitarias y de API)
+    name: Backend (lint y pruebas unitarias y de API)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -47,6 +47,7 @@ jobs:
           cache: npm
           cache-dependency-path: Codigo/backend/package-lock.json
       - run: npm ci
+      - run: npm run lint
       - name: Pruebas (la base debe terminar en _test; ver test/api.test.js)
         run: npm test
         env:
@@ -91,18 +92,27 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: "1"
 
-  imagen:
-    name: Imagen Docker del backend
+  imagenes:
+    name: Imagen Docker (${{ matrix.nombre }})
     runs-on: ubuntu-latest
-    needs: [backend, ml-engine]
+    needs: [backend, ml-engine, frontend]
+    strategy:
+      matrix:
+        include:
+          - nombre: backend
+            context: Codigo
+            file: Codigo/backend/Dockerfile
+          - nombre: frontend
+            context: Codigo/frontend
+            file: Codigo/frontend/Dockerfile
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
-          context: Codigo
-          file: Codigo/backend/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
           target: prod
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.nombre }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.nombre }}

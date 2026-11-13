@@ -47,22 +47,27 @@ export function Sidebar({ active, onNavegar }: { active: NavKey; onNavegar?: () 
           </Link>
         ))}
       </nav>
+      {/* Pie del menú en bloques: negocio y estado · fecha del sistema · usuario y cierre de sesión */}
       <div className="biz">
-        {cfg?.data.negocio.nombre ? <div className="who">{cfg.data.negocio.nombre}</div> : null}
-        <span className="biz-status">
-          <i className={enLinea ? "biz-dot" : "biz-dot off"} />
-          {enLinea ? "Sistema en línea" : "Sin conexión · datos guardados"}
-        </span>
+        <div className="biz-info">
+          {cfg?.data.negocio.nombre ? <div className="who">{cfg.data.negocio.nombre}</div> : null}
+          <span className="biz-status">
+            <i className={enLinea ? "biz-dot" : "biz-dot off"} />
+            {enLinea ? "Sistema en línea" : "Sin conexión · datos guardados"}
+          </span>
+        </div>
         <FechaSistemaToggle />
-        {user ? (
-          <div className="who">
-            {user.nombre}
-            <div style={{ color: "var(--ink-muted)", fontWeight: 400 }}>{ROL_LABEL[user.rol]}</div>
-          </div>
-        ) : null}
-        <button type="button" className="logout" onClick={() => void logout()}>
-          Cerrar sesión
-        </button>
+        <div className="biz-user">
+          {user ? (
+            <div className="who">
+              {user.nombre}
+              <div className="biz-rol">{ROL_LABEL[user.rol]}</div>
+            </div>
+          ) : null}
+          <button type="button" className="logout" onClick={() => void logout()}>
+            Cerrar sesión
+          </button>
+        </div>
       </div>
     </aside>
   );

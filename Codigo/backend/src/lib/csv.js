@@ -10,7 +10,7 @@ const celda = (v) => {
 function toCsv(columnas, filas) {
   const lineas = [columnas.map((c) => celda(c.titulo)).join(';')];
   for (const f of filas) lineas.push(columnas.map((c) => celda(c.valor(f))).join(';'));
-  return `﻿${lineas.join('\r\n')}\r\n`;
+  return `\uFEFF${lineas.join('\r\n')}\r\n`;
 }
 
 function enviarCsv(res, nombreArchivo, columnas, filas) {

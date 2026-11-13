@@ -78,6 +78,11 @@
   margin-top: 5px;
 }
 
+.biz-rol {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
 .biz-dot {
   width: 7px;
   height: 7px;
@@ -164,6 +169,9 @@
 }
 
 .main {
+  /* Bloque contenedor de los elementos absolutos (p. ej. .sr-only en tablas con scroll): sin esto
+     se posicionaban respecto de la página y la ensanchaban en móvil (scroll horizontal). */
+  position: relative;
   flex: 1;
   min-width: 0;
   padding: 26px 32px;

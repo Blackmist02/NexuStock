@@ -65,6 +65,7 @@
   flex-wrap: wrap;
 }
 .scrollx {
+  position: relative;
   overflow-x: auto;
 }
 .scrollx table.tbl {
@@ -318,6 +319,17 @@
   .menu-abierto .menu-btn span:nth-child(3) {
     transform: translateY(-6px) rotate(-45deg);
   }
+  /* Sub-pestañas: se deslizan sin barra de scroll visible; el desvanecido indica que hay más */
+  .tabs {
+    scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs a:last-child {
+    margin-right: 20px;
+  }
   .main {
     padding: 66px 16px 80px;
   }
@@ -329,8 +341,22 @@
   }
 }
 @media (max-width: 600px) {
+  /* Indicadores de a dos por fila: menos desplazamiento vertical en el teléfono */
   .grid4 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .grid4 .stat {
+    padding: 12px;
+  }
+  .grid4 .stat .val {
+    font-size: 19px;
+    margin-top: 6px;
+    overflow-wrap: anywhere;
+  }
+  .grid4 .stat .lbl {
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
   }
   .form-grid {
     grid-template-columns: 1fr;

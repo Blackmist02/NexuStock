@@ -334,7 +334,7 @@ async function plantilla(tipo) {
     return [f, '20:00', p.nombre, i ? '0,6' : '1,1', i ? 'deterioro' : 'vencimiento', Math.round(p.precio_venta_clp * 0.7)];
   });
   const celda = (v) => (/[;"\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
-  return `﻿${[t.columnas, ...filas].map((l) => l.map(celda).join(';')).join('\r\n')}\r\n`;
+  return `\uFEFF${[t.columnas, ...filas].map((l) => l.map(celda).join(';')).join('\r\n')}\r\n`;
 }
 
 module.exports = { validar, importar, plantilla, TIPOS };
