@@ -1,3 +1,4 @@
+import { useId, type CSSProperties } from "react";
 import { fmtFecha, fmtFechaCorta, fmtNum } from "@/lib/format";
 
 export interface PuntoTendencia {
@@ -23,6 +24,7 @@ function maximoLindo(max: number): number {
 
 /** Tendencia semanal: demanda real (línea sólida) vs. proyectada (línea punteada). SVG propio, sin librerías. */
 export function TendenciaChart({ serie }: { serie: PuntoTendencia[] }) {
+  const grad = useId().replace(/:/g, "");
   const n = serie.length;
   const valores = serie.flatMap((s) => [s.real, s.proyectada]).filter((v): v is number => v !== null);
   const ymax = maximoLindo(Math.max(0, ...valores) * 1.05);
@@ -45,6 +47,8 @@ export function TendenciaChart({ serie }: { serie: PuntoTendencia[] }) {
     return out;
   };
   const path = (t: { i: number; v: number }[]) => t.map((p, k) => `${k ? "L" : "M"}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
+  // Área bajo la línea: mismo trazo, cerrado contra el eje X
+  const area = (t: { i: number; v: number }[]) => `${path(t)} L${x(t[t.length - 1]!.i).toFixed(1)},${y(0).toFixed(1)} L${x(t[0]!.i).toFixed(1)},${y(0).toFixed(1)} Z`;
   const resumen = serie
     .map((s) => `Semana del ${fmtFecha(s.semana)}: real ${s.real === null ? "sin dato" : fmtNum(s.real)}, proyectada ${s.proyectada === null ? "sin dato" : fmtNum(s.proyectada)}`)
     .join(". ");
@@ -59,17 +63,33 @@ export function TendenciaChart({ serie }: { serie: PuntoTendencia[] }) {
           </text>
         </g>
       ))}
-      <line x1={x(idxHoy)} y1={PT - 4} x2={x(idxHoy)} y2={H - PB} stroke="var(--accent)" strokeWidth="1.2" strokeDasharray="3,3" />
+      <defs>
+        <linearGradient id={`${grad}r`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--ink-muted)" stopOpacity="0.22" />
+          <stop offset="1" stopColor="var(--ink-muted)" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`${grad}p`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--accent)" stopOpacity="0.2" />
+          <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
       {tramos("real").map((t, k) => (
-        <path key={`r${k}`} d={path(t)} fill="none" stroke="var(--ink-muted)" strokeWidth="2.5" strokeLinejoin="round" />
+        <path key={`ar${k}`} className="nx-area" d={area(t)} fill={`url(#${grad}r)`} />
       ))}
       {tramos("proyectada").map((t, k) => (
-        <path key={`p${k}`} d={path(t)} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeDasharray="6,4" strokeLinejoin="round" />
+        <path key={`ap${k}`} className="nx-area" d={area(t)} fill={`url(#${grad}p)`} />
+      ))}
+      <line x1={x(idxHoy)} y1={PT - 4} x2={x(idxHoy)} y2={H - PB} stroke="var(--accent)" strokeWidth="1.2" strokeDasharray="3,3" />
+      {tramos("real").map((t, k) => (
+        <path key={`r${k}`} className="nx-trazo" d={path(t)} fill="none" stroke="var(--ink-muted)" strokeWidth="2.5" strokeLinejoin="round" />
+      ))}
+      {tramos("proyectada").map((t, k) => (
+        <path key={`p${k}`} className="nx-trazo nx-trazo-2" d={path(t)} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeDasharray="6,4" strokeLinejoin="round" />
       ))}
       {serie.map((s, i) => (
         <g key={s.semana}>
-          {s.real !== null ? <circle cx={x(i)} cy={y(s.real)} r="3.2" fill="var(--ink-muted)" /> : null}
-          {s.proyectada !== null ? <circle cx={x(i)} cy={y(s.proyectada)} r="3.2" fill="var(--accent)" /> : null}
+          {s.real !== null ? <circle className="nx-punto" style={{ "--i": i } as CSSProperties} cx={x(i)} cy={y(s.real)} r="3.2" fill="var(--ink-muted)" /> : null}
+          {s.proyectada !== null ? <circle className="nx-punto" style={{ "--i": i } as CSSProperties} cx={x(i)} cy={y(s.proyectada)} r="3.2" fill="var(--accent)" /> : null}
           <rect x={x(i) - (W - PL - PR) / (2 * (n - 1))} y={PT} width={(W - PL - PR) / (n - 1)} height={H - PT - PB} fill="transparent">
             <title>{`Semana del ${fmtFecha(s.semana)}${i === idxHoy ? " (en curso)" : ""}\nReal: ${s.real === null ? "—" : fmtNum(s.real)}\nProyectada: ${s.proyectada === null ? "—" : fmtNum(s.proyectada)}`}</title>
           </rect>

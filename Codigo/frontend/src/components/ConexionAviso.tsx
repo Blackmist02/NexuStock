@@ -10,9 +10,10 @@ import { descartarRestablecida, reintentarConexion, reportarFallo, sondear, repo
 export function ConexionMonitor() {
   const { enLinea } = useConexion();
 
-  // Eventos del navegador.
+  // Eventos del navegador y comprobación inmediata al abrir la app (indicador «Sistema en línea»).
   useEffect(() => {
     if (!navigator.onLine) reportarFallo();
+    else void reintentarConexion();
     const alCaer = () => reportarFallo();
     const alVolver = () => void reintentarConexion();
     window.addEventListener("offline", alCaer);
@@ -68,12 +69,31 @@ export function ConexionMonitor() {
   return null;
 }
 
+/** Indicador compacto del estado del sistema: comprobando, en línea o sin conexión. */
+export function EstadoSistema({ className }: { className?: string }) {
+  const { enLinea, comprobado, causa } = useConexion();
+  const texto = !comprobado
+    ? "Comprobando conexión…"
+    : enLinea
+      ? "Sistema en línea"
+      : causa === "red"
+        ? "Sin internet · datos guardados"
+        : "Servidor no disponible";
+  return (
+    <span className={["biz-status", className].filter(Boolean).join(" ")} role="status" aria-live="polite">
+      <i className={!comprobado ? "biz-dot wait" : enLinea ? "biz-dot" : "biz-dot off"} aria-hidden="true" />
+      {texto}
+    </span>
+  );
+}
+
 /**
  * Aviso amable y no bloqueante: ocupa su lugar arriba del contenido, no tapa nada y se puede cerrar.
  * Al volver la conexión muestra un momento «Conexión restablecida».
+ * `contexto="acceso"` adapta el texto a las pantallas de inicio de sesión (sin datos guardados que mostrar).
  */
-export function ConexionAviso() {
-  const { enLinea, restablecidaEn, episodio } = useConexion();
+export function ConexionAviso({ contexto = "app" }: { contexto?: "app" | "acceso" }) {
+  const { enLinea, restablecidaEn, episodio, causa } = useConexion();
   // El usuario puede cerrar el aviso; queda cerrado solo durante ese corte (un corte nuevo lo vuelve a mostrar).
   const [cerradoEpisodio, setCerradoEpisodio] = useState(0);
   const [probando, setProbando] = useState(false);
@@ -89,7 +109,8 @@ export function ConexionAviso() {
       <div className="net-aviso ok" role="status" aria-live="polite">
         <span className="net-dot" aria-hidden="true" />
         <div className="net-txt">
-          <strong>Conexión restablecida.</strong> Estamos actualizando tu información.
+          <strong>Conexión restablecida.</strong>{" "}
+          {contexto === "app" ? "Estamos actualizando tu información." : "Ya puedes continuar."}
         </div>
       </div>
     );
@@ -97,12 +118,19 @@ export function ConexionAviso() {
 
   if (enLinea || cerradoEpisodio === episodio) return null;
 
+  const titulo = causa === "red" ? "Estás sin conexión a internet." : "No logramos comunicarnos con el servidor.";
+  const detalle =
+    contexto === "app"
+      ? "No te preocupes: puedes seguir revisando las proyecciones y alertas de tu stock con la última información guardada en este dispositivo. Intentaremos reconectar solos y actualizaremos los datos cuando vuelva la conexión."
+      : "No te preocupes: lo que escribiste no se pierde. Intentaremos reconectar solos y podrás continuar apenas vuelva la conexión.";
+
   return (
     <div className="net-aviso" role="status" aria-live="polite">
       <span className="net-dot off" aria-hidden="true" />
       <div className="net-txt">
-        <strong>Estás sin conexión.</strong> No te preocupes: puedes seguir revisando las proyecciones y alertas de tu stock con la
-        última información guardada en este dispositivo. Intentaremos reconectar solos y actualizaremos los datos cuando vuelva la red.
+        <strong>{titulo}</strong>{" "}
+        {causa === "red" ? "Revisa tu wifi o cable de red. " : ""}
+        {detalle}
       </div>
       <div className="net-acc">
         <button
