@@ -1,0 +1,202 @@
+﻿tipo,id,fecha,producto_id,valor_original,valor_nuevo,detalle
+demanda,,2022-09-18,P001,,5.46,vendido 4.39 kg; venta perdida 1.07 kg; stock al abrir 4.39 kg
+demanda,,2022-09-18,P002,,4.76,vendido 4.76 kg; venta perdida 0.0 kg; stock al abrir 6.18 kg
+demanda,,2022-09-18,P003,,6.9,vendido 6.9 kg; venta perdida 0.0 kg; stock al abrir 7.28 kg
+demanda,,2022-09-18,P004,,27.44,vendido 0.0 kg; venta perdida 27.44 kg; stock al abrir 0.03 kg
+demanda,,2022-09-18,P005,,16.33,vendido 0.0 kg; venta perdida 16.33 kg; stock al abrir 0.0 kg
+demanda,,2022-09-18,P006,,11.05,vendido 11.05 kg; venta perdida 0.0 kg; stock al abrir 48.09 kg
+demanda,,2022-09-18,P007,,1.85,vendido 1.85 kg; venta perdida 0.0 kg; stock al abrir 2.26 kg
+demanda,,2022-09-18,P008,,13.85,vendido 0.07 kg; venta perdida 13.78 kg; stock al abrir 0.07 kg
+demanda,,2022-09-18,P009,,4.31,vendido 4.31 kg; venta perdida 0.0 kg; stock al abrir 11.82 kg
+demanda,,2022-09-18,P010,,12.84,vendido 12.84 kg; venta perdida 0.0 kg; stock al abrir 26.17 kg
+demanda,,2022-09-18,P011,,11.34,vendido 0.0 kg; venta perdida 11.34 kg; stock al abrir 0.0 kg
+demanda,,2022-09-18,P012,,11.28,vendido 8.59 kg; venta perdida 2.69 kg; stock al abrir 8.59 kg
+demanda,,2022-09-18,P013,,11.34,vendido 11.34 kg; venta perdida 0.0 kg; stock al abrir 14.15 kg
+demanda,,2022-09-18,P014,,9.81,vendido 9.81 kg; venta perdida 0.0 kg; stock al abrir 34.59 kg
+demanda,,2022-09-18,P015,,9.82,vendido 0.0 kg; venta perdida 9.82 kg; stock al abrir 0.0 kg
+demanda,,2022-09-18,P016,,4.15,vendido 4.15 kg; venta perdida 0.0 kg; stock al abrir 4.7 kg
+demanda,,2022-09-18,P017,,11.35,vendido 0.0 kg; venta perdida 11.35 kg; stock al abrir 0.01 kg
+demanda,,2022-09-18,P018,,24.48,vendido 0.0 kg; venta perdida 24.48 kg; stock al abrir 0.0 kg
+demanda,,2022-09-18,P019,,15.04,vendido 0.0 kg; venta perdida 15.04 kg; stock al abrir 0.04 kg
+demanda,,2022-09-18,P020,,5.58,vendido 0.0 kg; venta perdida 5.58 kg; stock al abrir 0.0 kg
+demanda,,2022-09-18,P021,,0.86,vendido 0.86 kg; venta perdida 0.0 kg; stock al abrir 1.46 kg
+demanda,,2022-09-18,P022,,1.66,vendido 0.21 kg; venta perdida 1.45 kg; stock al abrir 0.21 kg
+demanda,,2022-09-18,P023,,0.87,vendido 0.08 kg; venta perdida 0.79 kg; stock al abrir 0.08 kg
+demanda,,2022-09-18,P024,,0.9,vendido 0.0 kg; venta perdida 0.9 kg; stock al abrir 0.01 kg
+demanda,,2022-09-19,P001,,4.35,vendido 0.0 kg; venta perdida 4.35 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P002,,3.12,vendido 1.42 kg; venta perdida 1.7 kg; stock al abrir 1.42 kg
+demanda,,2022-09-19,P003,,4.0,vendido 0.38 kg; venta perdida 3.62 kg; stock al abrir 0.38 kg
+demanda,,2022-09-19,P004,,15.52,vendido 0.0 kg; venta perdida 15.52 kg; stock al abrir 0.03 kg
+demanda,,2022-09-19,P005,,7.99,vendido 0.0 kg; venta perdida 7.99 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P006,,5.37,vendido 5.37 kg; venta perdida 0.0 kg; stock al abrir 37.04 kg
+demanda,,2022-09-19,P007,,1.13,vendido 0.41 kg; venta perdida 0.72 kg; stock al abrir 0.41 kg
+demanda,,2022-09-19,P008,,8.93,vendido 0.0 kg; venta perdida 8.93 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P009,,3.42,vendido 3.42 kg; venta perdida 0.0 kg; stock al abrir 7.51 kg
+demanda,,2022-09-19,P010,,8.14,vendido 8.14 kg; venta perdida 0.0 kg; stock al abrir 13.33 kg
+demanda,,2022-09-19,P011,,9.16,vendido 0.0 kg; venta perdida 9.16 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P012,,7.07,vendido 0.0 kg; venta perdida 7.07 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P013,,6.86,vendido 2.81 kg; venta perdida 4.05 kg; stock al abrir 2.81 kg
+demanda,,2022-09-19,P014,,8.68,vendido 8.68 kg; venta perdida 0.0 kg; stock al abrir 24.78 kg
+demanda,,2022-09-19,P015,,6.84,vendido 0.0 kg; venta perdida 6.84 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P016,,2.31,vendido 0.55 kg; venta perdida 1.76 kg; stock al abrir 0.55 kg
+demanda,,2022-09-19,P017,,4.69,vendido 0.0 kg; venta perdida 4.69 kg; stock al abrir 0.01 kg
+demanda,,2022-09-19,P018,,10.29,vendido 0.0 kg; venta perdida 10.29 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P019,,14.61,vendido 0.0 kg; venta perdida 14.61 kg; stock al abrir 0.04 kg
+demanda,,2022-09-19,P020,,3.83,vendido 0.0 kg; venta perdida 3.83 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P021,,0.83,vendido 0.6 kg; venta perdida 0.23 kg; stock al abrir 0.6 kg
+demanda,,2022-09-19,P022,,1.41,vendido 0.0 kg; venta perdida 1.41 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P023,,0.5,vendido 0.0 kg; venta perdida 0.5 kg; stock al abrir 0.0 kg
+demanda,,2022-09-19,P024,,0.5,vendido 0.0 kg; venta perdida 0.5 kg; stock al abrir 0.01 kg
+compra_reposicion,CPR000001,2022-09-20,P001,,4.39,reposición post-feriado con PR001
+compra_reposicion,CPR000002,2022-09-20,P002,,6.18,reposición post-feriado con PR001
+compra_reposicion,CPR000003,2022-09-20,P003,,7.28,reposición post-feriado con PR001
+merma_reducida,MR000498,2022-09-22,P006,39.83,23.41,producto vendido el 18-19 antes de vencer
+compra_reposicion,CPR000004,2022-09-20,P007,,2.26,reposición post-feriado con PR001
+compra_reposicion,CPR000005,2022-09-20,P008,,0.07,reposición post-feriado con PR001
+merma_eliminada,MR000495,2022-09-21,P009,2.99,0.0,producto vendido el 18-19 antes de vencer
+compra_reposicion,CPR000006,2022-09-20,P009,,4.74,reposición post-feriado con PR001
+compra_reposicion,CPR000007,2022-09-20,P010,,20.98,reposición post-feriado con PR001
+compra_reposicion,CPR000008,2022-09-20,P012,,8.59,reposición post-feriado con PR001
+compra_reposicion,CPR000009,2022-09-20,P013,,14.15,reposición post-feriado con PR001
+merma_reducida,MR000496,2022-09-21,P014,28.92,10.43,producto vendido el 18-19 antes de vencer
+compra_reposicion,CPR000010,2022-09-20,P016,,4.7,reposición post-feriado con PR001
+compra_reposicion,CPR000011,2022-09-20,P021,,1.46,reposición post-feriado con PR006
+compra_reposicion,CPR000012,2022-09-20,P022,,0.21,reposición post-feriado con PR006
+compra_reposicion,CPR000013,2022-09-20,P023,,0.08,reposición post-feriado con PR006
+demanda,,2023-09-18,P001,,7.19,vendido 3.69 kg; venta perdida 3.5 kg; stock al abrir 3.69 kg
+demanda,,2023-09-18,P002,,5.52,vendido 5.52 kg; venta perdida 0.0 kg; stock al abrir 6.1 kg
+demanda,,2023-09-18,P003,,5.76,vendido 5.76 kg; venta perdida 0.0 kg; stock al abrir 10.75 kg
+demanda,,2023-09-18,P004,,21.95,vendido 0.0 kg; venta perdida 21.95 kg; stock al abrir 0.0 kg
+demanda,,2023-09-18,P005,,18.53,vendido 0.0 kg; venta perdida 18.53 kg; stock al abrir 0.0 kg
+demanda,,2023-09-18,P006,,16.62,vendido 5.49 kg; venta perdida 11.13 kg; stock al abrir 5.49 kg
+demanda,,2023-09-18,P007,,1.49,vendido 0.19 kg; venta perdida 1.3 kg; stock al abrir 0.19 kg
+demanda,,2023-09-18,P008,,12.1,vendido 0.0 kg; venta perdida 12.1 kg; stock al abrir 0.0 kg
+demanda,,2023-09-18,P009,,3.53,vendido 3.32 kg; venta perdida 0.21 kg; stock al abrir 3.32 kg
+demanda,,2023-09-18,P010,,14.64,vendido 14.64 kg; venta perdida 0.0 kg; stock al abrir 15.07 kg
+demanda,,2023-09-18,P011,,10.68,vendido 10.68 kg; venta perdida 0.0 kg; stock al abrir 17.25 kg
+demanda,,2023-09-18,P012,,13.52,vendido 0.0 kg; venta perdida 13.52 kg; stock al abrir 0.0 kg
+demanda,,2023-09-18,P013,,12.36,vendido 12.36 kg; venta perdida 0.0 kg; stock al abrir 19.99 kg
+demanda,,2023-09-18,P014,,14.5,vendido 12.94 kg; venta perdida 1.56 kg; stock al abrir 12.94 kg
+demanda,,2023-09-18,P015,,5.56,vendido 5.56 kg; venta perdida 0.0 kg; stock al abrir 13.65 kg
+demanda,,2023-09-18,P016,,3.56,vendido 3.56 kg; venta perdida 0.0 kg; stock al abrir 7.91 kg
+demanda,,2023-09-18,P017,,6.93,vendido 6.93 kg; venta perdida 0.0 kg; stock al abrir 11.33 kg
+demanda,,2023-09-18,P018,,11.68,vendido 11.68 kg; venta perdida 0.0 kg; stock al abrir 14.39 kg
+demanda,,2023-09-18,P019,,11.07,vendido 0.0 kg; venta perdida 11.07 kg; stock al abrir 0.0 kg
+demanda,,2023-09-18,P020,,3.24,vendido 2.22 kg; venta perdida 1.02 kg; stock al abrir 2.22 kg
+demanda,,2023-09-18,P021,,0.82,vendido 0.82 kg; venta perdida 0.0 kg; stock al abrir 1.25 kg
+demanda,,2023-09-18,P022,,2.11,vendido 2.11 kg; venta perdida 0.0 kg; stock al abrir 10.17 kg
+demanda,,2023-09-18,P023,,0.82,vendido 0.82 kg; venta perdida 0.0 kg; stock al abrir 1.68 kg
+demanda,,2023-09-18,P024,,0.77,vendido 0.77 kg; venta perdida 0.0 kg; stock al abrir 2.38 kg
+demanda,,2023-09-19,P001,,3.65,vendido 0.0 kg; venta perdida 3.65 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P002,,2.52,vendido 0.58 kg; venta perdida 1.94 kg; stock al abrir 0.58 kg
+demanda,,2023-09-19,P003,,4.68,vendido 4.68 kg; venta perdida 0.0 kg; stock al abrir 4.99 kg
+demanda,,2023-09-19,P004,,15.87,vendido 0.0 kg; venta perdida 15.87 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P005,,10.82,vendido 0.0 kg; venta perdida 10.82 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P006,,5.95,vendido 0.0 kg; venta perdida 5.95 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P007,,1.46,vendido 0.0 kg; venta perdida 1.46 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P008,,12.16,vendido 0.0 kg; venta perdida 12.16 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P009,,2.65,vendido 0.0 kg; venta perdida 2.65 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P010,,10.81,vendido 0.43 kg; venta perdida 10.38 kg; stock al abrir 0.43 kg
+demanda,,2023-09-19,P011,,8.21,vendido 6.57 kg; venta perdida 1.64 kg; stock al abrir 6.57 kg
+demanda,,2023-09-19,P012,,10.06,vendido 0.0 kg; venta perdida 10.06 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P013,,7.79,vendido 7.63 kg; venta perdida 0.16 kg; stock al abrir 7.63 kg
+demanda,,2023-09-19,P014,,7.62,vendido 0.0 kg; venta perdida 7.62 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P015,,4.3,vendido 4.3 kg; venta perdida 0.0 kg; stock al abrir 8.09 kg
+demanda,,2023-09-19,P016,,2.23,vendido 2.23 kg; venta perdida 0.0 kg; stock al abrir 4.35 kg
+demanda,,2023-09-19,P017,,4.69,vendido 4.4 kg; venta perdida 0.29 kg; stock al abrir 4.4 kg
+demanda,,2023-09-19,P018,,9.68,vendido 2.71 kg; venta perdida 6.97 kg; stock al abrir 2.71 kg
+demanda,,2023-09-19,P019,,6.33,vendido 0.0 kg; venta perdida 6.33 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P020,,3.06,vendido 0.0 kg; venta perdida 3.06 kg; stock al abrir 0.0 kg
+demanda,,2023-09-19,P021,,0.75,vendido 0.43 kg; venta perdida 0.32 kg; stock al abrir 0.43 kg
+demanda,,2023-09-19,P022,,0.87,vendido 0.87 kg; venta perdida 0.0 kg; stock al abrir 8.06 kg
+demanda,,2023-09-19,P023,,0.47,vendido 0.47 kg; venta perdida 0.0 kg; stock al abrir 0.86 kg
+demanda,,2023-09-19,P024,,0.54,vendido 0.54 kg; venta perdida 0.0 kg; stock al abrir 1.61 kg
+compra_reposicion,CPR000014,2023-09-20,P001,,3.69,reposición post-feriado con PR001
+compra_reposicion,CPR000015,2023-09-20,P002,,6.1,reposición post-feriado con PR001
+compra_reposicion,CPR000016,2023-09-20,P003,,10.44,reposición post-feriado con PR001
+compra_reposicion,CPR000017,2023-09-20,P006,,5.49,reposición post-feriado con PR001
+compra_reposicion,CPR000018,2023-09-20,P007,,0.19,reposición post-feriado con PR001
+compra_reposicion,CPR000019,2023-09-20,P009,,3.32,reposición post-feriado con PR001
+compra_reposicion,CPR000020,2023-09-20,P010,,15.07,reposición post-feriado con PR001
+merma_eliminada,MR001237,2023-09-21,P011,0.23,0.0,producto vendido el 18-19 antes de vencer
+compra_reposicion,CPR000021,2023-09-20,P011,,17.02,reposición post-feriado con PR001
+compra_reposicion,CPR000022,2023-09-20,P013,,19.99,reposición post-feriado con PR001
+merma_eliminada,MR001238,2023-09-22,P014,5.31,0.0,producto vendido el 18-19 antes de vencer
+compra_reposicion,CPR000023,2023-09-20,P014,,7.63,reposición post-feriado con PR001
+compra_reposicion,CPR000024,2023-09-20,P015,,9.86,reposición post-feriado con PR001
+compra_reposicion,CPR000025,2023-09-20,P016,,5.79,reposición post-feriado con PR001
+compra_reposicion,CPR000026,2023-09-20,P017,,11.33,reposición post-feriado con PR001
+compra_reposicion,CPR000027,2023-09-20,P018,,14.39,reposición post-feriado con PR001
+compra_reposicion,CPR000028,2023-09-20,P020,,2.22,reposición post-feriado con PR001
+compra_reposicion,CPR000029,2023-09-20,P021,,1.25,reposición post-feriado con PR006
+compra_reposicion,CPR000030,2023-09-20,P022,,2.98,reposición post-feriado con PR006
+compra_reposicion,CPR000031,2023-09-20,P023,,1.29,reposición post-feriado con PR006
+compra_reposicion,CPR000032,2023-09-20,P024,,1.31,reposición post-feriado con PR006
+demanda,,2024-09-18,P001,,4.31,vendido 1.14 kg; venta perdida 3.17 kg; stock al abrir 1.14 kg
+demanda,,2024-09-18,P002,,2.45,vendido 2.45 kg; venta perdida 0.0 kg; stock al abrir 35.29 kg
+demanda,,2024-09-18,P003,,5.67,vendido 5.67 kg; venta perdida 0.0 kg; stock al abrir 10.77 kg
+demanda,,2024-09-18,P004,,10.05,vendido 10.05 kg; venta perdida 0.0 kg; stock al abrir 52.28 kg
+demanda,,2024-09-18,P005,,8.43,vendido 0.0 kg; venta perdida 8.43 kg; stock al abrir 0.0 kg
+demanda,,2024-09-18,P006,,10.3,vendido 2.65 kg; venta perdida 7.65 kg; stock al abrir 2.65 kg
+demanda,,2024-09-18,P007,,1.21,vendido 1.21 kg; venta perdida 0.0 kg; stock al abrir 9.4 kg
+demanda,,2024-09-18,P008,,6.82,vendido 1.65 kg; venta perdida 5.17 kg; stock al abrir 1.65 kg
+demanda,,2024-09-18,P009,,3.53,vendido 3.15 kg; venta perdida 0.38 kg; stock al abrir 3.15 kg
+demanda,,2024-09-18,P010,,9.09,vendido 0.0 kg; venta perdida 9.09 kg; stock al abrir 0.04 kg
+demanda,,2024-09-18,P011,,12.07,vendido 5.81 kg; venta perdida 6.26 kg; stock al abrir 5.81 kg
+demanda,,2024-09-18,P012,,9.45,vendido 9.45 kg; venta perdida 0.0 kg; stock al abrir 29.64 kg
+demanda,,2024-09-18,P013,,10.58,vendido 0.1 kg; venta perdida 10.48 kg; stock al abrir 0.1 kg
+demanda,,2024-09-18,P014,,10.73,vendido 10.73 kg; venta perdida 0.0 kg; stock al abrir 11.07 kg
+demanda,,2024-09-18,P015,,10.0,vendido 0.0 kg; venta perdida 10.0 kg; stock al abrir 0.0 kg
+demanda,,2024-09-18,P016,,3.03,vendido 3.03 kg; venta perdida 0.0 kg; stock al abrir 5.93 kg
+demanda,,2024-09-18,P017,,6.06,vendido 1.33 kg; venta perdida 4.73 kg; stock al abrir 1.33 kg
+demanda,,2024-09-18,P018,,17.25,vendido 8.6 kg; venta perdida 8.65 kg; stock al abrir 8.6 kg
+demanda,,2024-09-18,P019,,8.48,vendido 0.59 kg; venta perdida 7.89 kg; stock al abrir 0.59 kg
+demanda,,2024-09-18,P020,,3.38,vendido 0.2 kg; venta perdida 3.18 kg; stock al abrir 0.2 kg
+demanda,,2024-09-18,P021,,1.07,vendido 0.0 kg; venta perdida 1.07 kg; stock al abrir 0.05 kg
+demanda,,2024-09-18,P022,,2.19,vendido 0.35 kg; venta perdida 1.84 kg; stock al abrir 0.35 kg
+demanda,,2024-09-18,P023,,0.66,vendido 0.1 kg; venta perdida 0.56 kg; stock al abrir 0.1 kg
+demanda,,2024-09-18,P024,,0.91,vendido 0.09 kg; venta perdida 0.82 kg; stock al abrir 0.09 kg
+demanda,,2024-09-19,P001,,3.79,vendido 0.0 kg; venta perdida 3.79 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P002,,1.4,vendido 1.4 kg; venta perdida 0.0 kg; stock al abrir 32.84 kg
+demanda,,2024-09-19,P003,,4.07,vendido 4.07 kg; venta perdida 0.0 kg; stock al abrir 5.1 kg
+demanda,,2024-09-19,P004,,6.19,vendido 6.19 kg; venta perdida 0.0 kg; stock al abrir 42.23 kg
+demanda,,2024-09-19,P005,,8.83,vendido 0.0 kg; venta perdida 8.83 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P006,,5.73,vendido 0.0 kg; venta perdida 5.73 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P007,,0.85,vendido 0.85 kg; venta perdida 0.0 kg; stock al abrir 8.19 kg
+demanda,,2024-09-19,P008,,5.43,vendido 0.0 kg; venta perdida 5.43 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P009,,1.92,vendido 0.0 kg; venta perdida 1.92 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P010,,6.98,vendido 0.0 kg; venta perdida 6.98 kg; stock al abrir 0.04 kg
+demanda,,2024-09-19,P011,,7.76,vendido 0.0 kg; venta perdida 7.76 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P012,,9.19,vendido 9.19 kg; venta perdida 0.0 kg; stock al abrir 20.19 kg
+demanda,,2024-09-19,P013,,6.01,vendido 0.0 kg; venta perdida 6.01 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P014,,6.47,vendido 0.34 kg; venta perdida 6.13 kg; stock al abrir 0.34 kg
+demanda,,2024-09-19,P015,,4.97,vendido 0.0 kg; venta perdida 4.97 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P016,,1.57,vendido 1.57 kg; venta perdida 0.0 kg; stock al abrir 2.9 kg
+demanda,,2024-09-19,P017,,4.47,vendido 0.0 kg; venta perdida 4.47 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P018,,9.32,vendido 0.0 kg; venta perdida 9.32 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P019,,6.25,vendido 0.0 kg; venta perdida 6.25 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P020,,2.12,vendido 0.0 kg; venta perdida 2.12 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P021,,0.68,vendido 0.0 kg; venta perdida 0.68 kg; stock al abrir 0.05 kg
+demanda,,2024-09-19,P022,,1.34,vendido 0.0 kg; venta perdida 1.34 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P023,,0.4,vendido 0.0 kg; venta perdida 0.4 kg; stock al abrir 0.0 kg
+demanda,,2024-09-19,P024,,0.64,vendido 0.0 kg; venta perdida 0.64 kg; stock al abrir 0.0 kg
+compra_reposicion,CPR000033,2024-09-20,P001,,1.14,reposición post-feriado con PR001
+merma_reducida,MR001928,2024-09-21,P002,26.23,22.38,producto vendido el 18-19 antes de vencer
+compra_reposicion,CPR000034,2024-09-20,P003,,9.74,reposición post-feriado con PR001
+compra_reposicion,CPR000035,2024-09-20,P004,,16.24,reposición post-feriado con PR001
+compra_reposicion,CPR000036,2024-09-20,P006,,2.65,reposición post-feriado con PR001
+compra_reposicion,CPR000037,2024-09-20,P007,,2.06,reposición post-feriado con PR001
+compra_reposicion,CPR000038,2024-09-20,P008,,1.65,reposición post-feriado con PR001
+compra_reposicion,CPR000039,2024-09-20,P009,,3.15,reposición post-feriado con PR001
+compra_reposicion,CPR000040,2024-09-20,P011,,5.81,reposición post-feriado con PR001
+compra_reposicion,CPR000041,2024-09-20,P012,,18.64,reposición post-feriado con PR001
+compra_reposicion,CPR000042,2024-09-20,P013,,0.1,reposición post-feriado con PR001
+compra_reposicion,CPR000043,2024-09-20,P014,,11.07,reposición post-feriado con PR001
+compra_reposicion,CPR000044,2024-09-20,P016,,4.6,reposición post-feriado con PR001
+compra_reposicion,CPR000045,2024-09-20,P017,,1.33,reposición post-feriado con PR001
+compra_reposicion,CPR000046,2024-09-20,P018,,8.6,reposición post-feriado con PR001
+compra_reposicion,CPR000047,2024-09-20,P019,,0.59,reposición post-feriado con PR001
+compra_reposicion,CPR000048,2024-09-20,P020,,0.2,reposición post-feriado con PR001
+compra_reposicion,CPR000049,2024-09-20,P022,,0.35,reposición post-feriado con PR006
+compra_reposicion,CPR000050,2024-09-20,P023,,0.1,reposición post-feriado con PR006
+compra_reposicion,CPR000051,2024-09-20,P024,,0.09,reposición post-feriado con PR006
