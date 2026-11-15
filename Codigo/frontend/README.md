@@ -2,12 +2,12 @@
 
 ```bash
 npm install
-npm run dev        # http://localhost:3001 (el backend debe estar en el puerto 4000)
+npm run dev        # http://localhost:3000 (el backend debe estar en el puerto 4000)
 npm run lint && npm run build
 ```
 
 `/api/*` se reenvía al backend (`API_URL`, por defecto `http://localhost:4000`; se lee al ejecutar, no al compilar), así la cookie de
-sesión viaja por el mismo origen. Para producción: `npm run build && API_URL=http://backend:4000 npm start -- -p 3001`.
+sesión viaja por el mismo origen. Para producción: `npm run build && API_URL=http://backend:4000 npm start -- -p 3000`.
 
 ## Pantallas
 
