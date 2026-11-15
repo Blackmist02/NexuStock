@@ -49,6 +49,19 @@ async function main() {
       idProv.push(r.rows[0].id_proveedor);
     }
     const hoy = new Date();
+    // Efectos de calendario moderados y variables: cada semana tiene su propio repunte de fin de semana y cada mes su
+    // propio efecto de días de pago, compartidos por todos los productos (una semana movida lo es para todo el local).
+    const efectoSemana = new Map();
+    const efectoMes = new Map();
+    const efecto = (mapa, clave, min, max) => {
+      if (!mapa.has(clave)) mapa.set(clave, min + rnd() * (max - min));
+      return mapa.get(clave);
+    };
+    const lunesDe = (dia) => {
+      const l = new Date(dia);
+      l.setDate(dia.getDate() - ((dia.getDay() + 6) % 7));
+      return l.toDateString();
+    };
     let ventas = 0;
     let compras = 0;
     for (const [nombre, cat, iProv, unidad, precio, minimo, vida, media, stockFinal] of PRODUCTOS) {
@@ -64,8 +77,12 @@ async function main() {
       const id = p.rows[0].id_producto;
       for (let d = 70; d >= 0; d--) {
         const dia = new Date(hoy.getTime() - d * 86400000);
-        const finde = [5, 6].includes(dia.getDay()); // más venta viernes y sábado
-        const kg = Math.max(0, media * (finde ? 1.5 : 0.85) * (0.6 + rnd() * 0.8));
+        const finde = [5, 6].includes(dia.getDay()); // viernes y sábado: +8 % a +22 % según la semana
+        const pago = dia.getDate() <= 5 || (dia.getDate() >= 14 && dia.getDate() <= 17) || dia.getDate() >= 28; // 0 % a +10 % según el mes
+        const factor =
+          (finde ? 1 + efecto(efectoSemana, lunesDe(dia), 0.08, 0.22) : 1) *
+          (pago ? 1 + efecto(efectoMes, `${dia.getFullYear()}-${dia.getMonth()}`, 0, 0.1) : 1);
+        const kg = Math.max(0, media * factor * (0.75 + rnd() * 0.5)); // ruido diario de ±25 %
         const tickets = 1 + Math.floor(rnd() * 3);
         for (let t = 0; t < tickets; t++) {
           const cantidad = Math.max(0.2, Math.round((kg / tickets) * 10) / 10);
