@@ -228,9 +228,9 @@ describe('API de NexuStock', { skip: omitir }, () => {
     // la semana se reparte entre los días con los pesos de la semana: los 7 días suman la semanal
     const dias = d.dias.filter((x) => x.fecha >= addDays(lunesHoy, -7) && x.fecha < lunesHoy);
     assert.ok(Math.abs(dias.reduce((a, x) => a + x.proyectada, 0) - 12.5) < 0.05);
-    const tope = await llamar('admin', 'GET', `/predictions/producto/${ids.lomo}/serie?atras=9&adelante=0`);
-    assert.equal(tope.json.data.atras, 4);
-    assert.equal(tope.json.data.adelante, 1);
+    const tope = await llamar('admin', 'GET', `/predictions/producto/${ids.lomo}/serie?atras=15&adelante=9`);
+    assert.equal(tope.json.data.atras, 12);
+    assert.equal(tope.json.data.adelante, 4);
     assert.equal((await llamar('admin', 'GET', '/predictions/producto/abc/serie')).status, 400);
     // Total de los productos por kilo y por categoría: misma forma, con la suma de los productos
     const total = await llamar('admin', 'GET', '/predictions/serie?atras=1&adelante=1');

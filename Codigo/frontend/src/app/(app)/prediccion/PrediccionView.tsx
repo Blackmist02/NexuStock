@@ -52,7 +52,8 @@ interface Serie {
   eventos: Evento[];
 }
 
-const OPCIONES_MESES = [1, 2, 3, 4];
+const OPCIONES_ATRAS = [1, 2, 3, 4, 6, 12];
+const OPCIONES_ADELANTE = [1, 2, 3, 4];
 const mesesTxt = (n: number) => `${n} ${n === 1 ? "mes" : "meses"}`;
 
 export function PrediccionView() {
@@ -155,11 +156,11 @@ export function PrediccionView() {
                 </select>
                 <label className="hint" htmlFor="pr-atras">Hacia atrás</label>
                 <select id="pr-atras" className="input surface" style={{ height: 30, width: "auto" }} value={atras} onChange={(e) => setAtras(Number(e.target.value))}>
-                  {OPCIONES_MESES.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
+                  {OPCIONES_ATRAS.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
                 </select>
                 <label className="hint" htmlFor="pr-adelante">Hacia adelante</label>
                 <select id="pr-adelante" className="input surface" style={{ height: 30, width: "auto" }} value={adelante} onChange={(e) => setAdelante(Number(e.target.value))}>
-                  {OPCIONES_MESES.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
+                  {OPCIONES_ADELANTE.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
                 </select>
               </div>
             </div>
