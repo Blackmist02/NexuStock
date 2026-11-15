@@ -32,6 +32,7 @@ público se cierra y el equipo se crea en *Configuración* (`ALLOW_PUBLIC_SIGNUP
 
 Todos bajo `/api`, con sesión salvo los marcados «público». Sesión: cookie `nx_token` (httpOnly) o `Authorization: Bearer <token>`;
 las peticiones que modifican datos con cookie llevan `x-nx-csrf: 1`. Errores: `{ "error": { "code", "message", "details?: [{campo, mensaje}]" } }`
+Los errores 500 responden siempre «Error interno del servidor» (el detalle queda solo en el log). CORS: una petición con `Origin` fuera de `CORS_ORIGIN` se rechaza con 403 (`origen_no_permitido`).
 (`validacion` = datos inválidos, con el campo; 409 = conflicto de negocio, p. ej. stock insuficiente).
 
 | Ruta | Descripción |
