@@ -1,4 +1,3 @@
-const config = require('../config');
 const { ApiError } = require('../lib/errors');
 const { esTransitorio } = require('../lib/tx');
 
@@ -24,10 +23,9 @@ function errorHandler(err, req, res, _next) {
     console.error(`[error] base de datos no disponible en ${req.method} ${req.originalUrl}: ${err.message}`);
     return res.status(503).json({ error: { code: 'bd_no_disponible', message: 'El servicio no está disponible por un momento. Intenta nuevamente en unos segundos.' } });
   }
+  // El detalle (consultas SQL, rutas, mensajes de la BD) queda solo en el log del servidor, nunca en la respuesta
   console.error(`[error] ${req.method} ${req.originalUrl}:`, err);
-  res.status(500).json({
-    error: { code: 'error_interno', message: config.isProd ? 'Error interno del servidor' : (err && err.message) || 'Error interno' }
-  });
+  res.status(500).json({ error: { code: 'error_interno', message: 'Error interno del servidor' } });
 }
 
 module.exports = { notFoundHandler, errorHandler };

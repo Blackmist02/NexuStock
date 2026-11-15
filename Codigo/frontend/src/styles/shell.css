@@ -93,6 +93,62 @@
 .biz-dot.off {
   background: var(--alerta);
 }
+/* Todavía no sabemos si el servidor responde (primer sondeo al abrir la app) */
+.biz-dot.wait {
+  background: var(--ink-muted);
+  animation: biz-pulso 1.2s ease-in-out infinite;
+}
+@keyframes biz-pulso {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Gráfico de tendencia: la línea se dibuja de izquierda a derecha, luego aparece el área y brotan los puntos */
+svg[role="img"] .nx-trazo {
+  animation: nx-trazar 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
+}
+svg[role="img"] .nx-trazo-2 {
+  animation-delay: 0.55s;
+}
+@keyframes nx-trazar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+svg[role="img"] .nx-area {
+  animation: nx-area 1s cubic-bezier(0.22, 1, 0.36, 1) 0.9s backwards;
+}
+@keyframes nx-area {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+svg[role="img"] .nx-punto {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nx-brotar 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(0.25s + var(--i, 0) * 0.11s);
+}
+@keyframes nx-brotar {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .biz-dot.wait,
+  svg[role="img"] .nx-trazo,
+  svg[role="img"] .nx-area,
+  svg[role="img"] .nx-punto {
+    animation: none;
+  }
+}
 
 /* Fecha del sistema: interruptor Referencia / Real */
 .fecha-sis {

@@ -12,15 +12,21 @@ import { useSyncExternalStore } from "react";
  * Mientras no hay conexión se vuelve a probar sola con espera creciente; al volver, se avisa a quien
  * esté suscrito (useApi vuelve a pedir sus datos).
  */
+export type CausaCorte = "red" | "servidor";
+
 export interface EstadoConexion {
   enLinea: boolean;
+  /** false hasta la primera respuesta (o fallo) del servidor: todavía no sabemos si está listo. */
+  comprobado: boolean;
+  /** Por qué no hay conexión: el equipo no tiene red, o hay red pero el servidor no responde. */
+  causa: CausaCorte | null;
   /** Marca de tiempo (ms) del momento en que volvió la conexión; null si no acaba de volver. */
   restablecidaEn: number | null;
   /** Número de corte actual (sube con cada corte nuevo); sirve para recordar qué avisos ya cerró el usuario. */
   episodio: number;
 }
 
-let estado: EstadoConexion = { enLinea: true, restablecidaEn: null, episodio: 0 };
+let estado: EstadoConexion = { enLinea: true, comprobado: false, causa: null, restablecidaEn: null, episodio: 0 };
 const oyentes = new Set<() => void>();
 const alReconectar = new Set<() => void>();
 
@@ -29,14 +35,23 @@ function fijar(nuevo: EstadoConexion) {
   oyentes.forEach((f) => f());
 }
 
+const causaActual = (): CausaCorte => (typeof navigator !== "undefined" && navigator.onLine === false ? "red" : "servidor");
+
 export function reportarFallo() {
-  if (estado.enLinea) fijar({ enLinea: false, restablecidaEn: null, episodio: estado.episodio + 1 });
+  const causa = causaActual();
+  if (estado.enLinea) fijar({ enLinea: false, comprobado: true, causa, restablecidaEn: null, episodio: estado.episodio + 1 });
+  // Mismo corte, pero cambió el motivo (p. ej. volvió el wifi y el servidor sigue sin responder).
+  else if (estado.causa !== causa) fijar({ ...estado, causa });
 }
 
 export function reportarOk() {
+  // Con el servidor en este mismo equipo (localhost) la API responde aunque no haya red: manda el navegador.
+  if (causaActual() === "red") return reportarFallo();
   if (!estado.enLinea) {
-    fijar({ ...estado, enLinea: true, restablecidaEn: Date.now() });
+    fijar({ ...estado, enLinea: true, comprobado: true, causa: null, restablecidaEn: Date.now() });
     alReconectar.forEach((f) => f());
+  } else if (!estado.comprobado) {
+    fijar({ ...estado, comprobado: true });
   }
 }
 
@@ -60,7 +75,7 @@ const suscribir = (cb: () => void) => {
   };
 };
 const instantanea = () => estado;
-const SERVIDOR: EstadoConexion = { enLinea: true, restablecidaEn: null, episodio: 0 };
+const SERVIDOR: EstadoConexion = { enLinea: true, comprobado: false, causa: null, restablecidaEn: null, episodio: 0 };
 const instantaneaServidor = () => SERVIDOR;
 
 export function useConexion(): EstadoConexion {

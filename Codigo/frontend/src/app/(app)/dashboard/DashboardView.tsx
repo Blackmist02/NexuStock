@@ -16,6 +16,7 @@ import { cls } from "@/lib/cls";
 import { fmtCant, fmtCLP, fmtFechaCorta, hoyISO, NIVEL_BADGE, NIVEL_LABEL } from "@/lib/format";
 import { useApi } from "@/lib/useApi";
 import styles from "./page.module.css";
+import { Cifra } from "@/components/ui/Cifra";
 import { TendenciaChart, type PuntoTendencia } from "./TendenciaChart";
 
 const c = cls(styles);
@@ -191,26 +192,26 @@ export function DashboardView() {
           <div className={c("grid4")} style={{ marginBottom: "16px" }}>
             <div className={c("card stat")}>
               <div className={c("lbl")}>Valor de inventario</div>
-              <div className={c("val")}>{fmtCLP(data.kpis.valor_inventario_clp)}</div>
+              <div className={c("val")}><Cifra valor={data.kpis.valor_inventario_clp} formato={fmtCLP} /></div>
               <div className={c("delta")}>A precio de venta · {data.kpis.total_productos} {data.kpis.total_productos === 1 ? "producto activo" : "productos activos"}</div>
             </div>
             <div className={c("card stat")}>
               <div className={c("lbl")}>Productos en quiebre</div>
               <div className={c("val")} style={{ color: data.kpis.productos_quiebre > 0 ? "var(--quiebre)" : undefined }}>
-                {data.kpis.productos_quiebre}
+                <Cifra valor={data.kpis.productos_quiebre} formato={String} />
               </div>
               <div className={c("delta")}>{data.kpis.productos_quiebre > 0 ? "Requiere compra urgente" : "Ningún producto en quiebre"}</div>
             </div>
             <div className={c("card stat")}>
               <div className={c("lbl")}>Productos con stock bajo</div>
               <div className={c("val")} style={{ color: data.kpis.productos_bajo > 0 ? "var(--alerta)" : undefined }}>
-                {data.kpis.productos_bajo}
+                <Cifra valor={data.kpis.productos_bajo} formato={String} />
               </div>
               <div className={c("delta")}>{data.kpis.productos_bajo > 0 ? "Stock bajo lo que pide la demanda" : "Todo dentro de lo esperado"}</div>
             </div>
             <div className={c("card stat")}>
               <div className={c("lbl")}>Ventas hoy</div>
-              <div className={c("val")}>{fmtCLP(data.kpis.ventas_hoy_clp)}</div>
+              <div className={c("val")}><Cifra valor={data.kpis.ventas_hoy_clp} formato={fmtCLP} /></div>
               <div className={c("delta")}>{ventasHoyDetalle(data.kpis)}</div>
             </div>
           </div>
@@ -250,7 +251,7 @@ export function DashboardView() {
                     </div>
                   </div>
                   <span className={c("mono")} style={{ fontSize: "18px", fontWeight: 600, color }}>
-                    {data.semaforo[k]}
+                    <Cifra valor={data.semaforo[k]} formato={String} />
                   </span>
                 </div>
               ))}

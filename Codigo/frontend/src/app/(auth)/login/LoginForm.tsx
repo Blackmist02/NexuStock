@@ -102,6 +102,9 @@ export function LoginForm() {
       <div className={styles.foot}>
         ¿No tienes cuenta? <Link href="/crear-cuenta">Crear una</Link>
       </div>
+      <div className={styles.foot} style={{ marginTop: 10 }}>
+        ¿Primera vez aquí? <Link href="/conoce">Conoce NexuStock</Link>
+      </div>
     </div>
   );
 }

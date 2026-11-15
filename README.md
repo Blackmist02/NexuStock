@@ -114,6 +114,8 @@ Dos workflows de GitHub Actions en [.github/workflows/](.github/workflows/):
 
 Mientras un entorno no tenga la configuración de Azure, CD publica las imágenes y omite el despliegue con un aviso, sin fallar. Las imágenes leen toda su configuración de variables de entorno, así que la misma imagen sirve en desarrollo y en producción (RNF-25).
 
+**Demo gratuita** (escenario A de la TCO, para la defensa): frontend en Vercel Hobby (`https://nexustock-omega.vercel.app`), backend + motor ML en Render Free (`https://nexustock-api.onrender.com`, región Virginia, desde `Codigo/backend/Dockerfile` con contexto `Codigo`) y base de datos en Supabase Free (us-east-1). El frontend reenvía `/api/*` al backend con `API_URL`, así que la cookie de sesión viaja en el mismo origen. Tras CI en verde sobre `main`, el job `demo` de CD redespliega Render (secreto `RENDER_DEPLOY_HOOK`) y Vercel (secretos `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`) y prueba `/api/health` (variable `URL_DEMO`). Render Free se apaga tras 15 minutos sin tráfico: antes de presentar, ejecutar *Actions → Calentar demo*.
+
 Para probar las imágenes localmente: `docker build -f Codigo/backend/Dockerfile --target prod -t nexustock-backend Codigo` y `docker build -t nexustock-frontend Codigo/frontend` (el frontend escucha en el puerto 3000 y reenvía `/api/*` a `API_URL`).
 
 ## Integrantes del equipo con sus roles

@@ -8,14 +8,25 @@ const config = require('./config');
 const db = require('./db');
 const { authenticate, csrfGuard } = require('./middleware/auth');
 const { errorHandler, notFoundHandler } = require('./middleware/errors');
+const { ApiError } = require('./lib/errors');
 
 const app = express();
 
 // Middlewares
 app.set('trust proxy', config.trustProxy);
 app.use(helmet());
-// El frontend consume la API bajo su propio origen (proxy de Next), pero si se llama directo solo se aceptan estos orígenes
-app.use(cors({ origin: config.corsOrigins, credentials: true }));
+// El frontend consume la API bajo su propio origen (proxy de Next), pero si se llama directo solo se aceptan estos orígenes.
+// Un origen distinto se rechaza con 403 (sin cabecera Origin —curl, healthcheck, mismo origen— se permite).
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
+      console.warn(`[cors] origen no permitido: ${origin}`);
+      callback(new ApiError(403, 'origen_no_permitido', 'Origen no permitido'));
+    }
+  })
+);
 // /api/import acepta archivos CSV grandes y define su propio límite
 const json1mb = express.json({ limit: '1mb' });
 app.use((req, res, next) => (req.path.startsWith('/api/import') ? next() : json1mb(req, res, next)));

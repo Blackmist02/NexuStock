@@ -17,6 +17,7 @@
   border-right: 1px solid var(--border);
 }
 .right {
+  position: relative;
   flex: 1;
   min-width: 0;
   display: flex;
@@ -46,6 +47,25 @@
 .mobilebrand {
   display: none;
 }
+/* Estado del sistema (arriba a la derecha) y aviso de conexión (arriba, sin desplazar el formulario) */
+.estado {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.aviso {
+  position: absolute;
+  top: 48px;
+  left: 24px;
+  right: 24px;
+  z-index: 5;
+}
+.aviso:empty {
+  display: none;
+}
 
 @media (max-width: 900px) {
   .wrap {
@@ -65,6 +85,14 @@
   .mobilebrand {
     display: block;
     margin-bottom: 24px;
+  }
+  .estado {
+    top: 14px;
+    right: 16px;
+  }
+  /* En móvil el aviso va en el flujo, sobre el formulario */
+  .aviso {
+    position: static;
   }
 }
 @media (min-width: 901px) {

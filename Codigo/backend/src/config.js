@@ -35,10 +35,10 @@ module.exports = {
   port: int(process.env.PORT, 4000),
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
-  // Orígenes del frontend permitidos (separados por coma). El frontend en desarrollo corre en 3001 (el 3000 lo usa otro proyecto).
-  corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:3001').split(',').map((s) => s.trim()).filter(Boolean),
+  // Orígenes del frontend permitidos (separados por coma). El frontend en desarrollo corre en 3000.
+  corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',').map((s) => s.trim()).filter(Boolean),
   // URL pública del frontend: se usa en el enlace de recuperación de contraseña
-  appUrl: (process.env.APP_URL || 'http://localhost:3001').replace(/\/$/, ''),
+  appUrl: (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, ''),
   tz: process.env.TZ_NEGOCIO || 'America/Santiago',
   // La cookie de sesión solo viaja por HTTPS en producción (pon COOKIE_SECURE=false si pruebas por http)
   cookieSecure: bool(process.env.COOKIE_SECURE, isProd),

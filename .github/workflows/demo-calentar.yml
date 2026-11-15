@@ -1,0 +1,35 @@
+# Mantiene despierta la demo gratuita (Render Free se apaga tras 15 min sin tráfico; Supabase Free se pausa tras
+# 7 días sin uso). /api/health consulta la base, así que cada llamada también mantiene activo Supabase.
+#   - Manual (Actions → Calentar demo → Run workflow): antes de una presentación, llama cada 5 minutos durante
+#     los minutos indicados (máximo 340).
+#   - Programado: una llamada cada 3 días, solo para que Supabase no se pause.
+# Requiere la variable URL_DEMO (Settings → Secrets and variables → Actions → Variables), p. ej. https://nexustock.vercel.app
+
+name: Calentar demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutos:
+        description: "Minutos que la demo debe quedar despierta"
+        default: "180"
+  schedule:
+    - cron: "0 12 */3 * *"
+
+jobs:
+  calentar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Llamar a /api/health
+        env:
+          URL: ${{ vars.URL_DEMO }}
+          MINUTOS: ${{ github.event_name == 'workflow_dispatch' && inputs.minutos || '0' }}
+        run: |
+          if [ -z "$URL" ]; then echo "::notice::Define la variable URL_DEMO para usar este workflow."; exit 0; fi
+          fin=$(( $(date +%s) + (MINUTOS > 340 ? 340 : MINUTOS) * 60 ))
+          while :; do
+            curl -sS --max-time 90 -o /dev/null -w "$(date +%H:%M) %{http_code} %{time_total}s\n" "$URL/api/health" || true
+            [ "$(date +%s)" -ge "$fin" ] && break
+            sleep 300
+          done

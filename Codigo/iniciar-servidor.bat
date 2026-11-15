@@ -29,7 +29,7 @@ echo [OK] No habia .env: se creo a partir de .env.example.
 :env_listo
 
 REM Leer los puertos desde .env (con valores por defecto si no estan definidos)
-set "FRONTEND_PORT=3001"
+set "FRONTEND_PORT=3000"
 set "BACKEND_PORT=4000"
 set "DB_PORT=5433"
 for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env") do (

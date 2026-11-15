@@ -53,11 +53,13 @@ router.get('/resumen', async (req, res) => {
   });
 });
 
-const MESES_MAX = 4;
-const mesesParam = (v) => Math.min(MESES_MAX, Math.max(1, parseInt(v, 10) || 1));
+// Hacia atrás hasta un año (venta real y predicciones ya registradas); hacia adelante, lo que el modelo proyecta en serie.
+const ATRAS_MAX = 12;
+const ADELANTE_MAX = 4;
+const mesesParam = (v, max) => Math.min(max, Math.max(1, parseInt(v, 10) || 1));
 
 /**
- * Serie de demanda de un producto para el gráfico de Predicción, de `atras` a `adelante` meses (1 a 4 cada uno) en
+ * Serie de demanda de un producto para el gráfico de Predicción, de `atras` (1 a 12) a `adelante` (1 a 4) meses en
  * semanas completas: venta real y predicción registrada en el pasado; proyección del modelo desde la semana en curso.
  */
 router.get('/producto/:id/serie', async (req, res) => {
@@ -65,7 +67,7 @@ router.get('/producto/:id/serie', async (req, res) => {
   if (!Number.isInteger(id) || id <= 0) throw errorCampo('id', 'Identificador inválido');
   const [snap] = await snapshotInventario([id]);
   if (!snap) throw errorCampo('id', 'El producto no existe o está inactivo', 404);
-  const serie = await construirSerie([snap], mesesParam(req.query.atras), mesesParam(req.query.adelante));
+  const serie = await construirSerie([snap], mesesParam(req.query.atras, ATRAS_MAX), mesesParam(req.query.adelante, ADELANTE_MAX));
   res.json({ data: { id_producto: id, producto: snap.nombre, unidad: snap.unidad, ...serie } });
 });
 
@@ -73,7 +75,7 @@ router.get('/producto/:id/serie', async (req, res) => {
 router.get('/serie', async (req, res) => {
   const idCat = Number(req.query.categoria) || null;
   const snaps = (await snapshotInventario()).filter((p) => p.unidad === 'kg' && (!idCat || p.id_categoria === idCat));
-  const serie = await construirSerie(snaps, mesesParam(req.query.atras), mesesParam(req.query.adelante));
+  const serie = await construirSerie(snaps, mesesParam(req.query.atras, ATRAS_MAX), mesesParam(req.query.adelante, ADELANTE_MAX));
   const nombre = idCat ? snaps[0]?.categoria ?? 'Categoría' : 'Todos los productos';
   res.json({ data: { id_producto: null, producto: nombre, unidad: 'kg', ...serie } });
 });

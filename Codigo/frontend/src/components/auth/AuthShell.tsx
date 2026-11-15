@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
+import { ConexionAviso, EstadoSistema } from "@/components/ConexionAviso";
 import styles from "./AuthShell.module.css";
 
 interface AuthShellProps {
@@ -32,9 +33,13 @@ export function AuthShell({ tagline, aside, bottom, children }: AuthShellProps) 
         {bottom ? <div className={styles.bottom}>{bottom}</div> : null}
       </div>
       <main className={styles.right}>
+        <EstadoSistema className={styles.estado} />
         <div className={styles.inner}>
           <div className={styles.mobilebrand}>
             <Logo width={132} height={48} />
+          </div>
+          <div className={styles.aviso}>
+            <ConexionAviso contexto="acceso" />
           </div>
           {children}
         </div>

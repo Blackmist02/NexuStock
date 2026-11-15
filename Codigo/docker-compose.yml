@@ -43,8 +43,8 @@ services:
       DB_SSL_CA: ${DB_SSL_CA:-}
       # Autenticación (ver .env.example). Los valores por defecto son SOLO para desarrollo.
       JWT_SECRET: ${JWT_SECRET:-nexustock-dev-secret-cambiar-en-produccion}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${FRONTEND_PORT:-3001}}
-      APP_URL: ${APP_URL:-http://localhost:${FRONTEND_PORT:-3001}}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:${FRONTEND_PORT:-3000}}
+      APP_URL: ${APP_URL:-http://localhost:${FRONTEND_PORT:-3000}}
       TZ_NEGOCIO: ${TZ_NEGOCIO:-America/Santiago}
       # Tras crear la primera cuenta (administrador) el registro público queda cerrado; el resto del equipo se crea en Configuración.
       ALLOW_PUBLIC_SIGNUP: ${ALLOW_PUBLIC_SIGNUP:-false}
