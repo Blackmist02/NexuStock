@@ -1,11 +1,12 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { z } = require('zod');
 const config = require('../config');
 const db = require('../db');
 const { ApiError, forbidden, parse, unauthorized } = require('../lib/errors');
 const { errorCampo } = require('../lib/http');
+const { ipCliente } = require('../lib/ipCliente');
 const negocio = require('../lib/negocio');
 const { enlaceRestablecer } = require('../lib/reset');
 const { enviarCorreo } = require('../lib/mailer');
@@ -19,6 +20,8 @@ const limiter = rateLimit({
   limit: config.authRateLimit,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  // Cuenta por cliente real y no por el proxy que tenga delante (ver lib/ipCliente.js); IPv6 se agrupa por subred /56
+  keyGenerator: (req) => ipKeyGenerator(ipCliente(req, { secreto: config.proxySecret, confiarCloudflare: config.trustCfConnectingIp })),
   message: { error: { code: 'demasiados_intentos', message: 'Demasiados intentos. Intenta nuevamente en unos minutos.' } }
 });
 

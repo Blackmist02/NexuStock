@@ -48,6 +48,9 @@ services:
       TZ_NEGOCIO: ${TZ_NEGOCIO:-America/Santiago}
       # Tras crear la primera cuenta (administrador) el registro público queda cerrado; el resto del equipo se crea en Configuración.
       ALLOW_PUBLIC_SIGNUP: ${ALLOW_PUBLIC_SIGNUP:-false}
+      # Límite de intentos por cliente real (ver backend/src/lib/ipCliente.js); vacío = IP visible por la API
+      PROXY_SECRET: ${PROXY_SECRET:-}
+      TRUST_CF_CONNECTING_IP: ${TRUST_CF_CONNECTING_IP:-false}
       # Parámetros del negocio (nombre, alertas) y motor predictivo (Python 3.12 incluido en la imagen)
       DATA_DIR: /app/data
       ML_ENGINE_DIR: /ml-engine

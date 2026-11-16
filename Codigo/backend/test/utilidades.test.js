@@ -81,3 +81,13 @@ test('fechas: lunes de la semana, inicio y fin de mes, validación ISO', () => {
   assert.equal(addMonths('2024-03-31', -1), '2024-02-29'); // el 31 de febrero no existe: último día del mes
   assert.equal(addMonths('2024-10-31', 4), '2025-02-28');
 });
+
+test('errores de PostgreSQL por dato fuera de rango o mal formado responden 400 sin detalles (RNF-08, tarea 28)', () => {
+  const { errorHandler } = require('../src/middleware/errors');
+  for (const code of ['22003', '22P02']) {
+    const res = { status(s) { this.s = s; return this; }, json(b) { this.b = b; return this; } };
+    errorHandler(Object.assign(new Error('value "99999999" is out of range for type smallint'), { code }), { method: 'PUT', originalUrl: '/x' }, res);
+    assert.equal(res.s, 400);
+    assert.deepEqual(res.b, { error: { code: 'validacion', message: 'Datos inválidos' } });
+  }
+});

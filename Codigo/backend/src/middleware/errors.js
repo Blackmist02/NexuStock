@@ -13,6 +13,11 @@ function errorHandler(err, req, res, _next) {
   if (err && err.code === '23505') {
     return res.status(409).json({ error: { code: 'duplicado', message: 'Ya existe un registro con esos datos' } });
   }
+  // Valor fuera del rango de la columna (p. ej. un id SMALLINT) o con formato inválido para PostgreSQL: es un dato
+  // de entrada no válido, no una falla del servidor (RNF-08)
+  if (err && (err.code === '22003' || err.code === '22P02')) {
+    return res.status(400).json({ error: { code: 'validacion', message: 'Datos inválidos' } });
+  }
   if (err && err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: { code: 'json_invalido', message: 'El cuerpo no es JSON válido' } });
   }

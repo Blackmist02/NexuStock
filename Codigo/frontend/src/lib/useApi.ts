@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { api, errorMessage, esSinConexion } from "./api";
-import { guardarCache, leerCache } from "./cacheLocal";
+import { epocaCache, guardarCache, leerCache } from "./cacheLocal";
 import { alVolverConexion } from "./conexion";
 import { alCambiarFecha } from "./fechaSistema";
 
@@ -52,11 +52,12 @@ export function useApi<T>(path: string | null, query?: Query, opciones?: ApiOpci
     if (path === null) return;
     let cancelado = false;
     const k = `${path}?${queryKey}`;
+    const epoca = epocaCache();
     api
       .get<T>(path, JSON.parse(queryKey) as Query)
       .then((data) => {
         if (cancelado) return;
-        if (resguardo) guardarCache(k, data);
+        if (resguardo) guardarCache(k, data, epoca);
         setRes({ key: k, data, error: null, obsoleto: false, sinConexion: false });
       })
       .catch((e: unknown) => {

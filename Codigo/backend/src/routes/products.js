@@ -19,7 +19,8 @@ const numero = (msg, min = 0, max = 1_000_000) => z.number({ error: msg }).min(m
 
 const schema = z.object({
   nombre: z.string({ error: 'Ingresa el nombre del producto' }).trim().min(2, 'Ingresa el nombre del producto').max(120, 'Máximo 120 caracteres'),
-  id_categoria: entero('Elige una categoría', 1),
+  // id_categoria es SMALLINT en la BD: un valor mayor se rechaza aquí junto al campo
+  id_categoria: entero('Elige una categoría', 1, 32767),
   id_proveedor: entero('Elige el proveedor habitual', 1),
   unidad: z.enum(['kg', 'un'], { error: 'Elige la unidad de medida' }),
   precio_venta_clp: entero('El precio de venta debe ser un número válido', 0, 100_000_000),
