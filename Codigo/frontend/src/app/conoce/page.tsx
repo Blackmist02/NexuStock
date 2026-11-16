@@ -11,13 +11,13 @@ import s from "./conoce.module.css";
 export const metadata: Metadata = {
   title: "Conoce NexuStock",
   description:
-    "Inventario predictivo para carnicerías independientes: proyecta la demanda de cada producto y sugiere cuánto y cuándo pedir. Con los datos reales de 2024, $8,3 millones de ahorro.",
+    "Inventario predictivo para carnicerías independientes: proyecta la demanda de cada producto y sugiere cuánto y cuándo pedir. Con los datos reales de 2024, $8,6 millones de ahorro.",
 };
 
 const IMPACTO = [
-  { cifra: "$8,3 M", texto: "de ahorro anual con los datos reales de 2024" },
-  { cifra: "−83 %", texto: "de merma por vencimiento" },
-  { cifra: "−12 %", texto: "de venta perdida por quiebre de stock" },
+  { cifra: "$8,6 M", texto: "de ahorro anual con los datos reales de 2024" },
+  { cifra: "−84 %", texto: "de merma por vencimiento" },
+  { cifra: "−18 %", texto: "de venta perdida por quiebre de stock" },
 ];
 
 const PASOS = [
@@ -46,8 +46,8 @@ const VISTAS = [
 ];
 
 const MOTOR = [
-  { cifra: "5,1 kg", texto: "error medio por producto y semana (MAE)" },
-  { cifra: "−9 %", texto: "de error frente al promedio simple" },
+  { cifra: "5,2 kg", texto: "error medio por producto y semana (MAE)" },
+  { cifra: "−7 %", texto: "de error frente al promedio simple" },
   { cifra: "59 ms", texto: "tiempo de respuesta de la predicción" },
   { cifra: "Respaldo", texto: "si el modelo no responde, se usa el promedio histórico" },
 ];
@@ -165,7 +165,7 @@ export default function ConocePage() {
 
         <section className={s.section}>
           <p className={s.label}>Tecnología y seguridad</p>
-          <h2 className={s.h2}>Una plataforma web en la nube</h2>
+          <h2 className={s.h2}>Una plataforma web segura, disponible en línea</h2>
           <div className={s.chips}>
             {STACK.map((t) => (
               <span key={t} className={s.chip}>

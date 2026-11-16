@@ -38,6 +38,7 @@ Los errores 500 responden siempre «Error interno del servidor» (el detalle que
 | Ruta | Descripción |
 | --- | --- |
 | `GET /health` · `GET /auth/setup-status` (público) | Estado del backend; si falta crear la primera cuenta / si el registro está abierto. |
+| `GET /health` en el navegador · `GET /status` (administrador o TI) | Panel de la API: pide iniciar sesión y muestra el estado de la API, la base y el motor ML, una consola para probar endpoints y pruebas rápidas de servicios y seguridad. curl, Docker y los workflows siguen recibiendo el JSON de `/health`. |
 | `POST /auth/register` · `login` · `logout` · `GET /auth/session` · `GET /auth/me` | Cuenta y sesión. `register`: `{nombre, email, password, negocio, acepta_terminos}` (negocio y términos solo para la primera). |
 | `POST /auth/forgot` · `POST /auth/reset` (público) | Recuperar contraseña con enlace de un solo uso (30 min). |
 | `GET /dashboard` | KPIs, semáforo, tendencia real vs. proyectada, sugerencias de compra y productos críticos. |

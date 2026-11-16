@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel de la API · NexuStock</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23faf7f2' stroke='%231c1b19' stroke-width='3'/%3E%3Ccircle cx='32' cy='3.5' r='3' fill='%23dd8064'/%3E%3Ccircle cx='32' cy='60.5' r='3' fill='%23dd8064'/%3E%3Ctext x='32' y='41' font-family='Arial' font-weight='700' font-size='24' text-anchor='middle' fill='%231c1b19'%3ENS%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/api/panel/panel.css">
+  <script src="/api/panel/panel.js" defer></script>
+</head>
+<body>
+  <!-- Logo reutilizable -->
+  <svg width="0" height="0" class="oculto" aria-hidden="true">
+    <symbol id="logo" viewBox="0 0 246 90">
+      <g transform="translate(6,5)">
+        <circle cx="40" cy="40" r="30" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="40" cy="10" r="2.6" class="logo-acento"/>
+        <circle cx="40" cy="70" r="2.6" class="logo-acento"/>
+        <text x="40" y="49" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="27" letter-spacing="-1" fill="currentColor" text-anchor="middle">NS</text>
+      </g>
+      <text x="88" y="50" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="30" letter-spacing="-0.4" fill="currentColor">nexustock</text>
+    </symbol>
+  </svg>
+
+  <!-- Acceso -->
+  <main id="vista-acceso" class="acceso" hidden>
+    <section class="acceso-card">
+      <svg class="logo" width="150" height="55" role="img" aria-label="NexuStock"><use href="#logo"/></svg>
+      <h1>Panel de la API</h1>
+      <p class="muted">Estado de los servicios, consola de pruebas y verificación de seguridad. Acceso restringido al administrador de NexuStock.</p>
+      <form id="form-acceso" novalidate>
+        <label for="email">Correo</label>
+        <input id="email" name="email" type="email" autocomplete="username" required>
+        <label for="password">Contraseña</label>
+        <div class="pass">
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button type="button" id="ver-pass" class="btn-icono" aria-label="Mostrar contraseña">Ver</button>
+        </div>
+        <p id="error-acceso" class="error" role="alert" hidden></p>
+        <button type="submit" class="btn btn-primario" id="btn-entrar">Ingresar</button>
+      </form>
+      <p class="pie-acceso">Los sistemas automáticos (Docker, Render, GitHub Actions) siguen recibiendo el estado en JSON.</p>
+    </section>
+  </main>
+
+  <!-- Panel -->
+  <div id="vista-panel" class="panel" hidden>
+    <header class="barra">
+      <div class="barra-izq">
+        <svg class="logo" width="112" height="41" role="img" aria-label="NexuStock"><use href="#logo"/></svg>
+        <span class="sep" aria-hidden="true"></span>
+        <span class="titulo">Panel de la API</span>
+        <span id="chip-global" class="chip">…</span>
+      </div>
+      <div class="barra-der">
+        <span id="meta-entorno" class="meta"></span>
+        <button id="btn-tema" class="btn btn-sutil" type="button" aria-label="Cambiar tema">Tema</button>
+        <span id="usuario" class="usuario"></span>
+        <button id="btn-salir" class="btn btn-sutil" type="button">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <nav class="pestanas" role="tablist">
+      <button role="tab" class="pestana activa" data-vista="estado" aria-selected="true">Estado</button>
+      <button role="tab" class="pestana" data-vista="consola" aria-selected="false">Consola de la API</button>
+      <button role="tab" class="pestana" data-vista="pruebas" aria-selected="false">Pruebas rápidas</button>
+    </nav>
+
+    <!-- Estado -->
+    <section id="vista-estado" class="contenido">
+      <div class="encabezado">
+        <div>
+          <h2>Estado de los servicios</h2>
+          <p class="muted" id="estado-actualizado">Cargando…</p>
+        </div>
+        <div class="acciones">
+          <label class="switch"><input type="checkbox" id="auto-refresco" checked><span>Actualizar cada 30 s</span></label>
+          <button id="btn-actualizar" class="btn" type="button">Actualizar</button>
+        </div>
+      </div>
+      <div class="tarjetas" id="tarjetas"></div>
+      <div class="grilla-2">
+        <article class="caja">
+          <h3>Datos en la base</h3>
+          <div class="cifras" id="cifras"></div>
+        </article>
+        <article class="caja">
+          <h3>Configuración del servidor</h3>
+          <dl class="config" id="config"></dl>
+        </article>
+      </div>
+    </section>
+
+    <!-- Consola -->
+    <section id="vista-consola" class="contenido" hidden>
+      <div class="consola">
+        <aside class="catalogo">
+          <input id="buscar" class="buscar" type="search" placeholder="Buscar endpoint…" aria-label="Buscar endpoint">
+          <div id="lista-endpoints"></div>
+        </aside>
+        <div class="editor">
+          <div class="peticion">
+            <select id="metodo" aria-label="Método">
+              <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+            </select>
+            <div class="ruta"><span class="prefijo">/api</span><input id="ruta" value="/health" aria-label="Ruta" spellcheck="false"></div>
+            <button id="btn-enviar" class="btn btn-primario" type="button">Enviar</button>
+          </div>
+          <p id="descripcion" class="descripcion muted"></p>
+          <div class="cuerpo-wrap" id="cuerpo-wrap" hidden>
+            <label for="cuerpo">Cuerpo (JSON)</label>
+            <textarea id="cuerpo" spellcheck="false" rows="6"></textarea>
+          </div>
+          <div class="respuesta">
+            <div class="respuesta-cab">
+              <span id="resp-estado" class="chip">Sin enviar</span>
+              <span id="resp-meta" class="muted"></span>
+              <span class="flex"></span>
+              <button id="btn-curl" class="btn btn-sutil" type="button">Copiar como curl</button>
+              <button id="btn-copiar" class="btn btn-sutil" type="button">Copiar respuesta</button>
+            </div>
+            <pre id="resp-cuerpo" class="json" tabindex="0">Elige un endpoint del catálogo o escribe una ruta y presiona Enviar.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pruebas -->
+    <section id="vista-pruebas" class="contenido" hidden>
+      <div class="encabezado">
+        <div>
+          <h2>Pruebas rápidas</h2>
+          <p class="muted">Solo lectura: verifican que cada servicio responda y que los controles de seguridad rechacen lo indebido. No modifican datos.</p>
+        </div>
+        <div class="acciones">
+          <span id="resumen-pruebas" class="chip">Sin ejecutar</span>
+          <button id="btn-pruebas" class="btn btn-primario" type="button">Ejecutar pruebas</button>
+        </div>
+      </div>
+      <div class="caja tabla-wrap">
+        <table class="tabla">
+          <thead><tr><th>Prueba</th><th>Petición</th><th>Esperado</th><th>Obtenido</th><th>Tiempo</th><th>Resultado</th></tr></thead>
+          <tbody id="tabla-pruebas"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="pie">NexuStock · Capstone 2026 · Panel técnico interno</footer>
+  </div>
+
+  <dialog id="confirmar">
+    <form method="dialog">
+      <h3>Esta petición modifica datos</h3>
+      <p id="confirmar-texto" class="muted"></p>
+      <div class="dialog-acciones">
+        <button value="no" class="btn btn-sutil">Cancelar</button>
+        <button value="si" class="btn btn-peligro">Enviar de todos modos</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="aviso" class="aviso" role="status" hidden></div>
+</body>
+</html>

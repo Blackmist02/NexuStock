@@ -45,13 +45,15 @@ import joblib
 import pandas as pd
 
 RUTA_MODELO = Path(os.environ.get('NEXUSTOCK_MODELO',
-                                  Path(__file__).resolve().parent / 'models' / 'demanda_rf_v1.0.0.joblib'))
+                                  Path(__file__).resolve().parent / 'models' / 'demanda_rf_v1.1.0.joblib'))
 INICIO_SERIE = date(2022, 1, 3)   # lunes de la semana t = 0 en el entrenamiento
 SEMANAS_HISTORIAL = 8
 SEMANAS_MES = 4
 SEMANAS_SERIE_MAX = 26
 DIAS_MES = 30
-FERIADOS_IRRENUNCIABLES = {(1, 1), (5, 1), (9, 18), (9, 19), (12, 25)}
+# Feriados irrenunciables (Ley 19.973) en que el local cierra. El 18 y 19 de septiembre abre: lo atiende la familia, sin
+# trabajadores dependientes (confirmado por el cliente; ver reconstruir_fiestas_patrias.py).
+FERIADOS_IRRENUNCIABLES = {(1, 1), (5, 1), (12, 25)}
 
 
 class ErrorSolicitud(Exception):

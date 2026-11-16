@@ -4,7 +4,7 @@
 #   ml-engine · validación de predict.py con el modelo versionado (MAE, horizontes, modo servidor)
 #   frontend  · tipos (tsc), eslint y compilación de producción (next build)
 #   imagenes  · construcción de las imágenes Docker de producción (backend = API + motor ML; frontend), sin publicarlas
-# El despliegue (publicación de imágenes y Azure Container Apps) está en cd.yml.
+# El despliegue del entorno demo (Render + Vercel) está en cd.yml.
 
 name: CI
 
@@ -107,7 +107,14 @@ jobs:
             file: Codigo/frontend/Dockerfile
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      # Docker Hub responde a veces 502 al descargar BuildKit: un reintento evita que ese corte bloquee el despliegue
+      - id: buildx
+        uses: docker/setup-buildx-action@v3
+        continue-on-error: true
+      - if: steps.buildx.outcome == 'failure'
+        run: sleep 30
+      - if: steps.buildx.outcome == 'failure'
+        uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.context }}

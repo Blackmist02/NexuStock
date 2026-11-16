@@ -6,7 +6,7 @@ carpeta (en Docker se monta como `/ml-engine`, solo lectura).
 ```
 ml-engine/
   predict.py               ← motor de predicción (lo usa el backend como proceso hijo)
-  models/                  ← modelo serializado (demanda_rf_v1.0.0.joblib) y su fila para MODELOS_ML
+  models/                  ← modelo serializado (demanda_rf_v1.1.0.joblib; la v1.0.0 se conserva para volver atrás) y su fila para MODELOS_ML
   notebooks/               ← 01 EDA · 02 variables · 03 modelado y evaluación
   data/raw/                ← ventas, compras, mermas, catálogo, proveedores y calendario 2022-2024
   data/processed/          ← datasets que producen los notebooks
@@ -15,6 +15,7 @@ ml-engine/
   crear_esquema.py         ← crea el esquema (init.sql) en una base vacía (local, Supabase o proveedor definitivo)
   cargar_bd.py             ← carga los datos (ventas, compras y mermas) hasta una fecha y registra las predicciones de 2024
   exportar_plantillas.py   ← convierte data/raw al formato de las plantillas de carga (data/plantillas/, no versionado)
+  reconstruir_fiestas_patrias.py ← reconstruye el 18 y 19 de septiembre (el local abre; ver data/raw/reconstruccion_fiestas_patrias.csv)
 ```
 
 Entorno: Python 3.12 y las versiones de `requirements.txt` (scikit-learn va fijo: debe coincidir con el del modelo).
@@ -29,7 +30,7 @@ Para los notebooks y los scripts de carga: `pip install -r requirements-dev.txt`
    `CAPACIDAD_KG_SEMANA`), esa proyección usa el **promedio histórico** del producto o el de su categoría (RF-11).
 4. Si se activa otro modelo, el proceso se reinicia con su artefacto.
 
-El modelo se registra en NexuStock → *Predicción → Precisión del modelo* (rol TI) con la ruta `models/demanda_rf_v1.0.0.joblib`
+El modelo se registra en NexuStock → *Predicción → Precisión del modelo* (rol TI) con la ruta `models/demanda_rf_v1.1.0.joblib`
 (relativa a esta carpeta), o con `models/registro_modelos_ml.sql`.
 
 ## Contrato
@@ -43,7 +44,7 @@ El modelo se registra en NexuStock → *Predicción → Precisión del modelo* (
                   "ventas_semanales": [{ "semana": "2024-09-23", "kg": 35.2 }] }] }   // 8 semanas previas
 
 // respuesta (una línea)
-{ "predicciones": [{ "producto_id": 3, "demanda_kg": 38.13 }], "mae": 5.144, "latencia_ms": 46, "version": "1.0.0" }
+{ "predicciones": [{ "producto_id": 3, "demanda_kg": 38.13 }], "mae": 5.237, "latencia_ms": 46, "version": "1.1.0" }
 ```
 
 Con `"horizonte": "serie"` y `"semanas": n`, cada predicción trae además la proyección semana a semana desde
