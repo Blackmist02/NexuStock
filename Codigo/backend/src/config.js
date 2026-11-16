@@ -45,6 +45,9 @@ module.exports = {
   // Saltos de proxy confiables delante de la API (el frontend de Next cuenta como 1)
   trustProxy: int(process.env.TRUST_PROXY, 1),
   authRateLimit: int(process.env.AUTH_RATE_LIMIT, 20),
+  // IP real del cliente para el límite de intentos (lib/ipCliente.js). PROXY_SECRET debe ser el mismo en el frontend.
+  proxySecret: process.env.PROXY_SECRET || '',
+  trustCfConnectingIp: bool(process.env.TRUST_CF_CONNECTING_IP, false),
   // Cuentas nuevas desde «Crear cuenta»: la primera es administrador; las siguientes (operador) solo si está activo
   allowPublicSignup: bool(process.env.ALLOW_PUBLIC_SIGNUP, false),
   smtpUrl: process.env.SMTP_URL || '',

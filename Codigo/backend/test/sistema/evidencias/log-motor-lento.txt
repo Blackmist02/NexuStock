@@ -1,0 +1,5 @@
+[ml] modelo qa-lento listo en 59 ms
+[predicción] se usa el respaldo para el producto 13: tiempo_agotado
+[ml] modelo qa-lento listo en 69 ms
+[predicción] serie con respaldo: tiempo_agotado
+[ml] modelo qa-lento listo en 45 ms

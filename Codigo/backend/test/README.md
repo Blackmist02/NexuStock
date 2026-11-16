@@ -14,6 +14,7 @@ Las pruebas usan `node:test` y `node:assert` (sin dependencias extra). En CI ([.
 | `bordes.test.js` | Unitarias | Casos borde del semáforo y de la sugerencia; respaldo de demanda por promedio histórico y por categoría. |
 | `seguridad.test.js` | Unitarias | Hash de contraseñas, expiración y validez del token, roles, CSRF y límite de intentos. |
 | `alertas.test.js`, `utilidades.test.js` | Unitarias | Causa de cada alerta, lectura y escritura de CSV, feriados de Chile y fechas. |
+| `sistema/` | Sistema (tarea 28) | CU-01 a CU-13 contra el entorno desplegado, escenarios de falla y navegador. No corre en `npm test` ni en el CI; ver [sistema/README.md](sistema/README.md) e [informe](sistema/INFORME.md). |
 | `api.test.js` | Integración | Flujos de la API de punta a punta (cuentas y roles, catálogo, ventas, compras, alertas, predicción con respaldo, CSV). Requiere `TEST_DATABASE_URL` (la base debe terminar en `_test`). |
 
 ## Tarea 27: criterios de aceptación y pruebas que los cubren

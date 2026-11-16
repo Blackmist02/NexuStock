@@ -11,7 +11,15 @@ interface Entrada<T> {
   data: T;
 }
 
-export function guardarCache<T>(clave: string, data: T): void {
+/**
+ * Época del resguardo: sube cada vez que se limpia (cierre o expiración de sesión). Una consulta que partió antes de
+ * limpiar y responde después no debe volver a escribir datos del usuario que ya salió.
+ */
+let epoca = 0;
+export const epocaCache = (): number => epoca;
+
+export function guardarCache<T>(clave: string, data: T, epocaConsulta?: number): void {
+  if (epocaConsulta !== undefined && epocaConsulta !== epoca) return;
   try {
     const e: Entrada<T> = { guardado_en: new Date().toISOString(), data };
     localStorage.setItem(PREFIJO + clave, JSON.stringify(e));
@@ -50,6 +58,7 @@ export function leerUsuarioLocal<T>(): T | null {
 
 /** Borra el resguardo local (datos y usuario). */
 export function limpiarCacheLocal(): void {
+  epoca++;
   try {
     const borrar: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {

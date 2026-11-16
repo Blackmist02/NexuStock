@@ -1,0 +1,71 @@
+{
+  "fecha": "2026-11-16T15:10:06.814Z",
+  "api": "http://localhost:4110",
+  "escenario": "bd",
+  "resultados": [
+    {
+      "id": "F-BD-00",
+      "escenario": "bd",
+      "descripcion": "Línea base con la base disponible",
+      "esperado": "health 200",
+      "obtenido": "HTTP 200 en 6 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-01",
+      "escenario": "bd",
+      "descripcion": "Health check con la base detenida",
+      "esperado": "503 status DEGRADED, database ERROR",
+      "obtenido": "HTTP 503 en 7841 ms {\"status\":\"DEGRADED\",\"message\":\"Backend de NexuStock operativo\",\"database\":\"ERROR\",\"timestamp\":\"2026-11-16T15:09:52.699Z\"}",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-02",
+      "escenario": "bd",
+      "descripcion": "Dashboard con la base detenida",
+      "esperado": "503 bd_no_disponible con mensaje amigable, sin detalles técnicos",
+      "obtenido": "HTTP 503 bd_no_disponible en 3817 ms — «El servicio no está disponible por un momento. Intenta nuevamente en unos segundos.»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-03",
+      "escenario": "bd",
+      "descripcion": "Registrar venta con la base detenida (CU-01 7b)",
+      "esperado": "503 amigable tras los reintentos, sin datos parciales",
+      "obtenido": "HTTP 503 bd_no_disponible en 3832 ms — «El servicio no está disponible por un momento. Intenta nuevamente en unos segundos.»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-04",
+      "escenario": "bd",
+      "descripcion": "Iniciar sesión con la base detenida (CU-07 2a)",
+      "esperado": "503 amigable",
+      "obtenido": "HTTP 503 bd_no_disponible en 3815 ms — «El servicio no está disponible por un momento. Intenta nuevamente en unos segundos.»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-05",
+      "escenario": "bd",
+      "descripcion": "Recuperación automática al volver la base (sin reiniciar la API)",
+      "esperado": "health 200 en menos de 60 s",
+      "obtenido": "21 s desde la caída",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-06",
+      "escenario": "bd",
+      "descripcion": "Atomicidad: la venta fallida no dejó datos parciales (RNF-11)",
+      "esperado": "stock sin cambios (13.08)",
+      "obtenido": "stock 13.08",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-BD-07",
+      "escenario": "bd",
+      "descripcion": "Operación normal tras la recuperación",
+      "esperado": "201",
+      "obtenido": "HTTP 201 en 132 ms",
+      "resultado": "Aprobado"
+    }
+  ]
+}

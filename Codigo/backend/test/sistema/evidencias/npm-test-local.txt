@@ -1,0 +1,77 @@
+npm warn cli npm v11.19.0 does not support Node.js v26.8.0-alpha.0.0.0. This version of npm supports the following node versions: `^20.17.0 || >=22.9.0`. You can find the latest version at https://nodejs.org/.
+
+> backend@1.0.0 test
+> node --test "test/*.test.js"
+
+[config] JWT_SECRET no definido: se usa un secreto de desarrollo. Defínelo en .env.
+✔ causa de la alerta según su fotografía (3.5216ms)
+✔ la causa es coherente con el nivel del semáforo (1.4813ms)
+[config] JWT_SECRET no definido: se usa un secreto de desarrollo. Defínelo en .env.
+▶ API de NexuStock
+  ✔ la primera cuenta es administrador y exige negocio y términos; el registro se cierra después (2505.7078ms)
+  ✔ sin sesión no se accede a los datos (650.6189ms)
+  ✔ alta de equipo con roles (RF-12) y permisos por rol (2747.8958ms)
+  ✔ panel de la API: el navegador recibe el panel, las máquinas el JSON y /status exige administrador o TI (127.2629ms)
+[cors] origen no permitido: https://sitio-ajeno.example
+  ✔ CORS: el propio servidor es un origen válido y un sitio ajeno recibe 403 (12.0114ms)
+  ✔ catálogo: categorías, proveedores y productos con validación por campo (388.9898ms)
+  ✔ venta (RF-01): descuenta stock en una transacción y valida cantidad (106.1568ms)
+  ✔ compra (RF-02): suma stock y registra proveedor (102.1581ms)
+  ✔ alertas (RF-05, RF-08/09/10): se generan al bajar el stock, se atienden y se cierran (291.2705ms)
+  ✔ predicción con respaldo (RF-11): sin modelo activo se usa el promedio histórico (51.5977ms)
+  ✔ serie de predicción: rango de 1 a 4 meses hacia atrás y adelante, en semanas completas (374.1437ms)
+  ✔ «Recordarme» (RF-07): la cookie dura 30 días; sin marcarlo es de sesión (985.8359ms)
+  ✔ modelos (RF-06): solo TI registra; la ruta debe existir en ml-engine (41.9345ms)
+  ✔ historial, exportación CSV y calendario (106.6489ms)
+  ✔ integridad: un producto con historial no se elimina, se desactiva (RNF-10) (126.1029ms)
+  ✔ usuarios: no se puede dejar el sistema sin administrador ni cambiar el propio rol (38.1371ms)
+  ✔ configuración: nombre del negocio y activación de alertas (16.7902ms)
+  ✔ fecha del sistema guardada en CONFIGURACION: sin reiniciar, no futura ni anterior a lo cargado (90.8783ms)
+  ✔ carga de ventas, compras y mermas por CSV: valida, aplica en orden cronológico y no duplica (196.471ms)
+✔ API de NexuStock (11772.5875ms)
+[config] JWT_SECRET no definido: se usa un secreto de desarrollo. Defínelo en .env.
+✔ stock en cero: quiebre en ambos umbrales, agotado hoy y se pide la demanda más el margen (4.9851ms)
+✔ pico estacional (Fiestas Patrias): el mismo stock pasa de óptimo a quiebre y la sugerencia crece (1.0952ms)
+✔ proveedor con lead time extendido: el horizonte cubre todo el plazo y el pedido es para hoy (1.6335ms)
+✔ proveedor sin días hábiles registrados: se asume atención diaria en todas las reglas (2.0081ms)
+✔ tope por vida útil: sin demanda o sin vida útil no se acota; con stock se descuenta del tope (0.9162ms)
+✔ respaldo de demanda (RF-11): promedio histórico y, sin historial, promedio de la categoría (135.7644ms)
+[config] JWT_SECRET no definido: se usa un secreto de desarrollo. Defínelo en .env.
+✔ ejemplo del documento de diseño: stock 40, demanda 140, margen 10% → quiebre y 114 kg (2.7975ms)
+✔ semáforo por demanda (0.2876ms)
+✔ pesos de los días de la semana: lunes a domingo, suman 1 (2.6915ms)
+✔ días de cobertura: desde hoy hasta la llegada del pedido siguiente, inclusive (3.1521ms)
+✔ demanda del horizonte de reposición con el calendario del proveedor (control de cambios ERS v02) (0.702ms)
+✔ cantidad sugerida con demanda de reposición y tope por vida útil (control de cambios ERS v02) (0.6594ms)
+✔ demanda a cubrir en el semáforo: el horizonte de reposición, sin superar la vida útil (0.8475ms)
+✔ umbral local de stock mínimo (0.8243ms)
+✔ cantidad sugerida: kg a 0,1 hacia arriba; unidades enteras; nunca negativa (1.638ms)
+✔ fecha de quiebre estimada (0.6978ms)
+✔ fecha límite de pedido se adelanta al día hábil anterior del proveedor (0.5078ms)
+✔ fechas auxiliares (0.3184ms)
+✔ política de contraseña: 8+ caracteres, una mayúscula y un número (1.9971ms)
+✔ la huella de contraseña cambia con el hash (invalida sesiones y enlaces) (1.23ms)
+[config] JWT_SECRET no definido: se usa un secreto de desarrollo. Defínelo en .env.
+✔ hash de contraseña: bcrypt con costo 12, sal distinta en cada hash y verificación (2869.6331ms)
+✔ token de acceso: dura 8 h o 30 días con «Recordarme» y lleva la huella de la contraseña (5.675ms)
+✔ token válido: carga el usuario vigente en la petición (2.4182ms)
+✔ token expirado, adulterado, de otro tipo o ausente: 401 (4.0169ms)
+✔ cambiar la contraseña o desactivar la cuenta invalida las sesiones abiertas (518.9161ms)
+✔ roles: solo pasan los roles autorizados (403); sin sesión, 401 (0.6543ms)
+✔ CSRF: con cookie, las escrituras exigen la cabecera x-nx-csrf (0.3819ms)
+✔ límite de intentos: después de AUTH_RATE_LIMIT intentos en 15 min responde 429 (343.6837ms)
+[config] JWT_SECRET no definido: se usa un secreto de desarrollo. Defínelo en .env.
+✔ lectura de CSV: separador «;» o «,», comillas, BOM, coma decimal y fechas (5.4714ms)
+✔ vida útil: no se sugiere comprar más de lo que se alcanza a vender (0.5181ms)
+✔ Domingo de Pascua (algoritmo) y feriados móviles de Chile (1.5987ms)
+✔ CSV para Excel en español: BOM, separador «;», coma decimal y comillas (0.7867ms)
+✔ fechas: lunes de la semana, inicio y fin de mes, validación ISO (0.7983ms)
+✔ errores de PostgreSQL por dato fuera de rango o mal formado responden 400 sin detalles (RNF-08, tarea 28) (3.1019ms)
+ℹ tests 55
+ℹ suites 1
+ℹ pass 55
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12020.7702

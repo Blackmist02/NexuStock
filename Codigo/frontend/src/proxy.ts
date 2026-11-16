@@ -9,6 +9,8 @@ const PUBLICAS = ["/login", "/crear-cuenta", "/recuperar-contrasena", "/conoce"]
 
 /** URL interna de la API; se lee en tiempo de EJECUCIÓN (no hace falta recompilar al cambiar de proveedor). */
 const API_URL = (process.env.API_URL || "http://localhost:4000").replace(/\/$/, "");
+/** Secreto compartido con la API (PROXY_SECRET en ambos). Sin él la API cuenta los intentos por su propia IP visible. */
+const PROXY_SECRET = process.env.PROXY_SECRET || "";
 
 export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
@@ -19,6 +21,16 @@ export function proxy(req: NextRequest) {
     // Un origen ajeno se reenvía tal cual para que el backend lo rechace.
     const headers = new Headers(req.headers);
     if (headers.get("origin") === req.nextUrl.origin) headers.delete("origin");
+    // Límite de intentos por cliente real (DEF-02): se informa la IP que entrega la plataforma (Vercel fija x-real-ip y
+    // reescribe x-forwarded-for, así que el cliente no puede falsearlas) junto con el secreto compartido con la API.
+    // Lo que el cliente haya enviado en esas cabeceras se descarta siempre.
+    headers.delete("x-nx-cliente-ip");
+    headers.delete("x-nx-proxy-secreto");
+    const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+    if (PROXY_SECRET && ip) {
+      headers.set("x-nx-cliente-ip", ip);
+      headers.set("x-nx-proxy-secreto", PROXY_SECRET);
+    }
     return NextResponse.rewrite(new URL(`${pathname}${search}`, API_URL), { request: { headers } });
   }
   if (PUBLICAS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return NextResponse.next();

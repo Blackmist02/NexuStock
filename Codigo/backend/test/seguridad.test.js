@@ -113,3 +113,21 @@ test('límite de intentos: después de AUTH_RATE_LIMIT intentos en 15 min respon
     server.close();
   }
 });
+
+test('IP del cliente para el límite de intentos: secreto del proxy, Cloudflare y respaldo (DEF-02, tarea 28)', () => {
+  const { ipCliente } = require('../src/lib/ipCliente');
+  const req = (headers, ip = '10.0.0.9') => ({ headers, ip });
+  const opc = { secreto: 's3creto-compartido', confiarCloudflare: true };
+  // 1. El proxy de Next con el secreto correcto manda
+  assert.equal(ipCliente(req({ 'x-nx-cliente-ip': '200.1.2.3', 'x-nx-proxy-secreto': 's3creto-compartido', 'cf-connecting-ip': '76.76.21.1' }), opc), '200.1.2.3');
+  // Secreto incorrecto o ausente: la cabecera del cliente se ignora (no se puede falsear la IP)
+  assert.equal(ipCliente(req({ 'x-nx-cliente-ip': '1.1.1.1', 'x-nx-proxy-secreto': 'otro', 'cf-connecting-ip': '76.76.21.1' }), opc), '76.76.21.1');
+  assert.equal(ipCliente(req({ 'x-nx-cliente-ip': '1.1.1.1' }), opc), '10.0.0.9');
+  // IP mal formada con el secreto correcto: se pasa al siguiente criterio
+  assert.equal(ipCliente(req({ 'x-nx-cliente-ip': 'no-es-ip', 'x-nx-proxy-secreto': 's3creto-compartido' }), opc), '10.0.0.9');
+  // 2. Cloudflare solo si está habilitado
+  assert.equal(ipCliente(req({ 'cf-connecting-ip': '2001:db8::1' }), opc), '2001:db8::1');
+  assert.equal(ipCliente(req({ 'cf-connecting-ip': '200.1.2.3' }), { secreto: '', confiarCloudflare: false }), '10.0.0.9');
+  // 3. Sin secreto configurado nunca se confía en x-nx-cliente-ip
+  assert.equal(ipCliente(req({ 'x-nx-cliente-ip': '200.1.2.3', 'x-nx-proxy-secreto': '' }), { secreto: '' }), '10.0.0.9');
+});

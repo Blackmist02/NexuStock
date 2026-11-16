@@ -1,0 +1,47 @@
+{
+  "fecha": "2026-11-16T15:08:56.665Z",
+  "api": "http://localhost:4111",
+  "escenario": "motor-lento",
+  "resultados": [
+    {
+      "id": "F-M-LENTO-01",
+      "escenario": "motor-lento",
+      "descripcion": "Predicción de «Alitas de Pollo» con motor-lento",
+      "esperado": "201, origen promedio_historico (respaldo RF-11), sin detalles técnicos",
+      "obtenido": "HTTP 201 en 2080 ms, origen promedio_historico, respaldo true, demanda 26.99, latencia motor null",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-LENTO-02",
+      "escenario": "motor-lento",
+      "descripcion": "Tiempo total de la predicción",
+      "esperado": "Corte del motor a los 2,0 s y respuesta con respaldo antes de 3 s",
+      "obtenido": "2080 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-LENTO-03",
+      "escenario": "motor-lento",
+      "descripcion": "El servidor no se bloquea durante la inferencia (RNF-02)",
+      "esperado": "Otra consulta responde 200 mientras la predicción está en curso",
+      "obtenido": "GET /api/products HTTP 200 en 80 ms (predicción: 2080 ms)",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-LENTO-04",
+      "escenario": "motor-lento",
+      "descripcion": "El dashboard sigue disponible",
+      "esperado": "200 en ≤ 3 s",
+      "obtenido": "HTTP 200 en 2208 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-LENTO-05",
+      "escenario": "motor-lento",
+      "descripcion": "El panel técnico informa el estado del motor",
+      "esperado": "estado del motor visible para TI",
+      "obtenido": "motor OK, proceso listo, versión qa-lento",
+      "resultado": "Aprobado"
+    }
+  ]
+}
