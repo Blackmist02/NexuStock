@@ -1,21 +1,15 @@
-# Despliegue continuo de NexuStock (tarea 19; proveedor según la TCO #8: Azure Container Apps, Chile Central).
+# Despliegue continuo de NexuStock (tarea 19): entorno demo de la defensa.
 #
-#   publicar    · cuando CI termina en verde sobre main: construye las imágenes de producción (backend = API + motor ML;
-#                 frontend) y las publica en GitHub Container Registry con la etiqueta del commit (sha) y «dev».
-#   desarrollo  · automático tras publicar: actualiza las Container Apps del entorno «desarrollo» y hace la prueba de humo.
-#   produccion  · manual (Actions → CD → Run workflow, con el sha a promover). Usa el entorno «produccion», que en
-#                 Settings → Environments exige la aprobación de un revisor antes de ejecutarse.
+#   demo · entorno gratuito (escenario A de la TCO #8): Vercel (frontend) + Render Free (backend = API + motor ML) +
+#          Supabase Free (PostgreSQL). Corre solo cuando CI termina en verde sobre main, o a mano
+#          (Actions → CD → Run workflow) para redesplegar el último commit de main. Llama al deploy hook de Render
+#          (secreto RENDER_DEPLOY_HOOK), despliega el frontend con la CLI de Vercel (secretos VERCEL_TOKEN,
+#          VERCEL_ORG_ID, VERCEL_PROJECT_ID) y prueba /api/health en la URL pública (variable URL_DEMO).
+#          Sin esos secretos, cada paso se omite con un aviso.
 #
-# Configuración (Settings → Environments → desarrollo / produccion), sin credenciales en el código:
-#   variables : AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID (identidad federada OIDC, sin contraseña),
-#               AZURE_RESOURCE_GROUP, ACA_BACKEND, ACA_FRONTEND (nombres de las Container Apps) y URL_APP (https://…).
-#   Los secretos de la aplicación (DATABASE_URL, JWT_SECRET, SMTP_URL) viven como secretos de cada Container App,
-#   no en GitHub. Mientras falte la configuración de Azure, los despliegues se omiten con un aviso (no fallan).
-#
-#   demo        · entorno gratuito de la defensa (escenario A de la TCO): Vercel (frontend) + Render Free (backend) +
-#                 Supabase Free. Tras CI en verde sobre main llama al deploy hook de Render (secreto RENDER_DEPLOY_HOOK),
-#                 despliega el frontend con la CLI de Vercel (secretos VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID) y
-#                 prueba /api/health en la URL pública (variable URL_DEMO). Sin esos secretos, cada paso se omite.
+# Alcance (acta del 16-11-2026): el proyecto llega hasta la etapa demo. La implementación con un proveedor cloud
+# (Azure Container Apps, publicación de imágenes en GHCR y promoción a producción con aprobación) requiere inversión y
+# es una fase futura; esa versión del workflow queda en el historial (commit 48b15f6) para retomarla.
 
 name: CD
 
@@ -25,36 +19,30 @@ on:
     types: [completed]
     branches: [main]
   workflow_dispatch:
-    inputs:
-      sha:
-        description: "Commit (sha completo) cuyas imágenes se promueven a producción"
-        required: true
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 concurrency:
-  group: cd-${{ github.event_name }}
+  group: cd-demo
   cancel-in-progress: false
 
 jobs:
   demo:
-    name: Redesplegar la demo (Render)
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    name: Redesplegar la demo (Render + Vercel)
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy hook de Render
         env:
           HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           if [ -z "$HOOK" ]; then echo "::notice::Sin RENDER_DEPLOY_HOOK: la demo no se redespliega."; exit 0; fi
           curl -fsS -X POST "$HOOK&ref=$SHA" > /dev/null && echo "Despliegue de $SHA solicitado a Render."
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - name: Frontend en Vercel (producción)
         working-directory: Codigo/frontend
         env:
@@ -77,120 +65,3 @@ jobs:
             sleep 30
           done
           echo "::error::La demo no respondió en ${{ vars.URL_DEMO }}/api/health"; exit 1
-
-  publicar:
-    name: Publicar imágenes (${{ matrix.nombre }})
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - nombre: backend
-            context: Codigo
-            file: Codigo/backend/Dockerfile
-          - nombre: frontend
-            context: Codigo/frontend
-            file: Codigo/frontend/Dockerfile
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-      - name: Nombre de la imagen (GHCR exige minúsculas)
-        run: echo "IMAGEN=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nexustock-${{ matrix.nombre }}" >> "$GITHUB_ENV"
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.file }}
-          target: prod
-          push: true
-          tags: |
-            ${{ env.IMAGEN }}:${{ github.event.workflow_run.head_sha }}
-            ${{ env.IMAGEN }}:dev
-          cache-from: type=gha,scope=${{ matrix.nombre }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.nombre }}
-
-  desarrollo:
-    name: Desplegar en desarrollo
-    needs: publicar
-    runs-on: ubuntu-latest
-    environment: desarrollo
-    steps:
-      - id: cfg
-        name: Verificar configuración de Azure
-        env:
-          CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-        run: |
-          if [ -z "$CLIENT_ID" ]; then
-            echo "::notice::Entorno «desarrollo» sin configuración de Azure: imágenes publicadas, despliegue omitido."
-            echo "listo=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "listo=true" >> "$GITHUB_OUTPUT"
-          fi
-          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-      - if: steps.cfg.outputs.listo == 'true'
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - if: steps.cfg.outputs.listo == 'true'
-        name: Actualizar Container Apps
-        env:
-          SHA: ${{ github.event.workflow_run.head_sha }}
-          OWNER: ${{ steps.cfg.outputs.owner }}
-        run: |
-          az containerapp update -g "${{ vars.AZURE_RESOURCE_GROUP }}" -n "${{ vars.ACA_BACKEND }}" \
-            --image "ghcr.io/$OWNER/nexustock-backend:$SHA" --output none
-          az containerapp update -g "${{ vars.AZURE_RESOURCE_GROUP }}" -n "${{ vars.ACA_FRONTEND }}" \
-            --image "ghcr.io/$OWNER/nexustock-frontend:$SHA" --output none
-      - if: steps.cfg.outputs.listo == 'true'
-        name: Prueba de humo (/api/health a través del frontend)
-        run: |
-          for i in $(seq 1 20); do
-            if curl -fsS "${{ vars.URL_APP }}/api/health"; then exit 0; fi
-            sleep 15
-          done
-          echo "::error::La aplicación no respondió en ${{ vars.URL_APP }}/api/health"; exit 1
-
-  produccion:
-    name: Desplegar en producción (con aprobación)
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    environment: produccion
-    steps:
-      - id: cfg
-        name: Verificar configuración e imágenes
-        env:
-          CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-          SHA: ${{ inputs.sha }}
-        run: |
-          if ! [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]; then echo "::error::Indica el sha completo (40 caracteres)."; exit 1; fi
-          if [ -z "$CLIENT_ID" ]; then echo "::error::Falta la configuración de Azure del entorno «produccion»."; exit 1; fi
-          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-      - uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - name: Actualizar Container Apps
-        env:
-          SHA: ${{ inputs.sha }}
-          OWNER: ${{ steps.cfg.outputs.owner }}
-        run: |
-          az containerapp update -g "${{ vars.AZURE_RESOURCE_GROUP }}" -n "${{ vars.ACA_BACKEND }}" \
-            --image "ghcr.io/$OWNER/nexustock-backend:$SHA" --output none
-          az containerapp update -g "${{ vars.AZURE_RESOURCE_GROUP }}" -n "${{ vars.ACA_FRONTEND }}" \
-            --image "ghcr.io/$OWNER/nexustock-frontend:$SHA" --output none
-      - name: Prueba de humo (/api/health a través del frontend)
-        run: |
-          for i in $(seq 1 20); do
-            if curl -fsS "${{ vars.URL_APP }}/api/health"; then exit 0; fi
-            sleep 15
-          done
-          echo "::error::La aplicación no respondió en ${{ vars.URL_APP }}/api/health"; exit 1

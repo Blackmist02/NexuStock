@@ -49,7 +49,7 @@ def valores_env():
             linea = linea.strip()
             if linea and not linea.startswith('#') and '=' in linea:
                 k, v = linea.split('=', 1)
-                valores[k.strip()] = v.strip()
+                valores[k.strip()] = v.strip().strip('"\'')
     return valores
 
 

@@ -104,15 +104,9 @@ Dos workflows de GitHub Actions en [.github/workflows/](.github/workflows/):
 | Workflow | Cuándo corre | Qué hace |
 |---|---|---|
 | **CI** ([ci.yml](.github/workflows/ci.yml)) | Cada push a `main` o `Features/*` y cada pull request a `main` | Backend: `npm run lint` (ESLint) y `npm test` (pruebas unitarias y de API contra un PostgreSQL 16 descartable). Motor ML: `validar_predict.py`. Frontend: `tsc`, `eslint` y `next build`. Después construye las imágenes Docker de producción del backend (API + motor ML) y del frontend, sin publicarlas. |
-| **CD** ([cd.yml](.github/workflows/cd.yml)) | Cuando CI termina en verde sobre `main`; producción solo a mano | Publica ambas imágenes en GitHub Container Registry (`ghcr.io/<dueño>/nexustock-backend` y `nexustock-frontend`, etiquetas `<sha>` y `dev`). Despliega automáticamente en el entorno **desarrollo** (Azure Container Apps) y hace una prueba de humo a `/api/health`. **Producción**: *Actions → CD → Run workflow* con el sha a promover; el entorno `produccion` exige la aprobación de un revisor. |
+| **CD** ([cd.yml](.github/workflows/cd.yml)) | Cuando CI termina en verde sobre `main`, o a mano (*Actions → CD → Run workflow*) | Redespliega el entorno demo: backend + motor ML en Render y frontend en Vercel, y prueba `/api/health` en la URL pública. |
 
-**Configuración para el despliegue** (una sola vez, en *Settings → Environments*):
-
-1. Crear los entornos `desarrollo` y `produccion`. En `produccion`, activar *Required reviewers* con ambos integrantes.
-2. En cada entorno, definir las variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` (identidad de Azure con credencial federada OIDC para este repositorio: no se guarda ninguna contraseña), `AZURE_RESOURCE_GROUP`, `ACA_BACKEND`, `ACA_FRONTEND` y `URL_APP`.
-3. En Azure, cada Container App guarda sus propios secretos (`DATABASE_URL`, `JWT_SECRET`, `SMTP_URL`) y el frontend recibe `API_URL` con la dirección interna del backend. Si los paquetes de GHCR son privados, registrar el registro en cada app (`az containerapp registry set --server ghcr.io …`).
-
-Mientras un entorno no tenga la configuración de Azure, CD publica las imágenes y omite el despliegue con un aviso, sin fallar. Las imágenes leen toda su configuración de variables de entorno, así que la misma imagen sirve en desarrollo y en producción (RNF-25).
+**Alcance del despliegue** (acta del 16-11-2026): el proyecto llega hasta la etapa demo, en servicios gratuitos. La implementación con un proveedor cloud (Azure Container Apps según la TCO #8, publicación de imágenes en GHCR y promoción a producción con aprobación) requiere inversión y queda como fase futura. Esa versión de `cd.yml` está en el historial (commit `48b15f6`).
 
 **Demo gratuita** (escenario A de la TCO, para la defensa): frontend en Vercel Hobby (`https://nexustock-omega.vercel.app`), backend + motor ML en Render Free (`https://nexustock-api.onrender.com`, región Virginia, desde `Codigo/backend/Dockerfile` con contexto `Codigo`) y base de datos en Supabase Free (us-east-1). El frontend reenvía `/api/*` al backend con `API_URL`, así que la cookie de sesión viaja en el mismo origen. Tras CI en verde sobre `main`, el job `demo` de CD redespliega Render (secreto `RENDER_DEPLOY_HOOK`) y Vercel (secretos `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`) y prueba `/api/health` (variable `URL_DEMO`). Render Free se apaga tras 15 minutos sin tráfico: antes de presentar, ejecutar *Actions → Calentar demo*.
 
