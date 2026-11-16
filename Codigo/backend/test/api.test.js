@@ -44,6 +44,7 @@ describe('API de NexuStock', { skip: omitir }, () => {
     process.env.EVALUACION_CADA_MIN = '0';
     process.env.ML_ENGINE_DIR = path.join(process.env.DATA_DIR, 'ml-engine'); // sin motor: se usa el respaldo
     process.env.AUTH_RATE_LIMIT = '1000';
+    process.env.SMTP_URL = ''; // sin correo, como la demo
     db = require('../src/db');
     await db.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
     await db.query(fs.readFileSync(path.join(__dirname, '../../init.sql'), 'utf8'));
@@ -76,6 +77,15 @@ describe('API de NexuStock', { skip: omitir }, () => {
     await entrar('admin', 'ana@carniceria.cl', 'Clave1234');
     const cfg = await llamar('admin', 'GET', '/config');
     assert.equal(cfg.json.data.negocio.nombre, 'Carnicería Don Lomo');
+  });
+
+  test('setup-status indica que no hay recuperación por correo sin SMTP y /auth/forgot sigue respondiendo 202', async () => {
+    const estado = await llamar(null, 'GET', '/auth/setup-status');
+    assert.equal(estado.status, 200);
+    assert.equal(estado.json.registroAbierto, false);
+    assert.equal(estado.json.recuperacionPorCorreo, false);
+    const forgot = await llamar(null, 'POST', '/auth/forgot', { email: 'ana@carniceria.cl' });
+    assert.equal(forgot.status, 202);
   });
 
   test('sin sesión no se accede a los datos', async () => {

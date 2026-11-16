@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api, ApiClientError, errorMessage } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
 import { useAuth } from "@/lib/auth";
 import { PasswordRules, passwordValida } from "@/components/auth/PasswordRules";
 import { Button, TextField } from "@/components/ui/Field";
@@ -18,10 +19,13 @@ export function RecuperarForm() {
 
 /**
  * Paso 1: pide el correo. La API responde siempre 202 (no revela si el correo existe).
- * Nota para desarrollo: si la API no tiene SMTP configurado, el enlace de recuperación
- * se escribe en el log de la API en lugar de enviarse por correo.
+ * Si la API no tiene SMTP configurado (`recuperacionPorCorreo: false`, como en la demostración), el enlace
+ * se escribe en el log de la API en lugar de enviarse: la pantalla lo advierte e indica pedir un
+ * «Enlace de acceso» al administrador TI. La solicitud se sigue registrando (respaldo para el propio TI).
  */
 function PasoCorreo() {
+  const estado = useApi<{ recuperacionPorCorreo?: boolean }>("/auth/setup-status");
+  const sinCorreo = estado.data?.recuperacionPorCorreo === false;
   const [email, setEmail] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
@@ -47,6 +51,22 @@ function PasoCorreo() {
     } finally {
       setEnviando(false);
     }
+  }
+
+  if (enviado && sinCorreo) {
+    return (
+      <div className={`card authcard ${styles.card}`}>
+        <div className="eyebrow">Solicitud registrada</div>
+        <h1 className="ah">Pide un enlace de acceso</h1>
+        <div className="asub">
+          En este entorno no se envían correos de recuperación. Pide al administrador TI de tu carnicería un «Enlace de acceso» para crear una
+          contraseña nueva. Si tú eres el administrador TI, avisa al soporte de NexuStock.
+        </div>
+        <div className={styles.back}>
+          <Link href="/login">← Volver a iniciar sesión</Link>
+        </div>
+      </div>
+    );
   }
 
   if (enviado) {
@@ -79,7 +99,11 @@ function PasoCorreo() {
     <div className={`card authcard ${styles.card}`}>
       <div className="eyebrow">Paso 1 de 2</div>
       <h1 className="ah">¿Olvidaste tu contraseña?</h1>
-      <div className="asub">Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva.</div>
+      <div className="asub">
+        {sinCorreo
+          ? "En este entorno no se envían correos de recuperación: pide al administrador TI de tu carnicería un «Enlace de acceso». Si tú eres el administrador TI, registra aquí tu correo y avisa al soporte de NexuStock."
+          : "Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva."}
+      </div>
       <form onSubmit={enviar} noValidate>
         <TextField
           label="Correo electrónico" placeholder="Correo electrónico"
@@ -98,7 +122,7 @@ function PasoCorreo() {
         ) : null}
         <div style={{ height: 20 }} />
         <Button type="submit" variant="primary" size="block" loading={enviando}>
-          Enviar enlace
+          {sinCorreo ? "Registrar solicitud" : "Enviar enlace"}
         </Button>
       </form>
       <div className={styles.back}>
