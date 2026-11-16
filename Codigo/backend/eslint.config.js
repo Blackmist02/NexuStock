@@ -16,4 +16,9 @@ module.exports = [
       "no-unused-vars": ["error", { argsIgnorePattern: "^_", caughtErrors: "none", ignoreRestSiblings: true }],
     },
   },
+  {
+    // Panel de la API (/api/health en el navegador): script de navegador, no de Node
+    files: ["src/panel/**/*.js"],
+    languageOptions: { sourceType: "script", globals: { ...globals.browser } },
+  },
 ];

@@ -1,3 +1,4 @@
+const path = require('node:path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -16,15 +17,23 @@ const app = express();
 app.set('trust proxy', config.trustProxy);
 app.use(helmet());
 // El frontend consume la API bajo su propio origen (proxy de Next), pero si se llama directo solo se aceptan estos orígenes.
-// Un origen distinto se rechaza con 403 (sin cabecera Origin —curl, healthcheck, mismo origen— se permite).
+// Un origen distinto se rechaza con 403. Se permiten las peticiones sin cabecera Origin (curl, healthcheck) y las del
+// propio servidor (el panel de /api/health, servido por la API, llama a la API desde su mismo origen).
+const mismoOrigen = (origin, host) => {
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+};
 app.use(
-  cors({
-    credentials: true,
-    origin(origin, callback) {
-      if (!origin || config.corsOrigins.includes(origin)) return callback(null, true);
-      console.warn(`[cors] origen no permitido: ${origin}`);
-      callback(new ApiError(403, 'origen_no_permitido', 'Origen no permitido'));
+  cors((req, callback) => {
+    const origin = req.headers.origin;
+    if (!origin || config.corsOrigins.includes(origin) || mismoOrigen(origin, req.headers.host)) {
+      return callback(null, { origin: true, credentials: true });
     }
+    console.warn(`[cors] origen no permitido: ${origin}`);
+    callback(new ApiError(403, 'origen_no_permitido', 'Origen no permitido'));
   })
 );
 // /api/import acepta archivos CSV grandes y define su propio límite
@@ -33,8 +42,31 @@ app.use((req, res, next) => (req.path.startsWith('/api/import') ? next() : json1
 app.use(cookieParser());
 app.use('/api', csrfGuard);
 
-// Ruta de prueba (Healthcheck) — incluye el estado de la conexión a PostgreSQL
+// Panel de la API: archivos estáticos (sin datos; los datos se piden a /api/status con sesión de administrador o TI)
+const PANEL = path.join(__dirname, 'panel');
+app.use('/api/panel', express.static(PANEL, { index: false, maxAge: '1h' }));
+const CSP_PANEL = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'"
+].join('; ');
+
+// Healthcheck — incluye el estado de la conexión a PostgreSQL. Un navegador (Accept: text/html) recibe el panel de la
+// API, que pide iniciar sesión; curl, Docker, Render y los workflows reciben siempre este JSON.
 app.get('/api/health', async (req, res) => {
+  res.vary('Accept');
+  if (req.accepts(['json', 'html']) === 'html') {
+    return res
+      .set({ 'Cache-Control': 'no-store', 'Content-Security-Policy': CSP_PANEL })
+      .sendFile(path.join(PANEL, 'index.html'));
+  }
   let database = 'OK';
   try {
     await db.query('SELECT 1');
@@ -55,6 +87,7 @@ app.use('/api/auth', require('./routes/auth'));
 
 // Todo lo demás requiere sesión; el control por rol se aplica dentro de cada ruta (ver README)
 app.use('/api', authenticate);
+app.use('/api/status', require('./routes/estado'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/categories', require('./routes/categories'));

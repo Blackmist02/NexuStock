@@ -99,6 +99,37 @@ describe('API de NexuStock', { skip: omitir }, () => {
     assert.equal((await llamar('operador', 'GET', '/models')).status, 403);
   });
 
+  test('panel de la API: el navegador recibe el panel, las máquinas el JSON y /status exige administrador o TI', async () => {
+    const html = await fetch(`${base}/api/health`, { headers: { accept: 'text/html,application/xhtml+xml,*/*;q=0.8' } });
+    assert.equal(html.status, 200);
+    assert.match(html.headers.get('content-type'), /text\/html/);
+    assert.match(html.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+    assert.equal(html.headers.get('cache-control'), 'no-store');
+    const json = await llamar(null, 'GET', '/health');
+    ok(json, 200);
+    assert.equal(json.json.status, 'OK');
+    assert.equal((await fetch(`${base}/api/panel/panel.js`)).status, 200);
+
+    assert.equal((await llamar(null, 'GET', '/status')).status, 401);
+    assert.equal((await llamar('operador', 'GET', '/status')).status, 403);
+    ok(await llamar('ti', 'GET', '/status'), 200);
+    const r = await llamar('admin', 'GET', '/status');
+    ok(r, 200);
+    assert.equal(r.json.base.estado, 'OK');
+    assert.equal(typeof r.json.base.tablas.ventas, 'number');
+    assert.equal(r.json.motor.estado, 'RESPALDO'); // en las pruebas no hay motor: se usa el respaldo (RF-11)
+    assert.equal(r.json.usuario.rol, 'administrador');
+    assert.ok(!r.texto.includes(URL_BD), 'no expone la URL de la base');
+  });
+
+  test('CORS: el propio servidor es un origen válido y un sitio ajeno recibe 403', async () => {
+    const propio = await fetch(`${base}/api/health`, { headers: { origin: base } });
+    assert.equal(propio.status, 200);
+    const ajeno = await fetch(`${base}/api/health`, { headers: { origin: 'https://sitio-ajeno.example' } });
+    assert.equal(ajeno.status, 403);
+    assert.equal((await ajeno.json()).error.code, 'origen_no_permitido');
+  });
+
   test('catálogo: categorías, proveedores y productos con validación por campo', async () => {
     // el esquema trae categorías iniciales (Vacuno, Cerdo, Pollo, Embutidos)
     const iniciales = await llamar('admin', 'GET', '/categories');

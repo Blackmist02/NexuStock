@@ -171,5 +171,7 @@ module.exports = {
   detenerMotor,
   artefactoExiste,
   resolverArtefacto,
-  scriptPredict
+  scriptPredict,
+  /** Estado del proceso predict.py (panel de la API). */
+  estadoMotor: () => ({ disponible: motor.disponible, version: motor.version })
 };
