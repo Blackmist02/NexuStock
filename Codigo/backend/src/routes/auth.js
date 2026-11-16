@@ -29,11 +29,15 @@ const emailSchema = z.string().trim().toLowerCase().email('Correo inválido').ma
 
 const publicUser = (u) => ({ id: u.id_usuario, nombre: u.nombre, email: u.email, rol: u.rol });
 
-/** ¿Se puede crear una cuenta? La primera siempre; las siguientes solo con ALLOW_PUBLIC_SIGNUP=true. */
+/**
+ * ¿Se puede crear una cuenta? La primera siempre; las siguientes solo con ALLOW_PUBLIC_SIGNUP=true.
+ * recuperacionPorCorreo: sin SMTP_URL el enlace de «¿Olvidaste tu contraseña?» no se envía (queda en el log de la API),
+ * y la pantalla de recuperación indica pedir un «Enlace de acceso» al administrador TI.
+ */
 router.get('/setup-status', async (_req, res) => {
   const { rows } = await db.query('SELECT COUNT(*)::int AS n FROM usuarios');
   const necesitaRegistro = rows[0].n === 0;
-  res.json({ necesitaRegistro, registroAbierto: necesitaRegistro || config.allowPublicSignup });
+  res.json({ necesitaRegistro, registroAbierto: necesitaRegistro || config.allowPublicSignup, recuperacionPorCorreo: Boolean(config.smtpUrl) });
 });
 
 /**
