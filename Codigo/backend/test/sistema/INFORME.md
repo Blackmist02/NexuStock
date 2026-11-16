@@ -174,6 +174,18 @@ Las cuatro operaciones fuera de cota son justamente las que calculan o verifican
 | 4. Seguridad: HTTPS, CORS, CSRF, Data API cerrada, sin credenciales expuestas | Cumplido: sección 4. El hallazgo adicional en el límite de intentos (DEF-02) está corregido en la rama |
 | Salida: informe sin defectos críticos abiertos | Cumplido: no hay defectos críticos. Para cerrar la tarea faltan configurar las variables de DEF-02, desplegar DEF-01, DEF-02 y DEF-04 y hacer una nueva corrida de `sistema.js` (unos 5 minutos) |
 
+## 7.1 Verificación después del despliegue (16-11-2026, PR #15, commit `7b84ae4`)
+
+Nueva corrida de `sistema.js` contra la demo (`evidencias/sistema-demo-post-despliegue.json`): **91/93 aprobados**, 1 observación (OBS-01) y 1 fallido. El fallido es SEG-12, que quedó resuelto después al configurar `TRUST_CF_CONNECTING_IP` (ver DEF-02). **Tarea #28 cerrada sin defectos abiertos**; quedan solo las observaciones OBS-01 a OBS-03 y la desviación aceptada DEF-03.
+
+| Defecto | Resultado después del despliegue |
+|---|---|
+| DEF-01 | **Cerrado**: CU04-08 responde 400 «Elige una categoría» y CU04-12 responde 400 «La categoría no existe». |
+| DEF-02 | **Cerrado.** A través de Vercel, el contador es único por cliente y baja de uno en uno (19 → 18 → 17). En las llamadas directas a `nexustock-api.onrender.com`, la primera verificación seguía repartida en varios contadores porque faltaba la variable `TRUST_CF_CONNECTING_IP` en Render. Tras agregarla y redesplegar: 19 → 18 → 17 → 16, y una solicitud con `X-Forwarded-For` y `x-nx-cliente-ip` inventadas, sin el secreto, siguió descontando del mismo contador (15). |
+| DEF-03 | Desviación aceptada: login de 2,1–2,4 s, igual que antes. |
+| DEF-04 | Publicado en Vercel junto con el merge. No se repitió la prueba de navegador (UI-12). |
+| OBS-02 | En esta corrida pasaron 30/30 consultas simultáneas (latencia máxima de 11,5 s). |
+
 ## 8. Evidencias
 
 - [evidencias/matriz-resultados.md](evidencias/matriz-resultados.md): matriz completa de la corrida final.

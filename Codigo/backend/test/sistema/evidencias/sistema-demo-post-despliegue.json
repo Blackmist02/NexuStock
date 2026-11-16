@@ -1,0 +1,1024 @@
+{
+  "fecha": "2026-11-16T15:46:58.542Z",
+  "api": "https://nexustock-api.onrender.com",
+  "frontend": "https://nexustock-omega.vercel.app",
+  "ids": {
+    "op": 11,
+    "ti": 12,
+    "cat": 9,
+    "prov": 20,
+    "prov2": 21,
+    "prodB": 30,
+    "prodA": 31,
+    "prodC": 32
+  },
+  "aprobados": 91,
+  "observaciones": 1,
+  "fallidos": 1,
+  "resultados": [
+    {
+      "id": "INF-01",
+      "cu": "RNF-19",
+      "descripcion": "Health check de la API con la base de datos",
+      "esperado": "200, status OK y database OK",
+      "obtenido": "HTTP 200 en 721 ms, database=OK",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "INF-02",
+      "cu": "RNF-17",
+      "descripcion": "Frontend publicado responde",
+      "esperado": "200 en /login",
+      "obtenido": "HTTP 200 en 1409 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "INF-03",
+      "cu": "RNF-17",
+      "descripcion": "El frontend reenvía /api/* a la API (mismo origen)",
+      "esperado": "200 con database OK",
+      "obtenido": "HTTP 200 en 605 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-01",
+      "cu": "RNF-06",
+      "descripcion": "HTTP redirige a HTTPS (nexustock-api.onrender.com)",
+      "esperado": "301/302/307/308 hacia https://",
+      "obtenido": "HTTP 301 → https://nexustock-api.onrender.com/api/health",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-02",
+      "cu": "RNF-06",
+      "descripcion": "HTTP redirige a HTTPS (nexustock-omega.vercel.app)",
+      "esperado": "301/302/307/308 hacia https://",
+      "obtenido": "HTTP 308 → https://nexustock-omega.vercel.app/api/health",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-03",
+      "cu": "RNF-06",
+      "descripcion": "Cabecera HSTS en API y frontend",
+      "esperado": "Strict-Transport-Security presente en ambos",
+      "obtenido": "API: max-age=31536000; includeSubDomains | Front: max-age=63072000; includeSubDomains; preload",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-04",
+      "cu": "RNF-06",
+      "descripcion": "La API no anuncia la tecnología del servidor",
+      "esperado": "Sin X-Powered-By; con X-Content-Type-Options",
+      "obtenido": "x-powered-by=ausente, nosniff=nosniff",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-05",
+      "cu": "RNF-06",
+      "descripcion": "CORS rechaza un origen no autorizado",
+      "esperado": "403 origen_no_permitido, sin Access-Control-Allow-Origin",
+      "obtenido": "HTTP 403 origen_no_permitido en 215 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-06",
+      "cu": "RNF-06",
+      "descripcion": "CORS acepta el origen del frontend",
+      "esperado": "200 con Access-Control-Allow-Origin = frontend",
+      "obtenido": "HTTP 200 en 467 ms, ACAO=https://nexustock-omega.vercel.app",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-01",
+      "cu": "CU-07",
+      "descripcion": "Inicio de sesión con credenciales válidas (admin QA)",
+      "esperado": "200, rol administrador y cookie de sesión",
+      "obtenido": "HTTP 200 en 2361 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-07",
+      "cu": "RNF-05",
+      "descripcion": "Cookie de sesión protegida",
+      "esperado": "HttpOnly, Secure y SameSite=Lax",
+      "obtenido": "nx_token=…; Path=/; HttpOnly; Secure; SameSite=Lax",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-02",
+      "cu": "CU-07",
+      "descripcion": "Credenciales inválidas: mensaje genérico (4a)",
+      "esperado": "401 con el mismo mensaje para clave errónea y correo inexistente",
+      "obtenido": "HTTP 401 no_autenticado en 2299 ms / HTTP 401 no_autenticado en 2509 ms — «Correo o contraseña incorrectos»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-03",
+      "cu": "CU-07",
+      "descripcion": "Operación sin sesión",
+      "esperado": "401",
+      "obtenido": "HTTP 401 no_autenticado en 222 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-04",
+      "cu": "CU-07",
+      "descripcion": "Token sin firma (alg none) rechazado (7a)",
+      "esperado": "401",
+      "obtenido": "HTTP 401 no_autenticado en 515 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-08",
+      "cu": "RNF-06",
+      "descripcion": "CSRF: modificación con cookie pero sin cabecera x-nx-csrf",
+      "esperado": "403 y no se crea el registro",
+      "obtenido": "HTTP 403 prohibido en 149 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-01",
+      "cu": "CU-12",
+      "descripcion": "Registro público cerrado con administrador existente",
+      "esperado": "necesitaRegistro=false y registroAbierto=false",
+      "obtenido": "{\"necesitaRegistro\":false,\"registroAbierto\":false}",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-02",
+      "cu": "CU-12",
+      "descripcion": "Alta inicial cuando ya hay administrador (2a)",
+      "esperado": "403 indicando pedir la cuenta al administrador",
+      "obtenido": "HTTP 403 prohibido en 2342 ms — «El registro está cerrado. Pide a un administrador que cree tu usuario.»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-03",
+      "cu": "CU-12",
+      "descripcion": "Administrador crea un operador",
+      "esperado": "201, activo y rol operador",
+      "obtenido": "HTTP 201 en 2365 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-04",
+      "cu": "CU-12",
+      "descripcion": "Administrador crea un usuario TI",
+      "esperado": "201 y rol ti",
+      "obtenido": "HTTP 201 en 2133 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-05",
+      "cu": "CU-12",
+      "descripcion": "Correo ya registrado (4a)",
+      "esperado": "4xx informado junto al campo email",
+      "obtenido": "HTTP 400 validacion en 2415 ms — «Ese correo ya está registrado»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-06",
+      "cu": "CU-12",
+      "descripcion": "Contraseña fuera de política (4b)",
+      "esperado": "400 con el detalle del campo password",
+      "obtenido": "HTTP 400 validacion en 216 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-05",
+      "cu": "CU-07",
+      "descripcion": "Inicio de sesión de operador y TI recién creados",
+      "esperado": "200 en ambos",
+      "obtenido": "HTTP 200 en 2083 ms / HTTP 200 en 2185 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU12-07",
+      "cu": "CU-12",
+      "descripcion": "Operador intenta crear cuentas (1a)",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 213 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-06",
+      "cu": "CU-07",
+      "descripcion": "Rol sin permiso: operador en el panel técnico (7b)",
+      "esperado": "403 con mensaje claro",
+      "obtenido": "HTTP 403 prohibido en 219 ms — «Tu rol no tiene permiso para esta acción»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-01",
+      "cu": "CU-04",
+      "descripcion": "Crear categoría",
+      "esperado": "201",
+      "obtenido": "HTTP 201 en 262 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-02",
+      "cu": "CU-04",
+      "descripcion": "Nombre de categoría duplicado (6a)",
+      "esperado": "4xx informado junto al campo nombre",
+      "obtenido": "HTTP 400 validacion en 526 ms — «Ya existe una categoría con ese nombre»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-03",
+      "cu": "CU-04",
+      "descripcion": "Lead time negativo o sin días hábiles (6b)",
+      "esperado": "400 en ambos casos",
+      "obtenido": "HTTP 400 validacion en 210 ms / HTTP 400 validacion en 220 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-04",
+      "cu": "CU-04",
+      "descripcion": "Crear proveedor",
+      "esperado": "201",
+      "obtenido": "HTTP 201 en 265 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-05",
+      "cu": "CU-04",
+      "descripcion": "Baja lógica de proveedor sin productos",
+      "esperado": "200 y activo=false",
+      "obtenido": "HTTP 200 en 546 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-06",
+      "cu": "CU-04",
+      "descripcion": "Crear producto con stock inicial",
+      "esperado": "201 y stock 10 kg",
+      "obtenido": "HTTP 201 en 396 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-07",
+      "cu": "CU-04",
+      "descripcion": "Crear producto nuevo sin historial en categoría con datos (Cerdo)",
+      "esperado": "201",
+      "obtenido": "HTTP 201 en 353 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-08",
+      "cu": "CU-04",
+      "descripcion": "Producto con identificador de categoría fuera de rango (6)",
+      "esperado": "400 junto al campo id_categoria",
+      "obtenido": "HTTP 400 validacion en 218 ms — «Elige una categoría»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-12",
+      "cu": "CU-04",
+      "descripcion": "Producto con categoría inexistente (6)",
+      "esperado": "400 junto al campo id_categoria",
+      "obtenido": "HTTP 400 validacion en 226 ms — «La categoría no existe»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-09",
+      "cu": "CU-04",
+      "descripcion": "Editar precio del producto",
+      "esperado": "200 y precio 10.490",
+      "obtenido": "HTTP 200 en 345 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-10",
+      "cu": "CU-04",
+      "descripcion": "Operador intenta modificar el catálogo",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 220 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU02-01",
+      "cu": "CU-02",
+      "descripcion": "Operador registra recepción de 20 kg",
+      "esperado": "201, stock 10→30 y costo total 100.000",
+      "obtenido": "HTTP 201 en 309 ms, stock 10→30, total 100000",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU02-02",
+      "cu": "CU-02",
+      "descripcion": "Cantidad cero (4a)",
+      "esperado": "400 y no se registra",
+      "obtenido": "HTTP 400 validacion en 231 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU02-03",
+      "cu": "CU-02",
+      "descripcion": "Proveedor inactivo (4b)",
+      "esperado": "400 junto al campo id_proveedor",
+      "obtenido": "HTTP 400 validacion en 235 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU02-04",
+      "cu": "CU-02",
+      "descripcion": "Rol TI no registra compras (1a)",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 222 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU01-01",
+      "cu": "CU-01",
+      "descripcion": "Operador vende 3 kg con precio del catálogo",
+      "esperado": "201, total 3 × 10.490 = 31.470 y stock 30→27",
+      "obtenido": "HTTP 201 en 301 ms, total 31470, stock 30→27",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU01-02",
+      "cu": "CU-01",
+      "descripcion": "Cantidad negativa o no numérica (4a)",
+      "esperado": "400 en ambos",
+      "obtenido": "HTTP 400 validacion en 228 ms / HTTP 400 validacion en 216 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU01-03",
+      "cu": "CU-01",
+      "descripcion": "Cantidad mayor al stock (4b)",
+      "esperado": "409 «supera el stock disponible»",
+      "obtenido": "HTTP 409 validacion en 228 ms — «Datos inválidos»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU01-04",
+      "cu": "CU-01",
+      "descripcion": "Dos ventas simultáneas de 15 kg con 27 kg en stock (7a, RNF-11, RNF-13)",
+      "esperado": "Una 201 y otra 409; stock final 12, nunca negativo",
+      "obtenido": "409 / 201, stock final 12",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU01-05",
+      "cu": "CU-01",
+      "descripcion": "Rol TI no registra ventas (1a)",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 221 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU01-06",
+      "cu": "CU-01",
+      "descripcion": "Venta que deja el stock bajo el mínimo",
+      "esperado": "201 y stock 3 kg",
+      "obtenido": "HTTP 201 en 312 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU04-11",
+      "cu": "CU-04",
+      "descripcion": "Eliminar producto con ventas (3a, RNF-10)",
+      "esperado": "409 ofreciendo la baja lógica",
+      "obtenido": "HTTP 409 tiene_historial en 217 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU08-01",
+      "cu": "CU-08",
+      "descripcion": "Predicción semanal con el modelo activo (Alitas de Pollo)",
+      "esperado": "201, origen modelo, demanda > 0 y latencia del motor < 2.000 ms",
+      "obtenido": "HTTP 201 en 557 ms, origen modelo, demanda 25.4 kg, latencia motor 305 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU10-01",
+      "cu": "CU-10",
+      "descripcion": "Una sola predicción por producto, horizonte y fecha objetivo",
+      "esperado": "El segundo cálculo reemplaza al primero (mismo id)",
+      "obtenido": "ids 925 / 925",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU08-02",
+      "cu": "CU-08",
+      "descripcion": "Predicción mensual",
+      "esperado": "201, horizonte mes y 28–31 días",
+      "obtenido": "HTTP 201 en 1014 ms, origen modelo, demanda 124.52",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU11-01",
+      "cu": "CU-11",
+      "descripcion": "Producto nuevo sin historial: respaldo por categoría (CU-08 1a)",
+      "esperado": "201, origen categoria, sin modelo, demanda > 0",
+      "obtenido": "HTTP 201 en 291 ms, origen categoria, demanda 30.4",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU11-02",
+      "cu": "CU-11",
+      "descripcion": "Producto con historial propio: respaldo por promedio histórico (3)",
+      "esperado": "201, origen promedio_historico y demanda 27 kg (27 kg vendidos ÷ 7 días × 7)",
+      "obtenido": "HTTP 201 en 281 ms, origen promedio_historico, demanda 27",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU11-03",
+      "cu": "CU-11",
+      "descripcion": "Producto nuevo en categoría sin historial (4a)",
+      "esperado": "Origen categoria con demanda 0 (sin proyección)",
+      "obtenido": "HTTP 201 en 284 ms, origen categoria, demanda 0",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU08-03",
+      "cu": "CU-08",
+      "descripcion": "Operador no puede forzar el cálculo",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 215 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU10-02",
+      "cu": "CU-10",
+      "descripcion": "Horizonte no permitido (2a)",
+      "esperado": "400",
+      "obtenido": "HTTP 400 validacion en 228 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU09-01",
+      "cu": "CU-09",
+      "descripcion": "Recalcular proyecciones y alertas de todos los productos",
+      "esperado": "200 con productos evaluados",
+      "obtenido": "HTTP 200 en 371 ms, {\"evaluados\":27,\"creadas\":0,\"actualizadas\":18,\"cerradas\":0}",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU09-02",
+      "cu": "CU-09",
+      "descripcion": "Producto con 3 kg y demanda de 27 kg/semana queda en quiebre (2)",
+      "esperado": "Nivel quiebre con cantidad sugerida y fecha límite",
+      "obtenido": "nivel quiebre, demanda 27, sugerido 14.1 kg, límite 2024-09-29",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU09-05",
+      "cu": "CU-09",
+      "descripcion": "Sin demanda proyectada: umbral por stock mínimo (2a)",
+      "esperado": "Producto C con 4 kg y mínimo 5 kg en nivel bajo",
+      "obtenido": "nivel bajo, demanda 0, sugerido 1.5",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU09-03",
+      "cu": "CU-09",
+      "descripcion": "Semáforo consolidado",
+      "esperado": "quiebre + bajo + óptimo = total",
+      "obtenido": "{\"quiebre\":14,\"bajo\":4,\"optimo\":9,\"total\":27}",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU09-04",
+      "cu": "CU-09",
+      "descripcion": "Sugerencias coherentes en productos reales",
+      "esperado": "Cantidades ≥ 0 y fecha límite no anterior a hoy",
+      "obtenido": "15 sugerencias, hoy=2024-09-29",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU03-01",
+      "cu": "CU-03",
+      "descripcion": "Dashboard con indicadores, semáforo y tendencia",
+      "esperado": "200 con datos del inventario",
+      "obtenido": "HTTP 200 en 1527 ms, claves: generado_en, hoy, fecha_demo, origen_proyeccion, kpis, semaforo, tendencia, sugerencias",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU03-02",
+      "cu": "CU-03",
+      "descripcion": "Dashboard sin sesión (2a)",
+      "esperado": "401",
+      "obtenido": "HTTP 401 no_autenticado en 222 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-01",
+      "cu": "CU-05",
+      "descripcion": "Alerta activa del producto de prueba con su detalle",
+      "esperado": "Nivel, stock, sugerencia, proveedor, lead time y fecha límite",
+      "obtenido": "alerta 23: quiebre, stock 3, sugerido 14.1, límite 2024-09-29",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-02",
+      "cu": "CU-05",
+      "descripcion": "Alertas ordenadas por nivel de riesgo (paso 2)",
+      "esperado": "quiebre antes que bajo",
+      "obtenido": "18 alertas activas",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-03",
+      "cu": "CU-05",
+      "descripcion": "Operador intenta atender una alerta",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 424 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-04",
+      "cu": "CU-05",
+      "descripcion": "Atender alerta",
+      "esperado": "200, estado atendida con fecha de resolución",
+      "obtenido": "HTTP 200 en 161 ms, resuelta_en 2024-09-29T15:46:48.143Z",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-05",
+      "cu": "CU-05",
+      "descripcion": "Alerta ya resuelta desde otra sesión (3a)",
+      "esperado": "409 ya_resuelta",
+      "obtenido": "HTTP 409 ya_resuelta en 464 ms — «La alerta ya fue atendida. Actualizamos el listado.»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-06",
+      "cu": "CU-05",
+      "descripcion": "Descartar alerta",
+      "esperado": "200, estado descartada",
+      "obtenido": "HTTP 200 en 265 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU05-07",
+      "cu": "CU-05",
+      "descripcion": "Las alertas resueltas dejan de figurar como activas",
+      "esperado": "Sin alertas activas de los productos de prueba",
+      "obtenido": "16 alertas activas",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-01",
+      "cu": "CU-06",
+      "descripcion": "TI consulta el modelo activo y su MAE",
+      "esperado": "200 con modelo activo, MAE general y festivo",
+      "obtenido": "RandomForestRegressor 1.1.0, MAE 5.237 / festivos 8.933, mejora 6 %",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-02",
+      "cu": "CU-06",
+      "descripcion": "Operador no accede a la precisión del modelo",
+      "esperado": "403",
+      "obtenido": "HTTP 403 prohibido en 261 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-03",
+      "cu": "CU-06",
+      "descripcion": "Artefacto inexistente (4a)",
+      "esperado": "400 junto al campo artefacto_ruta",
+      "obtenido": "HTTP 400 validacion en 182 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-04",
+      "cu": "CU-06",
+      "descripcion": "Fechas de prueba inválidas (4b)",
+      "esperado": "400",
+      "obtenido": "HTTP 400 validacion en 194 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-05",
+      "cu": "CU-06",
+      "descripcion": "Registrar versión con artefacto existente",
+      "esperado": "201 en estado inactivo",
+      "obtenido": "HTTP 201 en 246 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-06",
+      "cu": "CU-06",
+      "descripcion": "Activar versión con MAE peor sin confirmar (6a)",
+      "esperado": "409 requiere_confirmacion y el modelo activo no cambia",
+      "obtenido": "HTTP 409 requiere_confirmacion en 407 ms — «El MAE de esta versión (6.237 kg) es mayor que el del modelo activo (5.237 kg). Confirma para activarla de todos modos.»",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU06-07",
+      "cu": "CU-06",
+      "descripcion": "Existe un único modelo activo y sigue siendo el original",
+      "esperado": "Activo 1.1.0",
+      "obtenido": "activo 1.1.0",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-01",
+      "cu": "CU-13",
+      "descripcion": "Mensaje neutro: no revela si el correo existe (2)",
+      "esperado": "202 con la misma respuesta para correo existente e inexistente",
+      "obtenido": "HTTP 202 en 240 ms / HTTP 202 en 189 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-02",
+      "cu": "CU-13",
+      "descripcion": "TI emite el enlace de restablecimiento asistido (1b)",
+      "esperado": "200 con enlace de 30 minutos",
+      "obtenido": "HTTP 200 en 222 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-03",
+      "cu": "CU-13",
+      "descripcion": "Solo el rol TI emite enlaces asistidos",
+      "esperado": "403 para administrador",
+      "obtenido": "HTTP 403 prohibido en 165 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-04",
+      "cu": "CU-13",
+      "descripcion": "Nueva contraseña fuera de política (5a)",
+      "esperado": "400",
+      "obtenido": "HTTP 400 validacion en 532 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-05",
+      "cu": "CU-13",
+      "descripcion": "Restablecer con enlace válido",
+      "esperado": "200",
+      "obtenido": "HTTP 200 en 2165 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-06",
+      "cu": "CU-13",
+      "descripcion": "Las sesiones anteriores quedan invalidadas (6)",
+      "esperado": "Sesión del operador: 200 antes y 401 después",
+      "obtenido": "200 → 401",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-07",
+      "cu": "CU-13",
+      "descripcion": "Enlace ya usado (4a)",
+      "esperado": "400 enlace_invalido",
+      "obtenido": "HTTP 400 enlace_invalido en 215 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU13-08",
+      "cu": "CU-13",
+      "descripcion": "Inicio de sesión con la nueva contraseña",
+      "esperado": "200",
+      "obtenido": "HTTP 200 en 2130 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-07",
+      "cu": "CU-07",
+      "descripcion": "Cuenta desactivada (4b): sesión vigente y nuevo ingreso rechazados",
+      "esperado": "Sesión 401 y login 401 con el mensaje genérico",
+      "obtenido": "desactivar 200, sesión 401, login 401",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-08",
+      "cu": "CU-07",
+      "descripcion": "Un administrador no puede desactivar su propia cuenta",
+      "esperado": "409 usuario_propio",
+      "obtenido": "HTTP 409 usuario_propio en 214 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-09",
+      "cu": "RNF-08",
+      "descripcion": "Errores sin detalles técnicos (JSON inválido, id inválido, ruta inexistente)",
+      "esperado": "4xx con código y mensaje, sin SQL ni trazas",
+      "obtenido": "HTTP 400 json_invalido en 224 ms / HTTP 400 validacion en 225 ms / HTTP 404 ruta_no_encontrada en 232 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-10",
+      "cu": "RNF-07",
+      "descripcion": "El panel /api/status no expone credenciales",
+      "esperado": "200 sin cadenas de conexión, secretos ni contraseñas",
+      "obtenido": "HTTP 200 en 250 ms, 1163 bytes",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-11",
+      "cu": "RNF-07",
+      "descripcion": "El JavaScript público del frontend no contiene credenciales",
+      "esperado": "Ninguna cadena de conexión ni nombre de secreto",
+      "obtenido": "11 archivos revisados",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "SEG-12",
+      "cu": "RNF-09",
+      "descripcion": "El límite de intentos cuenta por cliente (4 solicitudes seguidas del mismo equipo)",
+      "esperado": "remaining decrece de uno en uno en un único contador",
+      "obtenido": "remaining: 18 → 18 → 17 → 17 — el contador cambia entre solicitudes: la clave no es la IP del cliente",
+      "resultado": "Fallido"
+    },
+    {
+      "id": "CAR-01",
+      "cu": "RNF-03 / RNF-12",
+      "descripcion": "30 consultas simultáneas (dashboard, productos y sugerencias)",
+      "esperado": "Sin errores 5xx; el pool encola sin agotar el pooler",
+      "obtenido": "30/30 con 200, mediana 3627 ms, máx 11511 ms, lote 11533 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CAR-02",
+      "cu": "RNF-19",
+      "descripcion": "La API sigue sana tras la carga",
+      "esperado": "200 database OK",
+      "obtenido": "HTTP 200 en 225 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-09",
+      "cu": "CU-07",
+      "descripcion": "Cerrar sesión elimina la cookie",
+      "esperado": "204 y Set-Cookie que vence nx_token",
+      "obtenido": "HTTP 204 en 297 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "CU07-10",
+      "cu": "CU-07",
+      "descripcion": "Reutilizar el token copiado después de cerrar sesión",
+      "esperado": "Idealmente 401 (revocación del lado del servidor)",
+      "obtenido": "HTTP 200 — el JWT sigue vigente hasta su expiración (8 h)",
+      "resultado": "Observación",
+      "observacion": true,
+      "severidad": "Baja"
+    }
+  ],
+  "tiempos": [
+    {
+      "id": "CU07-T1",
+      "cu": "CU-07",
+      "operacion": "Inicio de sesión (pasos 4–6)",
+      "ms": 2361,
+      "cota_ms": 2000,
+      "cumple": false
+    },
+    {
+      "id": "CU12-T1",
+      "cu": "CU-12",
+      "operacion": "Alta de usuario del equipo (pasos 4–6)",
+      "ms": 2365,
+      "cota_ms": 2000,
+      "cumple": false
+    },
+    {
+      "id": "CU07-T2",
+      "cu": "CU-07",
+      "operacion": "Inicio de sesión (operador)",
+      "ms": 2083,
+      "cota_ms": 2000,
+      "cumple": false
+    },
+    {
+      "id": "CU07-T3",
+      "cu": "CU-07",
+      "operacion": "Inicio de sesión (TI)",
+      "ms": 2185,
+      "cota_ms": 2000,
+      "cumple": false
+    },
+    {
+      "id": "CU04-T1",
+      "cu": "CU-04",
+      "operacion": "Crear categoría (pasos 6–8)",
+      "ms": 262,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU04-T2",
+      "cu": "CU-04",
+      "operacion": "Crear proveedor (pasos 6–8)",
+      "ms": 265,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU04-T3",
+      "cu": "CU-04",
+      "operacion": "Crear producto (pasos 6–8)",
+      "ms": 396,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU04-T4",
+      "cu": "CU-04",
+      "operacion": "Editar producto (pasos 6–8)",
+      "ms": 345,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU02-T1",
+      "cu": "CU-02",
+      "operacion": "Registrar compra (pasos 7–8)",
+      "ms": 309,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU01-T1",
+      "cu": "CU-01",
+      "operacion": "Registrar venta (pasos 7–8)",
+      "ms": 301,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU01-T2",
+      "cu": "CU-01",
+      "operacion": "Validación de datos (paso 4)",
+      "ms": 228,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU08-T1",
+      "cu": "CU-08",
+      "operacion": "Generar predicción con el modelo (Alitas de Pollo)",
+      "ms": 557,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU11-T1",
+      "cu": "CU-11",
+      "operacion": "Respaldo por categoría",
+      "ms": 291,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU09-T1",
+      "cu": "CU-09",
+      "operacion": "Semáforo y sugerencias del conjunto de productos",
+      "ms": 260,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU09-T2",
+      "cu": "CU-09",
+      "operacion": "Semáforo y sugerencias del conjunto de productos",
+      "ms": 253,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU09-T3",
+      "cu": "CU-09",
+      "operacion": "Semáforo y sugerencias del conjunto de productos",
+      "ms": 254,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU09-T4",
+      "cu": "CU-09",
+      "operacion": "Semáforo y sugerencias del conjunto de productos",
+      "ms": 253,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU09-T5",
+      "cu": "CU-09",
+      "operacion": "Semáforo y sugerencias del conjunto de productos",
+      "ms": 270,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-T1",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (API directa)",
+      "ms": 1527,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-T2",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (API directa)",
+      "ms": 1302,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-T3",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (API directa)",
+      "ms": 907,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-T4",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (API directa)",
+      "ms": 1000,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-T5",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (API directa)",
+      "ms": 1109,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-TF1",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (vía frontend Vercel)",
+      "ms": 2301,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-TF2",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (vía frontend Vercel)",
+      "ms": 967,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU03-TF3",
+      "cu": "CU-03",
+      "operacion": "Carga del dashboard (vía frontend Vercel)",
+      "ms": 1358,
+      "cota_ms": 3000,
+      "cumple": true
+    },
+    {
+      "id": "CU05-T1",
+      "cu": "CU-05",
+      "operacion": "Listar alertas activas (paso 2)",
+      "ms": 248,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU05-T2",
+      "cu": "CU-05",
+      "operacion": "Atender alerta (paso 6)",
+      "ms": 161,
+      "cota_ms": 1000,
+      "cumple": true
+    },
+    {
+      "id": "CU06-T0",
+      "cu": "CU-06",
+      "operacion": "Consultar precisión del modelo",
+      "ms": 693,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU06-T1",
+      "cu": "CU-06",
+      "operacion": "Registrar versión del modelo (pasos 4–5)",
+      "ms": 246,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU13-T1",
+      "cu": "CU-13",
+      "operacion": "Solicitar enlace (paso 2)",
+      "ms": 240,
+      "cota_ms": 2000,
+      "cumple": true
+    },
+    {
+      "id": "CU13-T2",
+      "cu": "CU-13",
+      "operacion": "Restablecer contraseña (paso 6)",
+      "ms": 2165,
+      "cota_ms": 2000,
+      "cumple": false
+    }
+  ]
+}
