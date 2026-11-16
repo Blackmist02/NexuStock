@@ -1,26 +1,4 @@
-"""Reconstruye la venta del 18 y 19 de septiembre (2022-2024) de Carnicería El Buen Pastor.
 
-Contexto: los registros del local traen 0 ventas esos días y el proyecto los trataba como «local cerrado» por ser
-feriados irrenunciables (Ley 19.973). El cliente confirmó (2026-11-15) que el local SÍ abrió: es una carnicería de barrio
-atendida por la familia, sin trabajadores dependientes, a quienes no alcanza la obligación de cerrar. Mientras llegan
-los registros reales de esas fechas, este script los reconstruye con el patrón del propio local:
-
-1. Demanda del día: demanda media diaria del local entre el 12 y el 17 de septiembre del mismo año (semana de Fiestas
-   Patrias) × 0,85 el 18 y × 0,55 el 19, repartida según la participación de cada producto en esa misma semana, con
-   ruido lognormal (σ = 0,15). Los supermercados cierran esos días, así que el local recibe compras de última hora.
-2. Venta = mín(demanda, stock disponible); lo que falta es venta perdida (quiebre) y queda en
-   evaluacion/demanda_diaria.csv.
-3. Tickets: tamaños de línea tomados de las ventas reales del producto esa semana, horario reducido (9:00 a 14:59),
-   1,65 líneas por ticket, medio de pago y cliente según la distribución real.
-4. La cadena de stock posterior no cambia: lo vendido de más reduce primero las mermas por vencimiento de los días
-   siguientes (ese producto ya no alcanzó a vencer) y el resto se repone el 20 con un distribuidor nacional.
-
-Todo lo agregado lleva prefijo propio (VTR, TKR, CPR, F-R) y cada cambio queda en
-data/raw/reconstruccion_fiestas_patrias.csv. Las filas reales no se modifican, salvo las mermas reducidas (registradas
-en la bitácora con su valor original). Si llegan los registros reales: `git checkout` de los archivos y cargarlos.
-
-Uso: python reconstruir_fiestas_patrias.py            (aborta si ya se aplicó)
-"""
 
 import csv
 import io
