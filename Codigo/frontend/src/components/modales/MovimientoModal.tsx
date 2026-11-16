@@ -8,7 +8,7 @@ import { useToast } from "@/components/ui/Toast";
 import { ApiClientError, api, errorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ahoraLocalInput, fmtCant, fmtCLP, localInputAISO, parseNum } from "@/lib/format";
-import type { ListaProductos, Proveedor, Unidad } from "@/lib/tipos";
+import type { ConfigNegocio, ListaProductos, Proveedor, Unidad } from "@/lib/tipos";
 import { useApi } from "@/lib/useApi";
 
 type Tipo = "venta" | "compra";
@@ -41,13 +41,17 @@ export function MovimientoModal({ tipo, idProducto, cantidadSugerida, onClose, o
   const { user } = useAuth();
   const lista = useApi<ListaProductos>("/products", { estado: "activos" });
   const provs = useApi<{ data: Proveedor[] }>(tipo === "compra" ? "/suppliers" : null);
+  // «Ahora» del negocio: la fecha del sistema (datos históricos) con la hora actual del local, como la guarda el backend.
+  const config = useApi<{ data: ConfigNegocio }>("/config", undefined, { resguardo: true });
+  const hoy = config.data?.data.fecha.hoy;
+  const ahora = hoy ? `${hoy}T${ahoraLocalInput().slice(11)}` : ahoraLocalInput();
 
   const [idSel, setIdSel] = useState<string>(idProducto ? String(idProducto) : "");
   const [cantidad, setCantidad] = useState(cantidadSugerida && cantidadSugerida > 0 ? String(cantidadSugerida).replace(".", ",") : "");
   const [precio, setPrecio] = useState<string | null>(null); // null = usar el del catálogo
   const [proveedor, setProveedor] = useState<string | null>(null); // null = proveedor habitual
-  const [fecha, setFecha] = useState(ahoraLocalInput());
-  const [fechaCambiada, setFechaCambiada] = useState(false);
+  const [fechaEditada, setFechaEditada] = useState<string | null>(null); // null = ahora (fecha del sistema)
+  const fecha = fechaEditada ?? ahora;
   const [campos, setCampos] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -80,7 +84,7 @@ export function MovimientoModal({ tipo, idProducto, cantidadSugerida, onClose, o
     setEnviando(true);
     try {
       const cuerpo: Record<string, unknown> = { id_producto: p.id_producto, cantidad: cant };
-      if (fechaCambiada) cuerpo.fecha_hora = localInputAISO(fecha);
+      if (fechaEditada) cuerpo.fecha_hora = localInputAISO(fechaEditada);
       if (esVenta) cuerpo.precio_unitario_clp = Math.round(pr);
       else {
         cuerpo.costo_unitario_clp = Math.round(pr);
@@ -171,13 +175,10 @@ export function MovimientoModal({ tipo, idProducto, cantidadSugerida, onClose, o
             label="Fecha y hora"
             type="datetime-local"
             value={fecha}
-            max={ahoraLocalInput()}
-            onChange={(e) => {
-              setFecha(e.target.value);
-              setFechaCambiada(true);
-            }}
+            max={ahora}
+            onChange={(e) => setFechaEditada(e.target.value)}
             error={campos.fecha_hora}
-            hint={`Por defecto, ahora. Cámbiala si registras un movimiento anterior.${user ? ` Registra: ${user.nombre}.` : ""}`}
+            hint={`Por defecto, ahora${hoy && config.data?.data.fecha.referencia ? " en la fecha del sistema" : ""}. Cámbiala si registras un movimiento anterior.${user ? ` Registra: ${user.nombre}.` : ""}`}
           />
           {p && stockNuevo != null ? (
             <div className={`summary full${bajoMinimo || stockNuevo < 0 ? " warn" : ""}`} style={{ gridColumn: "1 / -1", marginTop: 0 }}>
