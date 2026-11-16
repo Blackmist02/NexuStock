@@ -1,0 +1,47 @@
+{
+  "fecha": "2026-11-16T15:09:20.491Z",
+  "api": "http://localhost:4112",
+  "escenario": "motor-caido",
+  "resultados": [
+    {
+      "id": "F-M-CAIDO-01",
+      "escenario": "motor-caido",
+      "descripcion": "Predicción de «Alitas de Pollo» con motor-caido",
+      "esperado": "201, origen promedio_historico (respaldo RF-11), sin detalles técnicos",
+      "obtenido": "HTTP 201 en 55 ms, origen promedio_historico, respaldo true, demanda 26.99, latencia motor null",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-CAIDO-02",
+      "escenario": "motor-caido",
+      "descripcion": "Tiempo total de la predicción",
+      "esperado": "Menos de 2,0 s",
+      "obtenido": "55 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-CAIDO-03",
+      "escenario": "motor-caido",
+      "descripcion": "El servidor no se bloquea durante la inferencia (RNF-02)",
+      "esperado": "Otra consulta responde 200 mientras la predicción está en curso",
+      "obtenido": "GET /api/products HTTP 200 en 68 ms (predicción: 55 ms)",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-CAIDO-04",
+      "escenario": "motor-caido",
+      "descripcion": "El dashboard sigue disponible",
+      "esperado": "200 en ≤ 3 s",
+      "obtenido": "HTTP 200 en 188 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-CAIDO-05",
+      "escenario": "motor-caido",
+      "descripcion": "El panel técnico informa el estado del motor",
+      "esperado": "estado del motor visible para TI",
+      "obtenido": "motor RESPALDO, proceso detenido, versión qa-caido",
+      "resultado": "Aprobado"
+    }
+  ]
+}

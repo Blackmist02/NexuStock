@@ -1,0 +1,3 @@
+[error] base de datos no disponible en GET /api/dashboard: getaddrinfo ENOTFOUND db
+[error] base de datos no disponible en POST /api/sales: getaddrinfo ENOTFOUND db
+[error] base de datos no disponible en POST /api/auth/login: getaddrinfo ENOTFOUND db

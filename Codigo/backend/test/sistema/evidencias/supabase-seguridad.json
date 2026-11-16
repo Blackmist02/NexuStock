@@ -1,0 +1,62 @@
+{
+ "rls": [
+  {
+   "tablename": "alertas_inventario",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "categorias",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "compras",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "configuracion",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "eventos_calendario",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "mermas",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "modelos_ml",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "predicciones",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "productos",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "proveedores",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "usuarios",
+   "rowsecurity": true
+  },
+  {
+   "tablename": "ventas",
+   "rowsecurity": true
+  }
+ ],
+ "politicas": 0,
+ "grants_anon_auth": [],
+ "ssl": {
+  "ssl": false,
+  "version": null
+ },
+ "conexiones": {
+  "max_conn": "60",
+  "activas": 15
+ }
+}

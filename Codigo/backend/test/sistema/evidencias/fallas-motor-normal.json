@@ -1,0 +1,47 @@
+{
+  "fecha": "2026-11-16T15:08:31.734Z",
+  "api": "http://localhost:4110",
+  "escenario": "motor-normal",
+  "resultados": [
+    {
+      "id": "F-M-NORMAL-01",
+      "escenario": "motor-normal",
+      "descripcion": "Predicción de «Alitas de Pollo» con motor-normal",
+      "esperado": "201, origen modelo, sin detalles técnicos",
+      "obtenido": "HTTP 201 en 117 ms, origen modelo, respaldo false, demanda 23.47, latencia motor 84",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-NORMAL-02",
+      "escenario": "motor-normal",
+      "descripcion": "Tiempo total de la predicción",
+      "esperado": "Menos de 2,0 s",
+      "obtenido": "117 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-NORMAL-03",
+      "escenario": "motor-normal",
+      "descripcion": "El servidor no se bloquea durante la inferencia (RNF-02)",
+      "esperado": "Otra consulta responde 200 mientras la predicción está en curso",
+      "obtenido": "GET /api/products HTTP 200 en 22 ms (predicción: 117 ms)",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-NORMAL-04",
+      "escenario": "motor-normal",
+      "descripcion": "El dashboard sigue disponible",
+      "esperado": "200 en ≤ 3 s",
+      "obtenido": "HTTP 200 en 287 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-NORMAL-05",
+      "escenario": "motor-normal",
+      "descripcion": "El panel técnico informa el estado del motor",
+      "esperado": "motor OK",
+      "obtenido": "motor OK, proceso listo, versión 1.0.0",
+      "resultado": "Aprobado"
+    }
+  ]
+}

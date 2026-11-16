@@ -1,0 +1,5 @@
+[ml] modelo qa-caido listo en 57 ms
+[ml] Traceback (most recent call last):
+[predicción] se usa el respaldo para el producto 13: motor_no_disponible
+[ml] modelo qa-caido listo en 54 ms
+[ml] Traceback (most recent call last):

@@ -1,0 +1,149 @@
+{
+  "fecha": "2026-11-16T15:13:57.374Z",
+  "resultados": [
+    {
+      "id": "UI-escritorio-01",
+      "descripcion": "Sin sesión, /dashboard redirige a /login (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "https://nexustock-omega.vercel.app/login?next=%2Fdashboard"
+    },
+    {
+      "id": "UI-escritorio-02",
+      "descripcion": "Login y carga completa del dashboard en el navegador (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "4408 ms (incluye login con bcrypt)"
+    },
+    {
+      "id": "UI-escritorio-03",
+      "descripcion": "Sin desplazamiento horizontal (RNF-24) (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "exceso 0 px"
+    },
+    {
+      "id": "UI-escritorio-04",
+      "descripcion": "Recarga del dashboard con sesión hasta ver los datos ≤ 3 s (CU-03) (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "mediana 1681 ms (1305, 2427, 1681 ms)"
+    },
+    {
+      "id": "UI-escritorio-05",
+      "descripcion": "Aviso amigable al perder la conexión (RNF-16) (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "Estás sin conexión. No te preocupes: puedes seguir revisando las proyecciones y alertas de tu stock con la última información guardada en es"
+    },
+    {
+      "id": "UI-escritorio-06",
+      "descripcion": "El dashboard sigue visible con la última información (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "2881 caracteres visibles (antes 2589)"
+    },
+    {
+      "id": "UI-escritorio-07",
+      "descripcion": "Se actualiza solo al reconectar (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "Conexión restablecida. Estamos actualizando tu información."
+    },
+    {
+      "id": "UI-escritorio-08",
+      "descripcion": "La copia local no guarda credenciales ni el token (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "3 claves: nx:cache:v1:/config?{}, nx:cache:v1:/dashboard?{}, nx:usuario:v1"
+    },
+    {
+      "id": "UI-escritorio-09",
+      "descripcion": "Cookie de sesión inaccesible para JavaScript (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "httpOnly=true, secure=true, sameSite=Lax"
+    },
+    {
+      "id": "UI-escritorio-12",
+      "descripcion": "Cerrar sesión borra los datos guardados localmente (CU-07) (escritorio)",
+      "resultado": "Fallido",
+      "obtenido": "botón de la UI; claves restantes: nx:cache:v1:/dashboard?{}"
+    },
+    {
+      "id": "UI-escritorio-10",
+      "descripcion": "Tras cerrar sesión, el dashboard vuelve a pedir inicio de sesión (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "https://nexustock-omega.vercel.app/login?next=%2Fdashboard"
+    },
+    {
+      "id": "UI-escritorio-11",
+      "descripcion": "Sin errores de JavaScript en la página (escritorio)",
+      "resultado": "Aprobado",
+      "obtenido": "ninguno"
+    },
+    {
+      "id": "UI-movil-01",
+      "descripcion": "Sin sesión, /dashboard redirige a /login (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "https://nexustock-omega.vercel.app/login?next=%2Fdashboard"
+    },
+    {
+      "id": "UI-movil-02",
+      "descripcion": "Login y carga completa del dashboard en el navegador (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "4215 ms (incluye login con bcrypt)"
+    },
+    {
+      "id": "UI-movil-03",
+      "descripcion": "Sin desplazamiento horizontal (RNF-24) (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "exceso 0 px"
+    },
+    {
+      "id": "UI-movil-04",
+      "descripcion": "Recarga del dashboard con sesión hasta ver los datos ≤ 3 s (CU-03) (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "mediana 1683 ms (1683, 1409, 1697 ms)"
+    },
+    {
+      "id": "UI-movil-05",
+      "descripcion": "Aviso amigable al perder la conexión (RNF-16) (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "Estás sin conexión. No te preocupes: puedes seguir revisando las proyecciones y alertas de tu stock con la última información guardada en es"
+    },
+    {
+      "id": "UI-movil-06",
+      "descripcion": "El dashboard sigue visible con la última información (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "2881 caracteres visibles (antes 2573)"
+    },
+    {
+      "id": "UI-movil-07",
+      "descripcion": "Se actualiza solo al reconectar (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "Conexión restablecida. Estamos actualizando tu información."
+    },
+    {
+      "id": "UI-movil-08",
+      "descripcion": "La copia local no guarda credenciales ni el token (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "3 claves: nx:cache:v1:/config?{}, nx:cache:v1:/dashboard?{}, nx:usuario:v1"
+    },
+    {
+      "id": "UI-movil-09",
+      "descripcion": "Cookie de sesión inaccesible para JavaScript (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "httpOnly=true, secure=true, sameSite=Lax"
+    },
+    {
+      "id": "UI-movil-12",
+      "descripcion": "Cerrar sesión borra los datos guardados localmente (CU-07) (movil)",
+      "resultado": "Fallido",
+      "obtenido": "botón no encontrado (API); claves restantes: nx:cache:v1:/config?{}, nx:cache:v1:/dashboard?{}, nx:usuario:v1"
+    },
+    {
+      "id": "UI-movil-10",
+      "descripcion": "Tras cerrar sesión, el dashboard vuelve a pedir inicio de sesión (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "https://nexustock-omega.vercel.app/login?next=%2Fdashboard"
+    },
+    {
+      "id": "UI-movil-11",
+      "descripcion": "Sin errores de JavaScript en la página (movil)",
+      "resultado": "Aprobado",
+      "obtenido": "ninguno"
+    }
+  ]
+}

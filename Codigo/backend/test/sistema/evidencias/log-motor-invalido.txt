@@ -1,0 +1,2 @@
+[ml] modelo qa-invalido listo en 64 ms
+[predicción] se usa el respaldo para el producto 13: sin_proyeccion

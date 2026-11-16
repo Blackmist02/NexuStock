@@ -1,0 +1,47 @@
+{
+  "fecha": "2026-11-16T15:09:42.154Z",
+  "api": "http://localhost:4113",
+  "escenario": "motor-invalido",
+  "resultados": [
+    {
+      "id": "F-M-INVALIDO-01",
+      "escenario": "motor-invalido",
+      "descripcion": "Predicción de «Alitas de Pollo» con motor-invalido",
+      "esperado": "201, origen promedio_historico (respaldo RF-11), sin detalles técnicos",
+      "obtenido": "HTTP 201 en 102 ms, origen promedio_historico, respaldo true, demanda 26.99, latencia motor null",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-INVALIDO-02",
+      "escenario": "motor-invalido",
+      "descripcion": "Tiempo total de la predicción",
+      "esperado": "Menos de 2,0 s",
+      "obtenido": "102 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-INVALIDO-03",
+      "escenario": "motor-invalido",
+      "descripcion": "El servidor no se bloquea durante la inferencia (RNF-02)",
+      "esperado": "Otra consulta responde 200 mientras la predicción está en curso",
+      "obtenido": "GET /api/products HTTP 200 en 54 ms (predicción: 102 ms)",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-INVALIDO-04",
+      "escenario": "motor-invalido",
+      "descripcion": "El dashboard sigue disponible",
+      "esperado": "200 en ≤ 3 s",
+      "obtenido": "HTTP 200 en 203 ms",
+      "resultado": "Aprobado"
+    },
+    {
+      "id": "F-M-INVALIDO-05",
+      "escenario": "motor-invalido",
+      "descripcion": "El panel técnico informa el estado del motor",
+      "esperado": "estado del motor visible para TI",
+      "obtenido": "motor OK, proceso listo, versión qa-invalido",
+      "resultado": "Aprobado"
+    }
+  ]
+}
