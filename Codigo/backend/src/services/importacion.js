@@ -3,7 +3,7 @@
  *  - Solo se importan las filas posteriores al último movimiento ya registrado de cada tipo (subir de nuevo el mismo
  *    archivo no duplica nada) y hasta la fecha límite elegida (por defecto, la última del archivo).
  *  - Las filas se aplican en orden cronológico, mezclando los tres tipos (a la misma hora: compra, venta, merma), y el
- *    stock no puede quedar negativo en ningún momento.
+ *    stock no puede quedar negativo en ningún momento (salvo un faltante de pesaje de hasta TOLERANCIA_KG).
  *  - Todo o nada: si una fila tiene errores no se importa ninguna. La validación previa no escribe en la base.
  */
 const config = require('../config');
@@ -14,7 +14,9 @@ const { withTransaction } = require('../lib/tx');
 
 const MAX_FILAS = 100000;
 const MAX_ERRORES = 50;
-// Faltante tolerado por redondeo del pesaje (kg): la venta o merma se registra y el stock queda en 0, con advertencia
+// Faltante tolerado por redondeo del pesaje (kg): la venta o merma se registra y el faltante queda pendiente (el saldo
+// sigue exacto, como en cargar_bd.py) hasta que lo cubre la compra siguiente. Solo si el stock final queda negativo se
+// deja en 0, porque la base no admite stock negativo.
 const TOLERANCIA_KG = 0.5;
 
 /** Columnas aceptadas (encabezado normalizado) y sus nombres alternativos. */
@@ -68,8 +70,8 @@ async function ultimosRegistrados(client) {
 }
 
 /** Lee y valida un archivo. Devuelve las filas válidas y agrega los errores encontrados. */
-function leerArchivo(tipo, texto, catalogo, errores) {
-  const { columnas, filas } = leerCsv(texto);
+function leerArchivo(tipo, texto, catalogo, errores, lineasOmitidas = 0) {
+  const { columnas, filas } = leerCsv(texto, lineasOmitidas);
   const col = Object.fromEntries(Object.keys(ALIAS).map((c) => [c, columnaDe(columnas, c)]));
   const error = (linea, mensaje) => {
     errores.total++;
@@ -142,7 +144,7 @@ function leerArchivo(tipo, texto, catalogo, errores) {
  * Valida los archivos contra la base (con `client`, dentro o fuera de una transacción) sin escribir nada.
  * `archivos` = { ventas?, compras?, mermas? } con el texto de cada CSV. Devuelve el resumen y las filas a importar.
  */
-async function preparar(client, { archivos, hasta: hastaPedido, avanzar = false }, bloquear = false) {
+async function preparar(client, { archivos, recorte = {}, hasta: hastaPedido, avanzar = false }, bloquear = false) {
   const errores = { total: 0, lista: [] };
   const generales = [];
   const prods = (
@@ -164,7 +166,7 @@ async function preparar(client, { archivos, hasta: hastaPedido, avanzar = false 
   let todas = [];
   for (const tipo of Object.keys(TIPOS)) {
     if (!archivos[tipo]) continue;
-    const r = leerArchivo(tipo, archivos[tipo], catalogo, errores);
+    const r = leerArchivo(tipo, archivos[tipo], catalogo, errores, (recorte[tipo] && recorte[tipo].lineas_omitidas) || 0);
     leidas[tipo] = r.leidas;
     todas = todas.concat(r.filas);
   }
@@ -182,11 +184,12 @@ async function preparar(client, { archivos, hasta: hastaPedido, avanzar = false 
     const nuevas = delTipo.filter((f) => !ultimos[tipo] || f.fechaHora > ultimos[tipo]);
     const enRango = nuevas.filter((f) => !hasta || f.fecha <= hasta);
     aImportar.push(...enRango);
+    const omit = recorte[tipo] || { ya_cargadas: 0, posteriores: 0 };
     resumen[tipo] = {
-      filas: leidas[tipo],
-      validas: delTipo.length,
-      ya_cargadas: delTipo.length - nuevas.length,
-      posteriores: nuevas.length - enRango.length,
+      filas: leidas[tipo] + omit.ya_cargadas + omit.posteriores,
+      validas: delTipo.length + omit.ya_cargadas + omit.posteriores,
+      ya_cargadas: delTipo.length - nuevas.length + omit.ya_cargadas,
+      posteriores: nuevas.length - enRango.length + omit.posteriores,
       a_importar: enRango.length,
       desde: enRango.length ? enRango.reduce((m, f) => (f.fecha < m ? f.fecha : m), '9999') : null,
       hasta: enRango.length ? enRango.reduce((m, f) => (f.fecha > m ? f.fecha : m), '') : null,
@@ -213,11 +216,10 @@ async function preparar(client, { archivos, hasta: hastaPedido, avanzar = false 
     const nuevo = r2(stock.get(id) + (f.tipo === 'compras' ? f.cantidad : -f.cantidad));
     if (nuevo < 0 && f.producto.unidad === 'kg' && -nuevo <= TOLERANCIA_KG) {
       ajustes.total++;
-      ajustes.kg = r2(ajustes.kg - nuevo);
       if (ajustes.lista.length < MAX_ERRORES) {
-        ajustes.lista.push({ tipo: f.tipo, linea: f.linea, mensaje: `«${f.producto.nombre}» el ${f.fechaHora.slice(0, 16)}: faltaban ${-nuevo} kg; el stock queda en 0` });
+        ajustes.lista.push({ tipo: f.tipo, linea: f.linea, mensaje: `«${f.producto.nombre}» el ${f.fechaHora.slice(0, 16)}: faltan ${-nuevo} kg por el pesaje; los cubre la compra siguiente` });
       }
-      stock.set(id, 0);
+      stock.set(id, nuevo);
       continue;
     }
     if (nuevo < 0) {
@@ -232,6 +234,15 @@ async function preparar(client, { archivos, hasta: hastaPedido, avanzar = false 
       continue;
     }
     stock.set(id, nuevo);
+  }
+  // Faltante que ninguna compra alcanzó a cubrir: el stock queda en 0
+  for (const p of prods) {
+    const final = stock.get(p.id_producto);
+    if (final < 0) {
+      ajustes.kg = r2(ajustes.kg - final);
+      ajustes.lista.push({ tipo: 'stock', linea: 0, mensaje: `«${p.nombre}» termina con ${final} kg; queda en 0` });
+      stock.set(p.id_producto, 0);
+    }
   }
   const cambios = prods
     .filter((p) => r2(stock.get(p.id_producto)) !== r2(p.stock_actual))
@@ -318,6 +329,106 @@ async function importar(params, idUsuario) {
   });
 }
 
+/**
+ * Deshacer movimientos (para volver a mostrar una carga en una demostración): ventas, compras y mermas desde el día
+ * `desde` (incluido, hora local) en adelante. El stock vuelve a como estaba al inicio de ese día (se suman las ventas y
+ * mermas quitadas y se restan las compras), y se borran las alertas creadas desde ese día (las cerradas desde entonces
+ * vuelven a quedar activas). Solo con fecha de referencia: con la fecha real se perderían movimientos verdaderos.
+ */
+async function prepararDeshacer(client, desde, bloquear = false) {
+  const generales = [];
+  if (bloquear) await client.query('SELECT 1 FROM productos FOR UPDATE'); // como la importación: nadie mueve stock mientras tanto
+  const { rows: cfg } = await client.query("SELECT valor->>'fecha' AS fecha FROM configuracion WHERE clave = 'mermas_incluidas_hasta'");
+  const mermasHasta = cfg[0] && cfg[0].fecha;
+  if (mermasHasta && desde <= mermasHasta) {
+    generales.push(`Hasta el ${mermasHasta} las mermas están incluidas en el stock sin registrarse: elige una fecha posterior.`);
+  }
+  if (desde > hoy()) generales.push(`La fecha (${desde}) es posterior a la fecha del sistema (${hoy()}).`);
+
+  const inicio = '($1::date::timestamp AT TIME ZONE $2)';
+  const tipos = {};
+  for (const [tipo, t] of Object.entries(TIPOS)) {
+    const { rows } = await client.query(
+      `SELECT COUNT(*)::int AS movimientos, COALESCE(SUM(cantidad), 0)::float AS cantidad,
+              to_char(MIN(fecha_hora AT TIME ZONE $2), 'YYYY-MM-DD') AS desde, to_char(MAX(fecha_hora AT TIME ZONE $2), 'YYYY-MM-DD') AS hasta
+         FROM ${t.tabla} WHERE fecha_hora >= ${inicio}`,
+      [desde, config.tz]
+    );
+    tipos[tipo] = { ...rows[0], cantidad: r2(rows[0].cantidad) };
+  }
+  const { rows: prods } = await client.query(
+    `WITH d AS (
+       SELECT id_producto, cantidad AS delta FROM ventas WHERE fecha_hora >= ${inicio}
+       UNION ALL SELECT id_producto, cantidad FROM mermas WHERE fecha_hora >= ${inicio}
+       UNION ALL SELECT id_producto, -cantidad FROM compras WHERE fecha_hora >= ${inicio})
+     SELECT p.id_producto, p.nombre, p.unidad, p.stock_actual::float AS stock_actual, SUM(d.delta)::float AS delta
+       FROM d JOIN productos p USING (id_producto)
+      GROUP BY p.id_producto`,
+    [desde, config.tz]
+  );
+  // El stock no puede quedar negativo (un faltante por redondeo del pesaje pudo dejarlo en 0 al importar)
+  const stock = prods
+    .map((p) => ({ id_producto: p.id_producto, producto: p.nombre, unidad: p.unidad, antes: r2(p.stock_actual), exacto: r2(p.stock_actual + p.delta) }))
+    .map(({ exacto, ...s }) => ({ ...s, despues: Math.max(0, exacto), faltante: exacto < 0 ? -exacto : 0 }))
+    .filter((s) => s.antes !== s.despues || s.faltante)
+    .sort((a, b) => a.producto.localeCompare(b.producto));
+  // Saldo negativo al inicio del día (faltantes de pesaje sin cubrir): queda en 0 y al volver a cargar no cuadra exacto
+  const advertencias = stock
+    .filter((s) => s.faltante)
+    .map((s) => `«${s.producto}» tenía ${-s.faltante} ${s.unidad} al inicio del ${desde} (faltante de pesaje): queda en 0, y al volver a cargar terminará con ${s.faltante} ${s.unidad} de más.`);
+  const { rows: al } = await client.query(
+    `SELECT COUNT(*) FILTER (WHERE creada_en >= ${inicio})::int AS borradas,
+            COUNT(*) FILTER (WHERE creada_en < ${inicio} AND resuelta_en >= ${inicio})::int AS reabiertas
+       FROM alertas_inventario`,
+    [desde, config.tz]
+  );
+  const total = Object.values(tipos).reduce((a, t) => a + t.movimientos, 0);
+  if (!total && !generales.length) generales.push(`No hay ventas, compras ni mermas desde el ${desde}.`);
+  return {
+    valido: !generales.length,
+    desde,
+    fecha_sistema: { actual: hoy(), nueva: desde },
+    tipos,
+    total,
+    alertas: al[0],
+    stock,
+    advertencias,
+    errores_generales: generales
+  };
+}
+
+/** Revisa qué se desharía desde `desde`, sin escribir nada. */
+async function revisarDeshacer(desde) {
+  const client = await db.pool.connect();
+  try {
+    await client.query('BEGIN READ ONLY');
+    return await prepararDeshacer(client, desde);
+  } finally {
+    await client.query('ROLLBACK').catch(() => {});
+    client.release();
+  }
+}
+
+/** Deshace en una transacción (todo o nada). La fecha del sistema y las alertas se recalculan después (en la ruta). */
+async function deshacer(desde) {
+  return withTransaction(async (client) => {
+    const r = await prepararDeshacer(client, desde, true);
+    if (!r.valido) return { ...r, deshecho: false };
+    const p = [desde, config.tz];
+    const inicio = '($1::date::timestamp AT TIME ZONE $2)';
+    for (const t of Object.values(TIPOS)) await client.query(`DELETE FROM ${t.tabla} WHERE fecha_hora >= ${inicio}`, p);
+    if (r.stock.length) {
+      await client.query(
+        `UPDATE productos p SET stock_actual = x.s FROM unnest($1::bigint[], $2::numeric[]) AS x(id, s) WHERE p.id_producto = x.id`,
+        [r.stock.map((s) => s.id_producto), r.stock.map((s) => s.despues)]
+      );
+    }
+    await client.query(`DELETE FROM alertas_inventario WHERE creada_en >= ${inicio}`, p);
+    await client.query(`UPDATE alertas_inventario SET estado = 'activa', resuelta_en = NULL WHERE resuelta_en >= ${inicio}`, p);
+    return { ...r, deshecho: true };
+  });
+}
+
 /** Plantilla CSV (separador «;», como la exporta Excel en español) con dos filas de ejemplo. */
 async function plantilla(tipo) {
   const t = TIPOS[tipo];
@@ -337,4 +448,4 @@ async function plantilla(tipo) {
   return `\uFEFF${[t.columnas, ...filas].map((l) => l.map(celda).join(';')).join('\r\n')}\r\n`;
 }
 
-module.exports = { validar, importar, plantilla, TIPOS };
+module.exports = { validar, importar, plantilla, revisarDeshacer, deshacer, TIPOS };

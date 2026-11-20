@@ -34,9 +34,10 @@ function dividir(texto, sep) {
 
 /**
  * Lee un CSV. Devuelve { separador, columnas: [nombre normalizado], filas: [{ linea, valores: { columna: texto } }] }.
- * Omite las filas vacías; `linea` es el número de línea del archivo (el encabezado es la 1).
+ * Omite las filas vacías; `linea` es el número de línea del archivo (el encabezado es la 1). `lineasOmitidas`: líneas
+ * del archivo original quitadas entre el encabezado y la primera fila (archivo recortado en el navegador).
  */
-function leerCsv(texto) {
+function leerCsv(texto, lineasOmitidas = 0) {
   const limpio = String(texto || '').replace(/^\uFEFF/, '');
   const primera = limpio.split(/\r?\n/, 1)[0] || '';
   const separador = (primera.match(/;/g) || []).length >= (primera.match(/,/g) || []).length ? ';' : ',';
@@ -47,7 +48,7 @@ function leerCsv(texto) {
   for (let i = 1; i < filas.length; i++) {
     const f = filas[i];
     if (f.every((c) => c.trim() === '')) continue;
-    salida.push({ linea: i + 1, valores: Object.fromEntries(columnas.map((c, k) => [c, (f[k] ?? '').trim()])) });
+    salida.push({ linea: i + 1 + lineasOmitidas, valores: Object.fromEntries(columnas.map((c, k) => [c, (f[k] ?? '').trim()])) });
   }
   return { separador, columnas, filas: salida };
 }
