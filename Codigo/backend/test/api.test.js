@@ -421,6 +421,14 @@ describe('API de NexuStock', { skip: omitir }, () => {
     assert.equal(malo.json.data.total_errores, 2);
     assert.match(malo.json.data.errores[0].mensaje, /Producto no encontrado/);
     assert.match(malo.json.data.errores[1].mensaje, /Stock insuficiente/);
+    // Archivo recortado en el navegador: el resumen suma las filas omitidas y las líneas siguen siendo las del original
+    const recortado = await llamar('admin', 'POST', '/import/validar', {
+      ventas: `fecha;hora;producto;cantidad;precio_unitario_clp\n${f};23:58;Cordero;1;9000\n`,
+      recorte: { ventas: { lineas_omitidas: 10, ya_cargadas: 10, posteriores: 4 } }
+    });
+    ok(recortado, 200);
+    assert.equal(recortado.json.data.errores[0].linea, 12);
+    assert.deepEqual([recortado.json.data.tipos.ventas.filas, recortado.json.data.tipos.ventas.ya_cargadas, recortado.json.data.tipos.ventas.posteriores], [15, 10, 4]);
 
     const v = await llamar('admin', 'POST', '/import/validar', { ventas, compras, mermas });
     ok(v, 200);
@@ -442,5 +450,35 @@ describe('API de NexuStock', { skip: omitir }, () => {
     assert.equal(otra.status, 400);
     assert.equal(otra.json.data.tipos.ventas.ya_cargadas, 1);
     assert.match(otra.json.data.errores_generales[0], /No hay filas nuevas/);
+
+    // Deshacer la carga (demostración): solo con fecha de referencia y solo el administrador
+    assert.equal((await llamar('admin', 'POST', '/import/deshacer/validar', { desde: f })).status, 409);
+    ok(await llamar('admin', 'PUT', '/config/fecha', { fecha: f }), 200);
+    assert.equal((await llamar('operador', 'POST', '/import/deshacer', { desde: f })).status, 403);
+    assert.equal((await llamar('admin', 'POST', '/import/deshacer/validar', { desde: 'ayer' })).status, 400);
+    const rev = await llamar('admin', 'POST', '/import/deshacer/validar', { desde: f });
+    ok(rev, 200);
+    assert.equal(rev.json.data.valido, true, JSON.stringify(rev.json.data));
+    assert.ok(rev.json.data.tipos.ventas.movimientos >= 1 && rev.json.data.tipos.compras.movimientos >= 1 && rev.json.data.tipos.mermas.movimientos === 1);
+    const pollo = rev.json.data.stock.find((s) => s.id_producto === idPollo);
+    assert.deepEqual([pollo.antes, pollo.despues], [12, antes]);
+    assert.equal((await llamar('admin', 'GET', `/products/${idPollo}`)).json.data.stock_actual, 12); // revisar no escribe
+
+    const des = await llamar('admin', 'POST', '/import/deshacer', { desde: f });
+    ok(des, 200);
+    assert.equal(des.json.data.deshecho, true);
+    assert.equal((await llamar('admin', 'GET', `/products/${idPollo}`)).json.data.stock_actual, antes);
+    assert.equal((await db.query(`SELECT COUNT(*)::int AS n FROM mermas`)).rows[0].n, 0);
+    assert.equal((await llamar('admin', 'GET', '/config')).json.data.fecha.referencia, f);
+    const nada = await llamar('admin', 'POST', '/import/deshacer/validar', { desde: f });
+    assert.equal(nada.json.data.valido, false);
+    assert.match(nada.json.data.errores_generales[0], /No hay ventas/);
+
+    // Ahora la misma carga se puede volver a importar
+    const otraVez = await llamar('admin', 'POST', '/import', { ventas, compras, mermas });
+    ok(otraVez, 201);
+    assert.equal(otraVez.json.data.total_a_importar, 3);
+    assert.equal((await llamar('admin', 'GET', `/products/${idPollo}`)).json.data.stock_actual, 12);
+    ok(await llamar('admin', 'PUT', '/config/fecha', { fecha: null }), 200);
   });
 });

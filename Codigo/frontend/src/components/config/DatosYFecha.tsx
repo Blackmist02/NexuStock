@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { AvisoFechaPasada, AvisoSinDatos, diasSinDatos } from "@/components/FechaSistema";
+import { ConfirmarModal } from "@/components/modales/ConfirmarModal";
 import { Button } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import { api, errorMessage } from "@/lib/api";
 import { avisarCambioFecha, cambiarFechaSistema, mensajeCambioFecha } from "@/lib/fechaSistema";
 import { fmtCLP, fmtFecha, fmtNum } from "@/lib/format";
+import { recortarCsv, type Recorte } from "@/lib/recorteCsv";
 import type { ConfigFecha } from "@/lib/tipos";
 import type { Evaluacion } from "@/lib/fechaSistema";
 
@@ -107,6 +109,12 @@ export function FechaSistemaCard({ fecha, onCambio }: { fecha: ConfigFecha; onCa
 }
 
 type Tipo = "ventas" | "compras" | "mermas";
+/** Último día cargado de cada tipo (para recortar el archivo antes de enviarlo). */
+const ULTIMO: Record<Tipo, (f: ConfigFecha) => string | null> = {
+  ventas: (f) => f.ultimos_movimientos.venta,
+  compras: (f) => f.ultimos_movimientos.compra,
+  mermas: (f) => f.ultimos_movimientos.merma,
+};
 const TIPOS: { t: Tipo; nombre: string; ayuda: string }[] = [
   { t: "ventas", nombre: "Ventas", ayuda: "fecha; hora; producto; cantidad; precio_unitario_clp" },
   { t: "compras", nombre: "Compras", ayuda: "fecha; hora; producto; cantidad; costo_unitario_clp; proveedor (opcional)" },
@@ -156,11 +164,39 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
     setError(null);
   };
 
+  /** Arma el envío: cada archivo recortado a las filas del tramo (desde el último día cargado hasta la fecha límite). */
   async function cuerpo() {
     const c: Record<string, unknown> = { avanzar, hasta: hasta || null };
-    for (const { t } of TIPOS) if (archivos[t]) c[t] = await archivos[t]!.text();
+    const recorte: Partial<Record<Tipo, Recorte>> = {};
+    for (const { t } of TIPOS) {
+      if (!archivos[t]) continue;
+      const texto = await archivos[t]!.text();
+      const r = recortarCsv(texto, ULTIMO[t](fecha), hasta || null);
+      c[t] = r ? r.texto : texto;
+      if (r) recorte[t] = r.recorte;
+    }
+    c.recorte = recorte;
     return c;
   }
+
+  // Atajos de tramo: desde el día siguiente al último cargado
+  const inicioTramo = sumarDias(
+    [fecha.ultimos_movimientos.venta, fecha.ultimos_movimientos.compra, fecha.ultimos_movimientos.merma]
+      .filter((f): f is string => !!f)
+      .reduce((m, f) => (f > m ? f : m), sumarDias(fecha.hoy, -1)),
+    1,
+  );
+  const tope = (f: string) => (f > fecha.real ? fecha.real : f);
+  const finDeMes = (iso: string) => {
+    const [y, m] = iso.split("-").map(Number);
+    return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+  };
+  const TRAMOS: { nombre: string; hasta: string }[] = [
+    { nombre: "1 día", hasta: inicioTramo },
+    { nombre: "1 semana", hasta: sumarDias(inicioTramo, 6) },
+    { nombre: "Hasta fin de mes", hasta: finDeMes(inicioTramo) },
+    { nombre: "30 días", hasta: sumarDias(inicioTramo, 29) },
+  ].map((x) => ({ ...x, hasta: tope(x.hasta) }));
 
   async function revisar() {
     setOcupado("revisar");
@@ -206,7 +242,7 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
       <div className="title">Carga de datos (CSV)</div>
       <p className="hint" style={{ margin: "0 0 12px" }}>
         Sube ventas, compras y mermas con las plantillas. Se importa solo lo posterior a lo ya cargado y hasta la fecha límite, así que puedes subir el
-        archivo completo cada semana. Se acepta el CSV de Excel (separador «;» y coma decimal) o con comas.
+        archivo completo y cargarlo por tramos (solo se envía el tramo elegido). Se acepta el CSV de Excel (separador «;» y coma decimal) o con comas.
       </p>
       <div className="carga-grid">
         {TIPOS.map(({ t, nombre, ayuda }) => (
@@ -235,6 +271,11 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
         <label className="hint" htmlFor="csv-hasta">Cargar hasta (incluido)</label>
         <input id="csv-hasta" className="input surface" type="date" style={{ height: 32, width: "auto" }} value={hasta} max={fecha.real} onChange={(e) => { setHasta(e.target.value); invalidar(); }} />
         <span className="mini">{hasta ? "" : "Vacío: hasta la última fecha de los archivos"}</span>
+        {TRAMOS.map((x) => (
+          <Button key={x.nombre} size="sm" disabled={!!ocupado} onClick={() => { setHasta(x.hasta); invalidar(); }}>
+            {x.nombre}
+          </Button>
+        ))}
         <label className="checkrow" style={{ marginLeft: 8 }}>
           <input type="checkbox" checked={avanzar} onChange={(e) => { setAvanzar(e.target.checked); invalidar(); }} />
           <span>Mover la fecha del sistema al día siguiente de la carga</span>
@@ -304,12 +345,18 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
               {revision.total_errores > revision.errores.length ? <li>… y {revision.total_errores - revision.errores.length} más.</li> : null}
             </ul>
           ) : null}
-          {revision.total_advertencias ? (
+          {revision.advertencias.length ? (
             <details className="carga-lista">
               <summary>
-                {revision.total_advertencias} {revision.total_advertencias === 1 ? "ajuste" : "ajustes"} por redondeo del pesaje ({fmtNum(revision.kg_ajustados, 2)} kg): el stock queda en 0
+                {revision.total_advertencias} {revision.total_advertencias === 1 ? "faltante" : "faltantes"} por redondeo del pesaje (hasta 0,5 kg), cubiertos por
+                la compra siguiente
+                {revision.kg_ajustados ? ` · ${fmtNum(revision.kg_ajustados, 2)} kg sin cubrir al final: ese stock queda en 0` : ""}
               </summary>
-              <ul>{revision.advertencias.map((a) => <li key={`${a.tipo}-${a.linea}`}><b>{a.tipo}, línea {a.linea}:</b> {a.mensaje}</li>)}</ul>
+              <ul>
+                {revision.advertencias.map((a) => (
+                  <li key={`${a.tipo}-${a.linea}-${a.mensaje}`}>{a.linea ? <b>{a.tipo}, línea {a.linea}: </b> : null}{a.mensaje}</li>
+                ))}
+              </ul>
             </details>
           ) : null}
           {revision.valido && revision.stock.length ? (
@@ -320,6 +367,133 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
           ) : null}
         </div>
       ) : null}
+      {fecha.origen !== "real" ? <DeshacerMovimientos fecha={fecha} onCambio={onCambio} /> : null}
     </div>
+  );
+}
+
+interface RevisionDeshacer {
+  valido: boolean;
+  desde: string;
+  fecha_sistema: { actual: string; nueva: string };
+  tipos: Record<Tipo, { movimientos: number; cantidad: number; desde: string | null; hasta: string | null }>;
+  total: number;
+  alertas: { borradas: number; reabiertas: number };
+  stock: { producto: string; unidad: string; antes: number; despues: number }[];
+  advertencias: string[];
+  errores_generales: string[];
+}
+
+/**
+ * Deshace ventas, compras y mermas desde una fecha (solo con fecha de referencia), para volver a mostrar una carga CSV
+ * en una demostración: el stock vuelve a como estaba ese día y la fecha del sistema retrocede a esa fecha.
+ */
+function DeshacerMovimientos({ fecha, onCambio }: { fecha: ConfigFecha; onCambio: () => void }) {
+  const toast = useToast();
+  const [desde, setDesde] = useState(() => sumarDias(fecha.hoy, -7));
+  const [revision, setRevision] = useState<RevisionDeshacer | null>(null);
+  const [ocupado, setOcupado] = useState<null | "revisar" | "deshacer">(null);
+  const [confirmar, setConfirmar] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function revisar() {
+    setOcupado("revisar");
+    setError(null);
+    try {
+      setRevision((await api.post<{ data: RevisionDeshacer }>("/import/deshacer/validar", { desde })).data);
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setOcupado(null);
+    }
+  }
+
+  async function deshacer() {
+    setOcupado("deshacer");
+    setError(null);
+    try {
+      const r = await api.post<{ data: RevisionDeshacer & { evaluacion: Evaluacion | null } }>("/import/deshacer", { desde });
+      const ev = r.data.evaluacion;
+      toast.ok(
+        `Deshechos ${r.data.total} movimientos · fecha del sistema: ${fmtFecha(r.data.desde)}` +
+          (ev ? ` · alertas: ${ev.creadas} nuevas, ${ev.cerradas} cerradas` : ""),
+      );
+      setConfirmar(false);
+      setRevision(null);
+      avisarCambioFecha();
+      onCambio();
+    } catch (e) {
+      setConfirmar(false);
+      setError(errorMessage(e));
+    } finally {
+      setOcupado(null);
+    }
+  }
+
+  return (
+    <details className="carga-lista" style={{ marginTop: 16 }}>
+      <summary>Deshacer movimientos desde una fecha (para repetir una carga en una demostración)</summary>
+      <p className="hint" style={{ margin: "8px 0 10px" }}>
+        Borra las ventas, compras y mermas desde el día elegido (incluido), devuelve el stock a como estaba ese día, quita las alertas creadas desde
+        entonces y deja la fecha del sistema en ese día. Después puedes volver a subir los mismos archivos. Solo está disponible con fecha de
+        referencia.
+      </p>
+      <div className="row-actions" style={{ flexWrap: "wrap", alignItems: "center" }}>
+        <label className="hint" htmlFor="deshacer-desde">Desde (incluido)</label>
+        <input
+          id="deshacer-desde"
+          className="input surface"
+          type="date"
+          style={{ height: 32, width: "auto" }}
+          value={desde}
+          max={fecha.hoy}
+          onChange={(e) => {
+            setDesde(e.target.value);
+            setRevision(null);
+            setError(null);
+          }}
+        />
+        <Button size="sm" disabled={!desde || !!ocupado} loading={ocupado === "revisar"} onClick={() => void revisar()}>Revisar</Button>
+        <Button size="sm" variant="danger" disabled={!revision?.valido || !!ocupado} onClick={() => setConfirmar(true)}>
+          {revision?.valido ? `Deshacer ${revision.total} movimientos` : "Deshacer"}
+        </Button>
+      </div>
+      {error ? <div className="form-err" role="alert" style={{ marginTop: 10 }}>{error}</div> : null}
+      {revision ? (
+        revision.valido ? (
+          <div className="callout info" role="status" style={{ marginTop: 10 }}>
+            <span>
+              Se borrarán {revision.tipos.ventas.movimientos} ventas ({fmtNum(revision.tipos.ventas.cantidad)} kg), {revision.tipos.compras.movimientos}{" "}
+              compras ({fmtNum(revision.tipos.compras.cantidad)} kg) y {revision.tipos.mermas.movimientos} mermas ({fmtNum(revision.tipos.mermas.cantidad)} kg)
+              desde el {fmtFecha(revision.desde)}; cambia el stock de {revision.stock.length} productos y {revision.alertas.borradas} alertas se quitan
+              {revision.alertas.reabiertas ? ` (${revision.alertas.reabiertas} vuelven a quedar activas)` : ""}. La fecha del sistema pasará del{" "}
+              {fmtFecha(revision.fecha_sistema.actual)} al <b>{fmtFecha(revision.fecha_sistema.nueva)}</b>.
+            </span>
+          </div>
+        ) : (
+          <div className="callout err" role="alert" style={{ marginTop: 10 }}>
+            <span>{revision.errores_generales.join(" ")}</span>
+          </div>
+        )
+      ) : null}
+      {revision?.valido && revision.advertencias.length ? (
+        <ul className="carga-lista">
+          {revision.advertencias.map((a) => <li key={a}>{a} Si necesitas que cuadre exacto, prueba otro día.</li>)}
+        </ul>
+      ) : null}
+      {confirmar && revision ? (
+        <ConfirmarModal
+          titulo="¿Deshacer los movimientos?"
+          confirmar={`Deshacer ${revision.total} movimientos`}
+          peligro
+          ocupado={ocupado === "deshacer"}
+          onConfirmar={() => void deshacer()}
+          onClose={() => setConfirmar(false)}
+        >
+          Se borrarán <b>{revision.total}</b> ventas, compras y mermas desde el <b>{fmtFecha(revision.desde)}</b> y el stock volverá a como estaba ese día.
+          No se puede revertir, salvo volviendo a cargar los archivos. El cambio lo ven todos los usuarios.
+        </ConfirmarModal>
+      ) : null}
+    </details>
   );
 }
