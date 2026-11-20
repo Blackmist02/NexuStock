@@ -456,7 +456,13 @@ describe('API de NexuStock', { skip: omitir }, () => {
     ok(await llamar('admin', 'PUT', '/config/fecha', { fecha: f }), 200);
     assert.equal((await llamar('operador', 'POST', '/import/deshacer', { desde: f })).status, 403);
     assert.equal((await llamar('admin', 'POST', '/import/deshacer/validar', { desde: 'ayer' })).status, 400);
+    // Marca de migracion_v5.sql obsoleta (hay mermas registradas hasta ese día, como en la demo): no bloquea
+    await db.query(
+      `INSERT INTO configuracion (clave, valor) VALUES ('mermas_incluidas_hasta', $1::jsonb) ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor`,
+      [JSON.stringify({ fecha: f })]
+    );
     const rev = await llamar('admin', 'POST', '/import/deshacer/validar', { desde: f });
+    await db.query("DELETE FROM configuracion WHERE clave = 'mermas_incluidas_hasta'");
     ok(rev, 200);
     assert.equal(rev.json.data.valido, true, JSON.stringify(rev.json.data));
     assert.ok(rev.json.data.tipos.ventas.movimientos >= 1 && rev.json.data.tipos.compras.movimientos >= 1 && rev.json.data.tipos.mermas.movimientos === 1);

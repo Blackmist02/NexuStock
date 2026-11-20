@@ -294,6 +294,9 @@ def main():
         if args.reemplazar:
             cur.execute('TRUNCATE alertas_inventario, predicciones, modelos_ml, eventos_calendario, ventas, compras, '
                         + ('mermas, ' if con_mermas else '') + 'productos, proveedores RESTART IDENTITY CASCADE')
+            if con_mermas:
+                # Las mermas se cargan de nuevo y quedan registradas: la marca de migracion_v5.sql ya no corresponde
+                cur.execute("DELETE FROM configuracion WHERE clave = 'mermas_incluidas_hasta'")
             print('Datos anteriores eliminados (usuarios y categorías se conservan)')
 
         cur.execute('SELECT COUNT(*) FROM productos')
