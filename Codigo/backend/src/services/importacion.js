@@ -338,7 +338,14 @@ async function importar(params, idUsuario) {
 async function prepararDeshacer(client, desde, bloquear = false) {
   const generales = [];
   if (bloquear) await client.query('SELECT 1 FROM productos FOR UPDATE'); // como la importación: nadie mueve stock mientras tanto
-  const { rows: cfg } = await client.query("SELECT valor->>'fecha' AS fecha FROM configuracion WHERE clave = 'mermas_incluidas_hasta'");
+  // Marca de migracion_v5.sql (mermas descontadas del stock sin registrarse hasta ese día). Si hay mermas registradas
+  // hasta ese día, la base se recargó con ellas (cargar_bd.py --reemplazar) y la marca quedó obsoleta.
+  const { rows: cfg } = await client.query(
+    `SELECT valor->>'fecha' AS fecha FROM configuracion c
+      WHERE clave = 'mermas_incluidas_hasta'
+        AND NOT EXISTS (SELECT 1 FROM mermas WHERE fecha_hora < (((c.valor->>'fecha')::date + 1)::timestamp AT TIME ZONE $1))`,
+    [config.tz]
+  );
   const mermasHasta = cfg[0] && cfg[0].fecha;
   if (mermasHasta && desde <= mermasHasta) {
     generales.push(`Hasta el ${mermasHasta} las mermas están incluidas en el stock sin registrarse: elige una fecha posterior.`);
