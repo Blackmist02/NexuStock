@@ -485,6 +485,19 @@ describe('API de NexuStock', { skip: omitir }, () => {
     ok(otraVez, 201);
     assert.equal(otraVez.json.data.total_a_importar, 3);
     assert.equal((await llamar('admin', 'GET', `/products/${idPollo}`)).json.data.stock_actual, 12);
+
+    // Tramo suelto: si las ventas del archivo empiezan días después de lo cargado, la revisión explica qué falta
+    const { addDays } = require('../src/lib/dates');
+    const ventaDel = (dia) => `fecha;hora;producto;cantidad;precio_unitario_clp\n${dia};10:00;Pollo entero;1;4000\n`;
+    const conHueco = await llamar('admin', 'POST', '/import/validar', { ventas: ventaDel(addDays(f, 5)), avanzar: true });
+    ok(conHueco, 200);
+    assert.equal(conHueco.json.data.hueco.dias, 4, JSON.stringify(conHueco.json.data.hueco));
+    assert.equal(conHueco.json.data.hueco.desde, addDays(f, 1));
+    assert.match(conHueco.json.data.avisos[0], /Faltan movimientos/);
+    // Un día sin ventas (feriado) es normal: sin aviso
+    const sinHueco = await llamar('admin', 'POST', '/import/validar', { ventas: ventaDel(addDays(f, 2)), avanzar: true });
+    assert.equal(sinHueco.json.data.hueco, null);
+    assert.deepEqual(sinHueco.json.data.avisos, []);
     ok(await llamar('admin', 'PUT', '/config/fecha', { fecha: null }), 200);
   });
 });

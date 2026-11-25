@@ -14,7 +14,8 @@ src ML/
   tests/validar_predict.py ← comprueba que predict.py reproduce las predicciones del notebook 03
   crear_esquema.py         ← crea el esquema (init.sql) en una base vacía (local, Supabase o proveedor definitivo)
   cargar_bd.py             ← carga los datos (ventas, compras y mermas) hasta una fecha y registra las predicciones de 2024
-  data/plantillas/         ← plantillas de carga (CSV): se versionan las de la semana 23-29/09/2024 para la prueba del README
+  data/plantillas/         ← plantillas de carga que genera exportar_plantillas.py (no versionado)
+  data/plantillas para testing/ ← CSV de prueba versionados: semana 23-29/09/2024 y año 2024 completo (ver su README)
   exportar_plantillas.py   ← convierte data/raw al formato de las plantillas de carga (data/plantillas/)
   reconstruir_fiestas_patrias.py ← reconstruye el 18 y 19 de septiembre (el local abre; ver data/raw/reconstruccion_fiestas_patrias.csv)
 ```

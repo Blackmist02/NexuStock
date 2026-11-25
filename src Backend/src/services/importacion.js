@@ -8,7 +8,7 @@
  */
 const config = require('../config');
 const db = require('../db');
-const { addDays, hoy } = require('../lib/dates');
+const { addDays, diffDays, hoy } = require('../lib/dates');
 const { leerCsv, leerFecha, leerHora, leerNumero } = require('../lib/csvLeer');
 const { withTransaction } = require('../lib/tx');
 
@@ -18,6 +18,22 @@ const MAX_ERRORES = 50;
 // sigue exacto, como en cargar_bd.py) hasta que lo cubre la compra siguiente. Solo si el stock final queda negativo se
 // deja en 0, porque la base no admite stock negativo.
 const TOLERANCIA_KG = 0.5;
+// El local vende todos los días salvo feriados irrenunciables (a lo más 2 seguidos): desde 3 días sin ventas entre lo
+// ya cargado y el primer día del archivo, faltan movimientos (p. ej. se deshizo desde antes de lo que trae el archivo).
+const DIAS_HUECO = 3;
+const fmtDia = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+
+/**
+ * Días sin ventas entre el último día cargado y el primero que se importaría. Sin esas ventas (y sus compras) el stock
+ * no cuadra: es la causa típica de los errores de «stock insuficiente» al cargar un tramo suelto.
+ */
+function huecoDeVentas(ultimo, resumenVentas) {
+  if (!ultimo || !resumenVentas || !resumenVentas.desde) return null;
+  const desde = addDays(ultimo.slice(0, 10), 1);
+  const dias = diffDays(resumenVentas.desde, desde);
+  if (dias < DIAS_HUECO) return null;
+  return { desde, hasta: addDays(resumenVentas.desde, -1), dias, primero: resumenVentas.desde, ultimo: ultimo.slice(0, 10) };
+}
 
 /** Columnas aceptadas (encabezado normalizado) y sus nombres alternativos. */
 const ALIAS = {
@@ -244,6 +260,17 @@ async function preparar(client, { archivos, recorte = {}, hasta: hastaPedido, av
       stock.set(p.id_producto, 0);
     }
   }
+  // Aviso claro cuando faltan días entre lo cargado y el archivo (no bloquea por sí solo: un local pudo cerrar)
+  const avisos = [];
+  const hueco = huecoDeVentas(ultimos.ventas, resumen.ventas);
+  if (hueco) {
+    avisos.push(
+      `Faltan movimientos: lo cargado llega al ${fmtDia(hueco.ultimo)} y las ventas del archivo empiezan el ${fmtDia(hueco.primero)}, ` +
+        `así que no hay datos del ${fmtDia(hueco.desde)} al ${fmtDia(hueco.hasta)} (${hueco.dias} días).` +
+        (errores.total ? ' Sin esas compras y ventas el stock no cuadra: por eso aparecen los errores de «stock insuficiente».' : '') +
+        ` Sube archivos que cubran desde el ${fmtDia(hueco.desde)} (por ejemplo, las plantillas del año completo): lo ya cargado no se duplica.`
+    );
+  }
   const cambios = prods
     .filter((p) => r2(stock.get(p.id_producto)) !== r2(p.stock_actual))
     .map((p) => ({ id_producto: p.id_producto, producto: p.nombre, unidad: p.unidad, antes: r2(p.stock_actual), despues: r2(stock.get(p.id_producto)) }));
@@ -254,6 +281,8 @@ async function preparar(client, { archivos, recorte = {}, hasta: hastaPedido, av
     fecha_sistema: { actual: hoyIso, nueva: nuevaFecha },
     tipos: resumen,
     total_a_importar: aImportar.length,
+    hueco,
+    avisos,
     errores_generales:
       aImportar.length || generales.length || errores.total
         ? generales

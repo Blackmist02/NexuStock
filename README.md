@@ -169,7 +169,7 @@ El segundo reinicia el backend para que tome el modelo recién registrado. **No 
 
 La prueba simula el uso real de la plataforma: el sistema está en el **lunes 23-09-2024** con la historia cargada hasta el domingo anterior, y el encargado sube las ventas, compras y mermas de esa semana para obtener la proyección y las sugerencias de compra de la semana siguiente.
 
-Los tres archivos de prueba están versionados en [`src ML/data/plantillas/`](src%20ML/data/plantillas/), en el mismo formato que las plantillas que descarga la plataforma (separador `;` y coma decimal, como los guarda Excel):
+Los archivos de prueba están versionados en [`src ML/data/plantillas para testing/`](src%20ML/data/plantillas%20para%20testing/) (con un README que explica cuál usar), en el mismo formato que las plantillas que descarga la plataforma (separador `;` y coma decimal, como los guarda Excel):
 
 | Archivo | Contenido (23 al 29-09-2024) |
 | --- | --- |
@@ -239,7 +239,7 @@ Render Free apaga el backend después de 15 minutos sin uso. La primera petició
 
 ### Aplicar las mismas pruebas en la demo
 
-Los CSV son los mismos de [`src ML/data/plantillas/`](src%20ML/data/plantillas/) (descargarlos desde GitHub con *Download raw file*).
+Los CSV son los mismos de [`src ML/data/plantillas para testing/`](src%20ML/data/plantillas%20para%20testing/) (descargarlos desde GitHub con *Download raw file*). Si se deshace desde una fecha anterior al 23-09-2024, hay que subir las plantillas del **año completo** (`*_2024-01-01_2024-09-29.csv`): las de la semana dejarían días sin movimientos y la revisión lo avisa con «Faltan movimientos…».
 
 1. Entrar en https://nexustock-omega.vercel.app/login con la cuenta de administrador.
 2. **Configuración → Carga de datos → Deshacer movimientos desde una fecha:** elegir `23-09-2024`, *Revisar* y *Deshacer*. La demo ya tiene esa semana cargada; esto la quita y deja la fecha del sistema en el 23-09-2024.

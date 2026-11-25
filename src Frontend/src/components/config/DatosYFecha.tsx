@@ -139,6 +139,8 @@ interface Revision {
   fecha_sistema: { actual: string; nueva: string | null };
   tipos: Partial<Record<Tipo, ResumenTipo>>;
   total_a_importar: number;
+  /** Avisos que explican la causa (p. ej. días sin movimientos entre lo cargado y el archivo). */
+  avisos?: string[];
   errores_generales: string[];
   errores: { tipo: Tipo; linea: number; mensaje: string }[];
   total_errores: number;
@@ -326,6 +328,11 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
 
       {revision ? (
         <div className="carga-revision">
+          {(revision.avisos ?? []).map((a) => (
+            <div key={a} className="callout warn" role="status">
+              <span>{a}</span>
+            </div>
+          ))}
           {revision.valido ? (
             <div className="callout ok" role="status">
               <span>

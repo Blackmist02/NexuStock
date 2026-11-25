@@ -154,6 +154,12 @@
   border-color: var(--border);
   color: var(--ink-muted);
 }
+/* Aviso que explica la causa de un problema (no bloquea por sí mismo) */
+.callout.warn {
+  background: var(--alerta-bg);
+  border-color: color-mix(in srgb, var(--alerta) 45%, transparent);
+  color: var(--ink);
+}
 .callout b {
   font-weight: 600;
 }

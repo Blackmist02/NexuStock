@@ -75,6 +75,5 @@ ehthumbs.db
 *.tmp
 
 # Plantillas de carga generadas con src ML/exportar_plantillas.py (se regeneran desde data/raw).
-# Se versionan solo las de la semana del 23 al 29-09-2024: son las de la prueba del README.
-src ML/data/plantillas/*
-!src ML/data/plantillas/*_2024-09-23_2024-09-29.csv
+# Las que usan las pruebas del README se versionan aparte, en «src ML/data/plantillas para testing».
+src ML/data/plantillas/

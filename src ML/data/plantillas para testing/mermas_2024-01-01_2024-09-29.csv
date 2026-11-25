@@ -1,0 +1,511 @@
+﻿fecha;hora;producto;cantidad;motivo;costo_unitario_clp
+2024-01-02;20:00;Pollo Entero;3,18;vencimiento;2282
+2024-01-02;20:00;Trutro Entero;11,1;vencimiento;2065
+2024-01-02;20:00;Costillar de Cerdo;0,49;deterioro;3558
+2024-01-02;20:00;Reineta Entera;5,0;vencimiento;7244
+2024-01-03;20:00;Congrio Negro;0,99;vencimiento;2835
+2024-01-03;20:00;Choritos (Mejillones);1,93;vencimiento;619
+2024-01-04;20:00;Punta Paleta;5,62;vencimiento;4955
+2024-01-04;20:00;Pollo Entero;2,92;vencimiento;2240
+2024-01-04;20:00;Alitas de Pollo;1,86;vencimiento;1880
+2024-01-06;20:00;Costillar de Cerdo;0,45;deterioro;3485
+2024-01-06;20:00;Congrio Negro;1,15;vencimiento;2778
+2024-01-08;20:00;Merluza Fresca;0,26;vencimiento;1508
+2024-01-09;20:00;Alitas de Pollo;2,88;vencimiento;1865
+2024-01-10;20:00;Choritos (Mejillones);1,4;vencimiento;638
+2024-01-10;20:00;Congrio Negro;2,14;vencimiento;2769
+2024-01-10;20:00;Merluza Fresca;3,62;vencimiento;1503
+2024-01-10;20:00;Pierna de Cerdo;1,3;vencimiento;3000
+2024-01-10;20:00;Chuleta de Cerdo;2,5;vencimiento;3805
+2024-01-11;20:00;Pollo Entero;8,07;vencimiento;2236
+2024-01-11;20:00;Alitas de Pollo;10,14;vencimiento;1797
+2024-01-11;20:00;Longaniza;0,93;deterioro;3659
+2024-01-15;20:00;Trutro Entero;0,46;deterioro;1988
+2024-01-15;20:00;Trutro Entero;9,14;vencimiento;1988
+2024-01-15;20:00;Merluza Fresca;1,92;vencimiento;1451
+2024-01-17;20:00;Pollo Entero;7,24;vencimiento;2183
+2024-01-17;20:00;Chuleta de Cerdo;10,83;vencimiento;3759
+2024-01-17;20:00;Reineta Entera;0,63;vencimiento;7186
+2024-01-17;20:00;Merluza Fresca;2,89;vencimiento;1565
+2024-01-17;20:00;Congrio Negro;0,77;vencimiento;2625
+2024-01-17;20:00;Choritos (Mejillones);0,17;vencimiento;660
+2024-01-18;20:00;Alitas de Pollo;16,84;vencimiento;1790
+2024-01-18;20:00;Malaya;2,95;vencimiento;4615
+2024-01-18;20:00;Punta Paleta;1,36;vencimiento;5389
+2024-01-19;20:00;Panceta de Cerdo;3,72;vencimiento;3317
+2024-01-20;20:00;Pierna de Cerdo;0,36;deterioro;2966
+2024-01-21;20:00;Posta Rosada;0,78;deterioro;8012
+2024-01-22;20:00;Huachalomo;0,62;deterioro;7437
+2024-01-22;20:00;Chorizo Parrillero;0,25;deterioro;3516
+2024-01-22;20:00;Reineta Entera;2,72;vencimiento;6913
+2024-01-22;20:00;Merluza Fresca;4,72;vencimiento;1473
+2024-01-22;20:00;Congrio Negro;0,57;vencimiento;2779
+2024-01-22;20:00;Choritos (Mejillones);0,5;vencimiento;643
+2024-01-24;20:00;Pollo Entero;34,17;vencimiento;2291
+2024-01-24;20:00;Chuleta de Cerdo;16,46;vencimiento;3742
+2024-01-24;20:00;Pierna de Cerdo;5,82;vencimiento;2966
+2024-01-24;20:00;Choritos (Mejillones);3,88;vencimiento;612
+2024-01-25;20:00;Punta Paleta;1,49;vencimiento;5271
+2024-01-26;20:00;Costillar de Cerdo;2,78;vencimiento;3481
+2024-01-29;20:00;Costillar de Cerdo;0,64;deterioro;3568
+2024-01-29;20:00;Reineta Entera;1,5;vencimiento;6726
+2024-01-29;20:00;Merluza Fresca;1,37;vencimiento;1481
+2024-01-29;20:00;Congrio Negro;0,65;vencimiento;2815
+2024-01-30;20:00;Lomo Vetado;0,27;deterioro;9591
+2024-01-30;20:00;Punta Paleta;6,91;vencimiento;5061
+2024-01-31;20:00;Plateada;2,76;vencimiento;4814
+2024-01-31;20:00;Panceta de Cerdo;0,15;vencimiento;3421
+2024-01-31;20:00;Choritos (Mejillones);0,49;vencimiento;675
+2024-02-01;20:00;Pechuga de Pollo;15,72;vencimiento;3334
+2024-02-01;20:00;Alitas de Pollo;0,21;vencimiento;1921
+2024-02-02;20:00;Reineta Entera;1,0;deterioro;7192
+2024-02-03;20:00;Prietas;0,26;deterioro;2694
+2024-02-03;20:00;Choritos (Mejillones);0,0466165758969876;deterioro;634
+2024-02-05;20:00;Merluza Fresca;2,64;vencimiento;1442
+2024-02-06;20:00;Punta Paleta;4,12;vencimiento;5460
+2024-02-07;20:00;Filete de Res;0,7;deterioro;11710
+2024-02-07;20:00;Malaya;0,29;deterioro;4520
+2024-02-07;20:00;Reineta Entera;0,03;vencimiento;6949
+2024-02-07;20:00;Choritos (Mejillones);0,03;vencimiento;676
+2024-02-08;20:00;Pechuga de Pollo;31,2;vencimiento;3472
+2024-02-08;20:00;Panceta de Cerdo;0,48;deterioro;3288
+2024-02-12;20:00;Merluza Fresca;5,6;vencimiento;1416
+2024-02-13;20:00;Malaya;1,34;vencimiento;4173
+2024-02-13;20:00;Trutro Entero;6,37;vencimiento;2181
+2024-02-13;20:00;Alitas de Pollo;0,81;vencimiento;1837
+2024-02-13;20:00;Congrio Negro;0,99;deterioro;2682
+2024-02-14;20:00;Choritos (Mejillones);2,21;vencimiento;638
+2024-02-14;20:00;Panceta de Cerdo;5,21;vencimiento;3431
+2024-02-14;20:00;Punta Paleta;0,68;deterioro;5211
+2024-02-14;20:00;Pierna de Cerdo;3,18;vencimiento;3205
+2024-02-15;20:00;Pechuga de Pollo;3,86;vencimiento;3429
+2024-02-15;20:00;Alitas de Pollo;1,57;vencimiento;1800
+2024-02-15;20:00;Prietas;0,37;deterioro;2575
+2024-02-16;20:00;Alitas de Pollo;0,4;deterioro;1937
+2024-02-17;20:00;Plateada;0,76;deterioro;4572
+2024-02-19;20:00;Punta Paleta;0,42;deterioro;5417
+2024-02-20;20:00;Posta Rosada;0,83;deterioro;8106
+2024-02-20;20:00;Malaya;7,24;vencimiento;4312
+2024-02-20;20:00;Trutro Entero;7,53;vencimiento;2091
+2024-02-20;20:00;Alitas de Pollo;3,47;vencimiento;1804
+2024-02-21;20:00;Congrio Negro;1,32;vencimiento;2691
+2024-02-21;20:00;Choritos (Mejillones);0,83;deterioro;656
+2024-02-21;20:00;Reineta Entera;1,75;vencimiento;6769
+2024-02-21;20:00;Choritos (Mejillones);1,05;vencimiento;656
+2024-02-21;20:00;Costillar de Cerdo;5,81;vencimiento;3605
+2024-02-21;20:00;Huachalomo;0,87;deterioro;7062
+2024-02-21;20:00;Pierna de Cerdo;7,85;vencimiento;3005
+2024-02-22;20:00;Punta Paleta;8,12;vencimiento;5417
+2024-02-22;20:00;Malaya;5,8;vencimiento;4361
+2024-02-22;20:00;Pollo Entero;1,54;vencimiento;2345
+2024-02-22;20:00;Pechuga de Pollo;1,94;vencimiento;3235
+2024-02-22;20:00;Trutro Entero;12,57;vencimiento;2079
+2024-02-22;20:00;Alitas de Pollo;0,59;vencimiento;1786
+2024-02-23;20:00;Chuleta de Cerdo;3,35;vencimiento;3655
+2024-02-24;20:00;Longaniza;0,68;deterioro;3293
+2024-02-26;20:00;Chuleta de Cerdo;5,38;vencimiento;3654
+2024-02-26;20:00;Reineta Entera;1,1;vencimiento;7058
+2024-02-26;20:00;Congrio Negro;1,68;vencimiento;2702
+2024-02-26;20:00;Choritos (Mejillones);4,51;vencimiento;644
+2024-02-27;20:00;Pechuga de Pollo;16,11;vencimiento;3391
+2024-02-27;20:00;Alitas de Pollo;15,97;vencimiento;1854
+2024-02-28;20:00;Congrio Negro;1,23;vencimiento;2762
+2024-02-28;20:00;Merluza Fresca;2,0;vencimiento;1440
+2024-02-28;20:00;Chorizo Parrillero;0,47;deterioro;3836
+2024-02-28;20:00;Reineta Entera;1,9;vencimiento;7289
+2024-03-02;20:00;Reineta Entera;4,42;vencimiento;6756
+2024-03-03;20:00;Asado de Tira;0,65;deterioro;6169
+2024-03-04;20:00;Pechuga de Pollo;0,73;deterioro;3318
+2024-03-04;20:00;Costillar de Cerdo;1,37;vencimiento;3545
+2024-03-04;20:00;Panceta de Cerdo;0,13;vencimiento;3262
+2024-03-05;20:00;Lomo Vetado;0,57;deterioro;10153
+2024-03-05;20:00;Punta Paleta;3,52;vencimiento;5313
+2024-03-05;20:00;Malaya;6,55;vencimiento;4423
+2024-03-06;20:00;Merluza Fresca;2,02;vencimiento;1416
+2024-03-06;20:00;Congrio Negro;0,49;vencimiento;2787
+2024-03-07;20:00;Malaya;5,06;vencimiento;4541
+2024-03-07;20:00;Trutro Entero;9,93;vencimiento;2160
+2024-03-08;20:00;Congrio Negro;0,58;deterioro;2687
+2024-03-08;20:00;Panceta de Cerdo;0,69;vencimiento;3372
+2024-03-08;20:00;Chuleta de Cerdo;5,07;vencimiento;3766
+2024-03-08;20:00;Costillar de Cerdo;0,39;deterioro;3547
+2024-03-09;20:00;Reineta Entera;0,47;deterioro;6993
+2024-03-10;20:00;Alitas de Pollo;3,15;vencimiento;1852
+2024-03-10;20:00;Chorizo Parrillero;0,8;deterioro;3940
+2024-03-11;20:00;Reineta Entera;0,68;deterioro;7490
+2024-03-12;20:00;Pechuga de Pollo;21,4;vencimiento;3389
+2024-03-13;20:00;Congrio Negro;1,42;vencimiento;2784
+2024-03-13;20:00;Choritos (Mejillones);2,63;vencimiento;626
+2024-03-13;20:00;Reineta Entera;1,85;vencimiento;7490
+2024-03-16;20:00;Costillar de Cerdo;0,9;deterioro;3544
+2024-03-16;20:00;Longaniza;0,76;deterioro;3503
+2024-03-16;20:00;Congrio Negro;0,7;deterioro;2605
+2024-03-17;20:00;Punta Paleta;2,34;vencimiento;5139
+2024-03-18;20:00;Reineta Entera;2,52;vencimiento;7018
+2024-03-19;20:00;Alitas de Pollo;7,69;vencimiento;1822
+2024-03-20;20:00;Congrio Negro;1,49;vencimiento;2769
+2024-03-22;20:00;Chuleta de Cerdo;0,25;vencimiento;3747
+2024-03-22;20:00;Filete de Res;0,4;deterioro;13126
+2024-03-22;20:00;Plateada;2,09;vencimiento;4635
+2024-03-23;20:00;Prietas;0,3;deterioro;2587
+2024-03-24;20:00;Trutro Entero;10,54;vencimiento;2035
+2024-03-24;20:00;Prietas;0,93;deterioro;2616
+2024-03-25;20:00;Chuleta de Cerdo;9,15;vencimiento;3687
+2024-03-25;20:00;Pierna de Cerdo;5,54;vencimiento;3306
+2024-03-25;20:00;Panceta de Cerdo;0,1;vencimiento;3413
+2024-03-25;20:00;Reineta Entera;0,02;vencimiento;6905
+2024-03-25;20:00;Merluza Fresca;4,84;vencimiento;1532
+2024-03-25;20:00;Choritos (Mejillones);0,5;vencimiento;661
+2024-03-26;20:00;Malaya;5,12;vencimiento;4447
+2024-03-26;20:00;Alitas de Pollo;0,88;vencimiento;1848
+2024-03-27;20:00;Congrio Negro;0,01;vencimiento;2776
+2024-03-27;20:00;Choritos (Mejillones);1,58;vencimiento;666
+2024-03-27;20:00;Merluza Fresca;0,22;vencimiento;1561
+2024-03-27;20:00;Costillar de Cerdo;1,11;vencimiento;3493
+2024-03-27;20:00;Panceta de Cerdo;6,38;vencimiento;3280
+2024-03-27;20:00;Chuleta de Cerdo;5,03;vencimiento;3748
+2024-03-27;20:00;Reineta Entera;3,16;vencimiento;7265
+2024-03-28;20:00;Asado de Tira;0,82;deterioro;5759
+2024-03-28;20:00;Plateada;0,35;deterioro;5003
+2024-03-28;20:00;Pechuga de Pollo;23,69;vencimiento;3436
+2024-03-29;20:00;Asado de Tira;0,72;deterioro;5759
+2024-03-29;20:00;Costillar de Cerdo;2,38;vencimiento;3666
+2024-03-29;20:00;Pierna de Cerdo;5,38;vencimiento;3118
+2024-03-31;20:00;Panceta de Cerdo;0,92;deterioro;3216
+2024-04-01;20:00;Choritos (Mejillones);3,01;vencimiento;639
+2024-04-03;20:00;Congrio Negro;4,66;vencimiento;2677
+2024-04-03;20:00;Choritos (Mejillones);3,17;vencimiento;670
+2024-04-04;20:00;Alitas de Pollo;2,46;vencimiento;1844
+2024-04-04;20:00;Malaya;18,3;vencimiento;4451
+2024-04-05;20:00;Lomo Liso;0,55;deterioro;13396
+2024-04-05;20:00;Costillar de Cerdo;4,93;vencimiento;3366
+2024-04-05;20:00;Panceta de Cerdo;0,85;vencimiento;3451
+2024-04-06;20:00;Merluza Fresca;0,17;vencimiento;1523
+2024-04-06;20:00;Choritos (Mejillones);5,3;vencimiento;627
+2024-04-07;20:00;Alitas de Pollo;7,01;vencimiento;1899
+2024-04-08;20:00;Chuleta de Cerdo;2,83;vencimiento;3635
+2024-04-08;20:00;Merluza Fresca;7,57;vencimiento;1413
+2024-04-08;20:00;Congrio Negro;4,56;vencimiento;2846
+2024-04-10;20:00;Chuleta de Cerdo;0,41;deterioro;3810
+2024-04-10;20:00;Reineta Entera;5,36;vencimiento;6850
+2024-04-11;20:00;Malaya;3,06;vencimiento;4346
+2024-04-11;20:00;Pechuga de Pollo;23,94;vencimiento;3411
+2024-04-11;20:00;Lomo Liso;0,55;deterioro;13538
+2024-04-13;20:00;Filete de Res;0,55;deterioro;12395
+2024-04-13;20:00;Congrio Negro;1,56;vencimiento;2560
+2024-04-13;20:00;Choritos (Mejillones);4,23;vencimiento;658
+2024-04-15;20:00;Pierna de Cerdo;0,28;vencimiento;3120
+2024-04-15;20:00;Panceta de Cerdo;3,15;vencimiento;3380
+2024-04-16;20:00;Chorizo Parrillero;0,59;deterioro;3830
+2024-04-16;20:00;Reineta Entera;0,51;deterioro;7278
+2024-04-16;20:00;Pollo Entero;0,6;deterioro;2180
+2024-04-17;20:00;Lomo Vetado;0,25;deterioro;10142
+2024-04-17;20:00;Costillar de Cerdo;1,66;vencimiento;3615
+2024-04-17;20:00;Panceta de Cerdo;5,92;vencimiento;3317
+2024-04-17;20:00;Reineta Entera;3,59;vencimiento;7278
+2024-04-17;20:00;Congrio Negro;0,29;vencimiento;2666
+2024-04-17;20:00;Merluza Fresca;10,41;vencimiento;1445
+2024-04-18;20:00;Pollo Entero;1,0;deterioro;2224
+2024-04-18;20:00;Pechuga de Pollo;26,44;vencimiento;3505
+2024-04-18;20:00;Malaya;1,89;vencimiento;4558
+2024-04-18;20:00;Punta Paleta;2,61;vencimiento;5379
+2024-04-21;20:00;Alitas de Pollo;6,2;vencimiento;1873
+2024-04-22;20:00;Reineta Entera;0,55;vencimiento;6920
+2024-04-22;20:00;Merluza Fresca;4,39;vencimiento;1522
+2024-04-22;20:00;Congrio Negro;0,57;vencimiento;2732
+2024-04-22;20:00;Choritos (Mejillones);3,48;vencimiento;613
+2024-04-23;20:00;Prietas;0,21;deterioro;2580
+2024-04-23;20:00;Punta Paleta;1,67;vencimiento;5382
+2024-04-23;20:00;Malaya;2,93;vencimiento;4396
+2024-04-24;20:00;Congrio Negro;1,16;vencimiento;2769
+2024-04-24;20:00;Choritos (Mejillones);2,25;vencimiento;654
+2024-04-24;20:00;Plateada;4,49;vencimiento;4905
+2024-04-24;20:00;Merluza Fresca;1,53;vencimiento;1418
+2024-04-25;20:00;Congrio Negro;0,68;deterioro;2642
+2024-04-25;20:00;Alitas de Pollo;3,75;vencimiento;1884
+2024-04-25;20:00;Pollo Entero;0,62;deterioro;2141
+2024-04-25;20:00;Pechuga de Pollo;10,56;vencimiento;3378
+2024-04-26;20:00;Costillar de Cerdo;6,7;vencimiento;3473
+2024-04-26;20:00;Panceta de Cerdo;0,45;vencimiento;3285
+2024-04-26;20:00;Prietas;4,4;vencimiento;2580
+2024-04-27;20:00;Alitas de Pollo;0,3022365749185089;deterioro;1816
+2024-04-29;20:00;Congrio Negro;1,04;vencimiento;2650
+2024-04-30;20:00;Pierna de Cerdo;0,51;deterioro;3060
+2024-05-02;20:00;Malaya;5,18;vencimiento;4617
+2024-05-02;20:00;Pollo Entero;12,75;vencimiento;2366
+2024-05-02;20:00;Alitas de Pollo;2,43;vencimiento;1840
+2024-05-02;20:00;Chuleta de Cerdo;3,67;vencimiento;3703
+2024-05-03;20:00;Plateada;2,67;vencimiento;4826
+2024-05-04;20:00;Pierna de Cerdo;0,93;deterioro;3164
+2024-05-06;20:00;Merluza Fresca;4,62;vencimiento;1469
+2024-05-06;20:00;Trutro Entero;0,81;deterioro;2173
+2024-05-08;20:00;Plateada;8,13;vencimiento;4670
+2024-05-08;20:00;Alitas de Pollo;0,94;deterioro;1845
+2024-05-08;20:00;Pierna de Cerdo;7,66;vencimiento;3164
+2024-05-08;20:00;Reineta Entera;2,9;vencimiento;7045
+2024-05-08;20:00;Congrio Negro;0,2;vencimiento;2692
+2024-05-08;20:00;Choritos (Mejillones);1,58;vencimiento;620
+2024-05-09;20:00;Pechuga de Pollo;5,93;vencimiento;3477
+2024-05-11;20:00;Huachalomo;0,95;deterioro;6601
+2024-05-11;20:00;Lomo Vetado;0,37;deterioro;9309
+2024-05-11;20:00;Choritos (Mejillones);2,36;vencimiento;654
+2024-05-13;20:00;Costillar de Cerdo;0,1;vencimiento;3498
+2024-05-13;20:00;Reineta Entera;1,7;vencimiento;7175
+2024-05-14;20:00;Punta Paleta;0,46;deterioro;5297
+2024-05-14;20:00;Posta Rosada;0,33;deterioro;7900
+2024-05-15;20:00;Reineta Entera;2,33;vencimiento;7220
+2024-05-15;20:00;Panceta de Cerdo;0,56;vencimiento;3614
+2024-05-15;20:00;Prietas;0,82;deterioro;2500
+2024-05-16;20:00;Alitas de Pollo;0,64;vencimiento;1876
+2024-05-17;20:00;Longaniza;0,53;deterioro;3590
+2024-05-19;20:00;Punta Paleta;2,29;vencimiento;5531
+2024-05-19;20:00;Alitas de Pollo;2,58;vencimiento;1773
+2024-05-20;20:00;Panceta de Cerdo;1,51;vencimiento;3343
+2024-05-20;20:00;Congrio Negro;0,99;vencimiento;2722
+2024-05-20;20:00;Choritos (Mejillones);0,65;vencimiento;644
+2024-05-21;20:00;Punta Paleta;6,89;vencimiento;5048
+2024-05-21;20:00;Malaya;9,38;vencimiento;4838
+2024-05-21;20:00;Pollo Entero;4,32;vencimiento;2109
+2024-05-21;20:00;Pechuga de Pollo;8,14;vencimiento;3290
+2024-05-22;20:00;Chuleta de Cerdo;25,46;vencimiento;3661
+2024-05-22;20:00;Pierna de Cerdo;8,81;vencimiento;3115
+2024-05-22;20:00;Panceta de Cerdo;6,13;vencimiento;3268
+2024-05-22;20:00;Congrio Negro;3,99;vencimiento;2586
+2024-05-23;20:00;Pechuga de Pollo;23,68;vencimiento;3066
+2024-05-24;20:00;Costillar de Cerdo;6,78;vencimiento;3624
+2024-05-25;20:00;Filete de Res;0,24;deterioro;12726
+2024-05-25;20:00;Reineta Entera;14,3;vencimiento;7284
+2024-05-25;20:00;Choritos (Mejillones);2,36;vencimiento;669
+2024-05-26;20:00;Alitas de Pollo;5,59;vencimiento;1916
+2024-05-26;20:00;Prietas;0,81;deterioro;2597
+2024-05-27;20:00;Congrio Negro;1,1;vencimiento;2583
+2024-05-28;20:00;Punta Paleta;2,35;vencimiento;5660
+2024-05-28;20:00;Trutro Entero;0,28;deterioro;2126
+2024-05-28;20:00;Choritos (Mejillones);0,86;deterioro;651
+2024-05-29;20:00;Huachalomo;0,64;deterioro;7379
+2024-05-29;20:00;Huachalomo;1,35;vencimiento;7379
+2024-05-29;20:00;Merluza Fresca;2,15;vencimiento;1547
+2024-05-29;20:00;Congrio Negro;2,32;vencimiento;2809
+2024-05-29;20:00;Posta Rosada;5,36;vencimiento;8207
+2024-05-30;20:00;Trutro Entero;8,69;vencimiento;2126
+2024-05-30;20:00;Punta Paleta;11,21;vencimiento;5432
+2024-05-30;20:00;Pechuga de Pollo;0,12;vencimiento;3557
+2024-05-31;20:00;Panceta de Cerdo;4,0;vencimiento;3307
+2024-06-01;20:00;Prietas;0,82;deterioro;2562
+2024-06-03;20:00;Choritos (Mejillones);1,5;vencimiento;614
+2024-06-04;20:00;Pechuga de Pollo;12,03;vencimiento;3351
+2024-06-04;20:00;Alitas de Pollo;1,13;vencimiento;1768
+2024-06-05;20:00;Pollo Entero;36,74;vencimiento;2198
+2024-06-05;20:00;Pierna de Cerdo;2,15;vencimiento;3297
+2024-06-05;20:00;Reineta Entera;1,76;vencimiento;7469
+2024-06-05;20:00;Congrio Negro;0,87;vencimiento;2828
+2024-06-05;20:00;Choritos (Mejillones);4,12;vencimiento;667
+2024-06-06;20:00;Punta Paleta;1,25;vencimiento;5318
+2024-06-07;20:00;Longaniza;0,95;deterioro;3633
+2024-06-07;20:00;Plateada;5,36;vencimiento;4756
+2024-06-09;20:00;Malaya;2,61;vencimiento;4578
+2024-06-09;20:00;Alitas de Pollo;1,39;vencimiento;1825
+2024-06-10;20:00;Chuleta de Cerdo;2,88;vencimiento;3765
+2024-06-11;20:00;Punta Paleta;8,98;vencimiento;5528
+2024-06-12;20:00;Chuleta de Cerdo;0,88;vencimiento;3502
+2024-06-12;20:00;Pierna de Cerdo;18,2;vencimiento;3131
+2024-06-12;20:00;Prietas;0,03;vencimiento;2684
+2024-06-13;20:00;Malaya;11,78;vencimiento;4525
+2024-06-14;20:00;Costillar de Cerdo;1,49;vencimiento;3760
+2024-06-16;20:00;Prietas;0,23;vencimiento;2567
+2024-06-16;20:00;Alitas de Pollo;1,46;vencimiento;1837
+2024-06-17;20:00;Congrio Negro;0,42;vencimiento;2805
+2024-06-17;20:00;Longaniza;0,74;deterioro;3671
+2024-06-17;20:00;Costillar de Cerdo;1,24;vencimiento;3615
+2024-06-17;20:00;Panceta de Cerdo;2,78;vencimiento;3493
+2024-06-19;20:00;Congrio Negro;1,05;vencimiento;2766
+2024-06-19;20:00;Merluza Fresca;5,15;vencimiento;1521
+2024-06-19;20:00;Malaya;0,77;deterioro;4564
+2024-06-19;20:00;Chuleta de Cerdo;3,03;vencimiento;3918
+2024-06-20;20:00;Punta Paleta;1,0;deterioro;5460
+2024-06-20;20:00;Malaya;0,57;deterioro;4564
+2024-06-20;20:00;Malaya;3,12;vencimiento;4564
+2024-06-20;20:00;Pechuga de Pollo;10,02;vencimiento;3405
+2024-06-20;20:00;Trutro Entero;23,75;vencimiento;2180
+2024-06-20;20:00;Alitas de Pollo;0,62;vencimiento;1782
+2024-06-21;20:00;Costillar de Cerdo;1,12;vencimiento;3598
+2024-06-21;20:00;Pierna de Cerdo;5,37;vencimiento;3279
+2024-06-21;20:00;Panceta de Cerdo;2,64;vencimiento;3306
+2024-06-23;20:00;Punta Paleta;0,68;deterioro;5460
+2024-06-23;20:00;Punta Paleta;0,08;vencimiento;5460
+2024-06-23;20:00;Pechuga de Pollo;16,02;vencimiento;3460
+2024-06-24;20:00;Choritos (Mejillones);1,04;vencimiento;649
+2024-06-24;20:00;Congrio Negro;2,32;vencimiento;2657
+2024-06-24;20:00;Plateada;0,51;deterioro;4869
+2024-06-24;20:00;Chuleta de Cerdo;2,47;vencimiento;3847
+2024-06-24;20:00;Reineta Entera;7,08;vencimiento;7361
+2024-06-25;20:00;Punta Paleta;5,76;vencimiento;5325
+2024-06-26;20:00;Posta Rosada;2,57;vencimiento;8586
+2024-06-26;20:00;Costillar de Cerdo;2,02;vencimiento;3632
+2024-06-26;20:00;Merluza Fresca;5,57;vencimiento;1588
+2024-06-27;20:00;Costillar de Cerdo;0,83;deterioro;3689
+2024-06-27;20:00;Huachalomo;0,91;deterioro;7619
+2024-06-27;20:00;Malaya;4,75;vencimiento;4575
+2024-06-27;20:00;Pollo Entero;24,74;vencimiento;2359
+2024-06-27;20:00;Alitas de Pollo;3,33;vencimiento;1919
+2024-07-01;20:00;Prietas;0,5141217958507808;deterioro;2611
+2024-07-01;20:00;Pierna de Cerdo;2,47;vencimiento;3312
+2024-07-02;20:00;Pollo Entero;13,52;vencimiento;2261
+2024-07-02;20:00;Pechuga de Pollo;16,62;vencimiento;3422
+2024-07-03;20:00;Reineta Entera;1,52;vencimiento;6514
+2024-07-03;20:00;Merluza Fresca;0,34;vencimiento;1514
+2024-07-04;20:00;Alitas de Pollo;0,75;vencimiento;1883
+2024-07-05;20:00;Costillar de Cerdo;3,64;vencimiento;3853
+2024-07-08;20:00;Congrio Negro;0,13;vencimiento;2629
+2024-07-09;20:00;Lomo Liso;0,54;deterioro;12650
+2024-07-09;20:00;Punta Paleta;2,82;vencimiento;5315
+2024-07-10;20:00;Reineta Entera;0,74;vencimiento;7376
+2024-07-10;20:00;Merluza Fresca;0,51;vencimiento;1594
+2024-07-10;20:00;Congrio Negro;2,73;vencimiento;2739
+2024-07-11;20:00;Chorizo Parrillero;0,51;deterioro;3935
+2024-07-11;20:00;Pollo Entero;0,42;deterioro;2301
+2024-07-11;20:00;Punta Paleta;2,42;vencimiento;5412
+2024-07-12;20:00;Pierna de Cerdo;1,22;vencimiento;3352
+2024-07-13;20:00;Choritos (Mejillones);0,9;vencimiento;653
+2024-07-14;20:00;Pechuga de Pollo;3,52;vencimiento;3381
+2024-07-15;20:00;Pollo Entero;4,13;vencimiento;2272
+2024-07-15;20:00;Costillar de Cerdo;2,14;vencimiento;3717
+2024-07-15;20:00;Panceta de Cerdo;1,93;vencimiento;3259
+2024-07-15;20:00;Choritos (Mejillones);1,04;vencimiento;633
+2024-07-17;20:00;Chorizo Parrillero;0,46;deterioro;3879
+2024-07-17;20:00;Congrio Negro;1,62;vencimiento;2701
+2024-07-18;20:00;Posta Rosada;2,15;vencimiento;8517
+2024-07-18;20:00;Alitas de Pollo;5,26;vencimiento;1900
+2024-07-19;20:00;Costillar de Cerdo;3,36;vencimiento;3693
+2024-07-20;20:00;Reineta Entera;0,6;vencimiento;7145
+2024-07-21;20:00;Pechuga de Pollo;18,25;vencimiento;3500
+2024-07-21;20:00;Prietas;1,26;vencimiento;2652
+2024-07-21;20:00;Pollo Entero;0,39;deterioro;2306
+2024-07-23;20:00;Alitas de Pollo;7,55;vencimiento;1857
+2024-07-23;20:00;Trutro Entero;20,17;vencimiento;2234
+2024-07-23;20:00;Malaya;6,69;vencimiento;4635
+2024-07-23;20:00;Plateada;24,65;vencimiento;5160
+2024-07-24;20:00;Huachalomo;8,63;vencimiento;7456
+2024-07-24;20:00;Pollo Entero;14,15;vencimiento;2205
+2024-07-24;20:00;Chuleta de Cerdo;0,28;deterioro;3893
+2024-07-24;20:00;Pierna de Cerdo;0,9;deterioro;3173
+2024-07-24;20:00;Pierna de Cerdo;12,01;vencimiento;3173
+2024-07-24;20:00;Reineta Entera;0,12;vencimiento;7058
+2024-07-24;20:00;Merluza Fresca;2,04;vencimiento;1580
+2024-07-24;20:00;Congrio Negro;0,73;vencimiento;2783
+2024-07-24;20:00;Choritos (Mejillones);2,11;vencimiento;651
+2024-07-25;20:00;Alitas de Pollo;4,95;vencimiento;2036
+2024-07-27;20:00;Trutro Entero;0,35;deterioro;2249
+2024-07-28;20:00;Pechuga de Pollo;0,98;vencimiento;3384
+2024-07-29;20:00;Lomo Vetado;0,95;deterioro;10018
+2024-07-30;20:00;Plateada;8,88;vencimiento;5003
+2024-07-31;20:00;Posta Rosada;1,03;vencimiento;8686
+2024-07-31;20:00;Reineta Entera;1,93;vencimiento;6856
+2024-07-31;20:00;Congrio Negro;0,92;vencimiento;2860
+2024-07-31;20:00;Choritos (Mejillones);3,35;vencimiento;654
+2024-08-01;20:00;Lomo Liso;0,26;deterioro;13170
+2024-08-01;20:00;Punta Paleta;5,63;vencimiento;5438
+2024-08-01;20:00;Pechuga de Pollo;32,66;vencimiento;3593
+2024-08-02;20:00;Chuleta de Cerdo;3,22;vencimiento;3826
+2024-08-02;20:00;Pierna de Cerdo;0,28;deterioro;3154
+2024-08-05;20:00;Merluza Fresca;14,21;vencimiento;1616
+2024-08-05;20:00;Congrio Negro;3,76;vencimiento;2693
+2024-08-06;20:00;Alitas de Pollo;3,57;vencimiento;1859
+2024-08-07;20:00;Panceta de Cerdo;0,17;vencimiento;3552
+2024-08-07;20:00;Congrio Negro;0,43;vencimiento;2898
+2024-08-07;20:00;Costillar de Cerdo;0,78;deterioro;3744
+2024-08-08;20:00;Malaya;1,46;vencimiento;4490
+2024-08-09;20:00;Trutro Entero;0,26;deterioro;2218
+2024-08-09;20:00;Costillar de Cerdo;0,33;deterioro;3693
+2024-08-09;20:00;Pierna de Cerdo;8,57;vencimiento;3224
+2024-08-09;20:00;Panceta de Cerdo;5,27;vencimiento;3443
+2024-08-10;20:00;Reineta Entera;0,75;vencimiento;6547
+2024-08-10;20:00;Choritos (Mejillones);3,66;vencimiento;650
+2024-08-12;20:00;Posta Rosada;0,53;deterioro;8785
+2024-08-12;20:00;Merluza Fresca;2,82;vencimiento;1510
+2024-08-12;20:00;Congrio Negro;0,06;vencimiento;2812
+2024-08-13;20:00;Pollo Entero;22,67;vencimiento;2251
+2024-08-13;20:00;Trutro Entero;0,33;deterioro;2192
+2024-08-14;20:00;Congrio Negro;0,25;vencimiento;2837
+2024-08-15;20:00;Trutro Entero;0,93;deterioro;2227
+2024-08-15;20:00;Punta Paleta;4,6;vencimiento;5654
+2024-08-15;20:00;Pechuga de Pollo;10,89;vencimiento;3313
+2024-08-18;20:00;Alitas de Pollo;2,46;vencimiento;1936
+2024-08-19;20:00;Congrio Negro;0,71;vencimiento;2737
+2024-08-20;20:00;Punta Paleta;0,194451910148393;deterioro;5433
+2024-08-21;20:00;Costillar de Cerdo;1,58;vencimiento;3721
+2024-08-21;20:00;Merluza Fresca;2,0;vencimiento;1486
+2024-08-21;20:00;Congrio Negro;2,47;vencimiento;2781
+2024-08-21;20:00;Choritos (Mejillones);0,93;vencimiento;690
+2024-08-22;20:00;Alitas de Pollo;13,96;vencimiento;1834
+2024-08-22;20:00;Malaya;3,46;vencimiento;4424
+2024-08-23;20:00;Panceta de Cerdo;7,24;vencimiento;3478
+2024-08-26;20:00;Reineta Entera;2,61;vencimiento;7650
+2024-08-26;20:00;Pierna de Cerdo;1,4;vencimiento;3343
+2024-08-26;20:00;Merluza Fresca;18,27;vencimiento;1484
+2024-08-27;20:00;Pechuga de Pollo;18,8;vencimiento;3295
+2024-08-27;20:00;Malaya;9,83;vencimiento;4851
+2024-08-28;20:00;Posta Rosada;8,87;vencimiento;8347
+2024-08-28;20:00;Costillar de Cerdo;0,89;vencimiento;3457
+2024-08-28;20:00;Reineta Entera;0,18;vencimiento;7360
+2024-08-28;20:00;Congrio Negro;1,83;vencimiento;2687
+2024-08-28;20:00;Choritos (Mejillones);0,85;vencimiento;636
+2024-08-29;20:00;Punta Paleta;6,01;vencimiento;5309
+2024-08-29;20:00;Alitas de Pollo;7,73;vencimiento;1963
+2024-08-29;20:00;Panceta de Cerdo;0,54;deterioro;3723
+2024-08-30;20:00;Panceta de Cerdo;1,6;vencimiento;3723
+2024-09-01;20:00;Alitas de Pollo;0,7143068345334935;deterioro;1956
+2024-09-01;20:00;Longaniza;0,56;deterioro;3549
+2024-09-02;20:00;Choritos (Mejillones);3,78;vencimiento;649
+2024-09-02;20:00;Merluza Fresca;6,61;vencimiento;1534
+2024-09-03;20:00;Posta Rosada;0,59;deterioro;8549
+2024-09-03;20:00;Plateada;0,43;deterioro;4961
+2024-09-03;20:00;Pollo Entero;2,69;vencimiento;2263
+2024-09-04;20:00;Huachalomo;12,17;vencimiento;7290
+2024-09-04;20:00;Pollo Entero;0,94;deterioro;2151
+2024-09-04;20:00;Trutro Entero;0,67;deterioro;2205
+2024-09-04;20:00;Reineta Entera;2,46;vencimiento;6898
+2024-09-04;20:00;Congrio Negro;0,03;vencimiento;2609
+2024-09-05;20:00;Malaya;2,25;vencimiento;4555
+2024-09-05;20:00;Pollo Entero;6,22;vencimiento;2151
+2024-09-06;20:00;Lomo Vetado;0,83;deterioro;10126
+2024-09-08;20:00;Pollo Entero;17,05;vencimiento;2348
+2024-09-09;20:00;Choritos (Mejillones);3,18;vencimiento;686
+2024-09-09;20:00;Congrio Negro;1,13;vencimiento;2943
+2024-09-09;20:00;Reineta Entera;0,2;vencimiento;6827
+2024-09-09;20:00;Chuleta de Cerdo;0,3;vencimiento;3623
+2024-09-10;20:00;Punta Paleta;0,37;deterioro;5413
+2024-09-10;20:00;Punta Paleta;1,05;vencimiento;5413
+2024-09-10;20:00;Malaya;6,21;vencimiento;4305
+2024-09-10;20:00;Trutro Entero;1,21;vencimiento;2068
+2024-09-11;20:00;Trutro Entero;18,91;vencimiento;2236
+2024-09-11;20:00;Chuleta de Cerdo;2,27;vencimiento;3907
+2024-09-11;20:00;Reineta Entera;4,37;vencimiento;7317
+2024-09-11;20:00;Merluza Fresca;8,28;vencimiento;1558
+2024-09-13;20:00;Posta Rosada;0,56;deterioro;8803
+2024-09-15;20:00;Pollo Entero;7,07;vencimiento;2316
+2024-09-16;20:00;Choritos (Mejillones);0,66;vencimiento;635
+2024-09-16;20:00;Congrio Negro;1,65;vencimiento;2757
+2024-09-16;20:00;Reineta Entera;10,49;vencimiento;7356
+2024-09-16;20:00;Pierna de Cerdo;0,21;vencimiento;3184
+2024-09-17;20:00;Pollo Entero;17,55;vencimiento;2265
+2024-09-20;20:00;Posta Rosada;0,64;deterioro;8788
+2024-09-20;20:00;Posta Rosada;3,86;vencimiento;8788
+2024-09-20;20:00;Pechuga de Pollo;1,4;vencimiento;3626
+2024-09-20;20:00;Trutro Entero;24,1;vencimiento;2206
+2024-09-20;20:00;Costillar de Cerdo;6,88;vencimiento;3696
+2024-09-20;20:00;Pierna de Cerdo;1,95;vencimiento;3351
+2024-09-21;20:00;Lomo Liso;22,38;vencimiento;13128
+2024-09-21;20:00;Posta Rosada;0,98;deterioro;8371
+2024-09-24;20:00;Punta Paleta;0,58;deterioro;5340
+2024-09-25;20:00;Trutro Entero;0,5;deterioro;2188
+2024-09-25;20:00;Congrio Negro;0,94;vencimiento;2777
+2024-09-25;20:00;Pollo Entero;0,48;vencimiento;2333
+2024-09-26;20:00;Pechuga de Pollo;32,8;vencimiento;3675
+2024-09-26;20:00;Alitas de Pollo;9,77;vencimiento;1936
+2024-09-26;20:00;Punta Paleta;4,72;vencimiento;5340
+2024-09-26;20:00;Malaya;6,43;vencimiento;4677
+2024-09-26;20:00;Costillar de Cerdo;0,94;deterioro;3557
+2024-09-27;20:00;Panceta de Cerdo;2,71;vencimiento;3347
+2024-09-27;20:00;Costillar de Cerdo;16,88;vencimiento;3557
+2024-09-29;20:00;Posta Rosada;0,96;deterioro;8380
