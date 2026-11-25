@@ -149,19 +149,26 @@ export function PrediccionView() {
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="title" style={{ flexWrap: "wrap", gap: 8 }}>
               Demanda real y proyectada
-              <div className="row-actions" style={{ flexWrap: "wrap", alignItems: "center" }}>
-                <select className="input surface" style={{ height: 30, width: "auto", maxWidth: 260 }} aria-label="Producto" value={idSerie ?? ""} onChange={(e) => setSel(e.target.value ? Number(e.target.value) : null)}>
-                  <option value="">{nombreCategoria ? `Toda la categoría ${nombreCategoria} (total)` : "Todos los productos (total)"}</option>
-                  {productos.map((p) => <option key={p.id_producto} value={p.id_producto}>{p.producto}</option>)}
-                </select>
-                <label className="hint" htmlFor="pr-atras">Hacia atrás</label>
-                <select id="pr-atras" className="input surface" style={{ height: 30, width: "auto" }} value={atras} onChange={(e) => setAtras(Number(e.target.value))}>
-                  {OPCIONES_ATRAS.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
-                </select>
-                <label className="hint" htmlFor="pr-adelante">Hacia adelante</label>
-                <select id="pr-adelante" className="input surface" style={{ height: 30, width: "auto" }} value={adelante} onChange={(e) => setAdelante(Number(e.target.value))}>
-                  {OPCIONES_ADELANTE.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
-                </select>
+              <div className="row-actions serie-ctrl">
+                <label className="serie-campo serie-producto">
+                  <span className="hint">Producto</span>
+                  <select className="input surface" style={{ height: 30, width: "auto", maxWidth: 260 }} value={idSerie ?? ""} onChange={(e) => setSel(e.target.value ? Number(e.target.value) : null)}>
+                    <option value="">{nombreCategoria ? `Toda la categoría ${nombreCategoria} (total)` : "Todos los productos (total)"}</option>
+                    {productos.map((p) => <option key={p.id_producto} value={p.id_producto}>{p.producto}</option>)}
+                  </select>
+                </label>
+                <label className="serie-campo" htmlFor="pr-atras">
+                  <span className="hint">Hacia atrás</span>
+                  <select id="pr-atras" className="input surface" style={{ height: 30, width: "auto" }} value={atras} onChange={(e) => setAtras(Number(e.target.value))}>
+                    {OPCIONES_ATRAS.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
+                  </select>
+                </label>
+                <label className="serie-campo" htmlFor="pr-adelante">
+                  <span className="hint">Hacia adelante</span>
+                  <select id="pr-adelante" className="input surface" style={{ height: 30, width: "auto" }} value={adelante} onChange={(e) => setAdelante(Number(e.target.value))}>
+                    {OPCIONES_ADELANTE.map((m) => <option key={m} value={m}>{mesesTxt(m)}</option>)}
+                  </select>
+                </label>
               </div>
             </div>
             <div className="legend">

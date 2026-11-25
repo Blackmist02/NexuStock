@@ -542,30 +542,134 @@ table.tbl td.ctr {
   font-size: 22px;
   margin: 2px 0 6px;
 }
-.carga-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+.fecha-acciones {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 12px;
 }
-.carga-item {
+.fecha-acciones .input {
+  height: 32px;
+  width: auto;
+}
+/* Carga de datos: un archivo por fila */
+.carga-archivos {
   display: grid;
-  gap: 6px;
-  padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.carga-archivo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
   min-width: 0;
 }
-.carga-item input[type="file"] {
-  font-size: 12px;
-  color: var(--ink-muted);
-  max-width: 100%;
+.carga-archivo + .carga-archivo {
+  border-top: 1px solid var(--border);
 }
-.carga-cab {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
+.carga-archivo.listo {
+  background: color-mix(in srgb, var(--saludable) 7%, transparent);
+}
+.carga-info {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.carga-nombre {
   font-size: 13px;
+  font-weight: 600;
+}
+.carga-elegido {
+  font-size: 12px;
+  color: var(--saludable);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.carga-acc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+/* El input nativo queda oculto pero accesible: la etiqueta hace de botón */
+.carga-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.carga-input:focus-visible + label {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.carga-acc label.btn {
+  cursor: pointer;
+  white-space: nowrap;
+}
+.carga-elegir {
+  border-style: dashed;
+}
+.carga-rango {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.carga-rango > .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.carga-rango-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.carga-rango-fila .input {
+  height: 32px;
+  width: auto;
+}
+/* Grupo segmentado (atajos de tramo) */
+.tramos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tramos button {
+  height: 30px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.tramos button + button {
+  border-left: 1px solid var(--border-strong);
+}
+.tramos button:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--border);
+}
+.tramos button.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+.tramos button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.carga-acciones {
+  margin-top: 14px;
+  flex-wrap: wrap;
 }
 .carga-revision {
   margin-top: 14px;
@@ -596,4 +700,16 @@ ul.carga-lista.err {
   .cfg-datos {
     grid-template-columns: 1fr;
   }
+}
+
+/* Controles del gráfico de predicción: cada selector con su etiqueta */
+.serie-ctrl {
+  flex-wrap: wrap;
+  align-items: center;
+}
+.serie-campo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }

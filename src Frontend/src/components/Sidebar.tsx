@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FechaSistemaToggle } from "./FechaSistema";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/lib/auth";
 import { useConexion } from "@/lib/conexion";
 import { puede, ROL_LABEL } from "@/lib/permisos";
@@ -64,9 +65,12 @@ export function Sidebar({ active, onNavegar }: { active: NavKey; onNavegar?: () 
               <div className="biz-rol">{ROL_LABEL[user.rol]}</div>
             </div>
           ) : null}
-          <button type="button" className="logout" onClick={() => void logout()}>
-            Cerrar sesión
-          </button>
+          <div className="biz-acc">
+            <button type="button" className="logout" onClick={() => void logout()}>
+              Cerrar sesión
+            </button>
+            <ThemeToggle enLinea />
+          </div>
         </div>
       </div>
     </aside>

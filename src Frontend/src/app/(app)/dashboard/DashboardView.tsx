@@ -272,7 +272,7 @@ export function DashboardView() {
               <div className={c("vacio")}>{q.trim() ? "Ninguna sugerencia coincide con la búsqueda." : "No hay sugerencias de compra pendientes: el stock está acorde con la demanda proyectada."}</div>
             ) : (
               <div className={c("scroll")}>
-                <table className={c("tbl")}>
+                <table className={`${c("tbl")} tbl-movil`}>
                   <thead>
                     <tr>
                       <th scope="col">Producto</th>
@@ -325,7 +325,7 @@ export function DashboardView() {
               <div className={c("vacio")}>{q.trim() ? "Ningún producto crítico coincide con la búsqueda." : "Ningún producto en quiebre ni con stock bajo."}</div>
             ) : (
               <div className={c("scroll")}>
-                <table className={c("tbl")}>
+                <table className={`${c("tbl")} tbl-movil`}>
                   <thead>
                     <tr>
                       <th scope="col">Producto</th>
