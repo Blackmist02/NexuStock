@@ -37,12 +37,25 @@ Las carnicerías de gestión independiente suelen decidir qué y cuánto comprar
 **NexuStock** ataca ambos problemas combinando dos componentes en una sola solución:
 
 - Un **núcleo transaccional**: productos, inventario, ventas, compras, mermas, proveedores, usuarios y roles.
-- Un **motor de Machine Learning** (Random Forest, versión 1.1.0) entrenado con los datos reales de ventas, compras y mermas 2022–2024 de la carnicería piloto, que proyecta la demanda semanal por producto considerando el calendario (feriados, Fiestas Patrias, días de pago), los tiempos de entrega de los proveedores y la vida útil de la carne.
+- Un **motor de Machine Learning** (Random Forest, versión 1.1.0) entrenado con los datos reales de ventas, compras y mermas 2022–2024 de la carnicería piloto, **El Buen Pastor** (pyme independiente de la región de O'Higgins), que proyecta la demanda semanal por producto considerando el calendario (feriados, Fiestas Patrias, días de pago), los tiempos de entrega de los proveedores y la vida útil de la carne.
 
 Con esa proyección el sistema genera automáticamente **sugerencias de compra** (cuánto pedir, a quién y hasta cuándo) y **alertas** con un semáforo (*Quiebre / Bajo / Óptimo*), en un dashboard pensado para que una persona sin conocimientos técnicos tome la decisión de compra con un vistazo.
 
 - **A quién va dirigido:** dueños y encargados de carnicerías de gestión independiente, negocios pequeños sin sistemas informáticos previos.
 - **Qué problema resuelve:** reemplaza el abastecimiento basado en intuición por uno apoyado en datos, reduciendo la merma por descomposición y las ventas perdidas por desabastecimiento.
+
+### Resultados del modelo
+
+Entrenado con 2022–2023 y evaluado con las 52 semanas de 2024 (error medio absoluto, kg por producto y semana):
+
+| Métrica | Random Forest **1.1.0** (activo) | Random Forest 1.0.0 | Línea base |
+| --- | --- | --- | --- |
+| Semanas en general | 5,237 | 5,144 | 5,64 |
+| Semanas con feriados | 8,933 | 8,835 | 9,80 |
+
+La versión 1.1.0 incorpora el 18 y 19 de septiembre como días de atención: en los datos originales aparecían sin ventas y el cliente confirmó que el local sí abre esos días, por lo que se reconstruyeron.
+
+En una simulación sobre el periodo de prueba 2024 (hecha con la versión 1.0.0), usar las sugerencias de compra reduce la merma de 6,2 % a 1,1 % y la venta perdida de 3,0 % a 2,6 %, con un ahorro anual estimado de $8.318.026 CLP. Es una simulación sobre los datos reales de El Buen Pastor, no una medición con NexuStock operando en el negocio (ver [`src ML/notebooks/04_evaluacion_impacto.ipynb`](src%20ML/notebooks/04_evaluacion_impacto.ipynb)).
 
 ---
 
