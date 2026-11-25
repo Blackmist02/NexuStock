@@ -1,0 +1,13 @@
+﻿fecha;hora;producto;cantidad;motivo;costo_unitario_clp
+2024-09-24;20:00;Punta Paleta;0,58;deterioro;5340
+2024-09-25;20:00;Pollo Entero;0,48;vencimiento;2333
+2024-09-25;20:00;Trutro Entero;0,5;deterioro;2188
+2024-09-25;20:00;Congrio Negro;0,94;vencimiento;2777
+2024-09-26;20:00;Punta Paleta;4,72;vencimiento;5340
+2024-09-26;20:00;Malaya;6,43;vencimiento;4677
+2024-09-26;20:00;Pechuga de Pollo;32,8;vencimiento;3675
+2024-09-26;20:00;Alitas de Pollo;9,77;vencimiento;1936
+2024-09-26;20:00;Costillar de Cerdo;0,94;deterioro;3557
+2024-09-27;20:00;Costillar de Cerdo;16,88;vencimiento;3557
+2024-09-27;20:00;Panceta de Cerdo;2,71;vencimiento;3347
+2024-09-29;20:00;Posta Rosada;0,96;deterioro;8380

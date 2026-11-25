@@ -1,0 +1,13 @@
+# Contexto de construcción: la raíz del repositorio. Solo entra lo necesario para el backend y el motor ML
+# (las carpetas de las fases, el frontend y los notebooks quedan fuera).
+**
+!src Backend/
+!src ML/requirements.txt
+!src ML/predict.py
+!src ML/models/
+!Maquinas virtuales/certs/*.crt
+
+src Backend/node_modules
+src Backend/.env
+src Backend/data
+**/*.log
