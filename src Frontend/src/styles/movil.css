@@ -1,0 +1,335 @@
+/* Adaptación a teléfono (y algunos ajustes de tableta). Se carga al final: sobrescribe lo necesario de las otras hojas. */
+
+/* Barra superior fija del teléfono: menú (izquierda), logo (centro) y tema (derecha). En computador no existe. */
+.movil-bar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .movil-bar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 40;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .menu-btn {
+    top: 12px;
+    left: 12px;
+  }
+  /* Selector de tema: deja de flotar sobre el contenido y se ubica en la barra, a la derecha */
+  body:has(.app) .theme-toggle {
+    top: 12px;
+    right: 12px;
+    bottom: auto;
+    width: 36px;
+    height: 36px;
+    z-index: 61;
+    box-shadow: none;
+  }
+  .main {
+    padding: 76px 16px 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* ---------- Encabezado de cada vista ---------- */
+  .h1 {
+    font-size: 22px;
+    line-height: 1.2;
+  }
+  .topbar {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .topbar > div:first-child {
+    width: 100%;
+  }
+  /* Acciones: búsqueda a todo el ancho y los botones repartidos en una grilla pareja */
+  .topbar-right {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .topbar-right > * {
+    min-width: 0;
+  }
+  .topbar-right > .btn {
+    width: 100%;
+    height: 36px;
+  }
+  .topbar-right > .searchbox,
+  .topbar-right > select,
+  .topbar-right > .fecha-btn,
+  .topbar-right > :first-child:not(.btn) {
+    grid-column: 1 / -1;
+  }
+  .topbar-right .searchbox input {
+    height: 38px;
+    font-size: 14px;
+  }
+  /* El botón principal (registrar venta, recalcular, agregar…) ocupa la fila completa si queda solo */
+  .topbar-right > .btn.primary:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  /* ---------- Pestañas: más compactas para que quepan las tres ---------- */
+  .tabs a {
+    padding: 9px 10px;
+    font-size: 12.5px;
+  }
+
+  /* ---------- Tablas → tarjetas ----------
+     Cada fila es una tarjeta: la primera celda es el título y el resto va en una grilla de dos columnas, con el
+     nombre de la columna (data-label, ver lib/etiquetasTabla.ts) sobre cada valor. */
+  .scrollx {
+    overflow: visible;
+  }
+  .scrollx table:is(.tbl, .tbl-movil),
+  .main table:is(.tbl, .tbl-movil) {
+    min-width: 0;
+  }
+  .main table:is(.tbl, .tbl-movil),
+  .main table:is(.tbl, .tbl-movil) tbody {
+    display: block;
+    width: 100%;
+  }
+  .main table:is(.tbl, .tbl-movil) thead {
+    display: none;
+  }
+  .main table:is(.tbl, .tbl-movil) tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+  }
+  .main table:is(.tbl, .tbl-movil) tr:last-child {
+    margin-bottom: 0;
+  }
+  .main table:is(.tbl, .tbl-movil) td,
+  .main table:is(.tbl, .tbl-movil) td.right,
+  .main table:is(.tbl, .tbl-movil) td.ctr {
+    display: block;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    text-align: left;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .main table:is(.tbl, .tbl-movil) td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 3px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .main table:is(.tbl, .tbl-movil) td[data-label=""]::before,
+  .main table:is(.tbl, .tbl-movil) td:not([data-label])::before {
+    display: none;
+  }
+  /* Título de la tarjeta (producto, fecha, nombre…) */
+  .main table:is(.tbl, .tbl-movil) td:first-child {
+    grid-column: 1 / -1;
+    font-size: 14px;
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .main table:is(.tbl, .tbl-movil) td:first-child::before {
+    display: none;
+  }
+  .main table:is(.tbl, .tbl-movil) td:first-child .sub,
+  .main table:is(.tbl, .tbl-movil) td:first-child .mini {
+    font-weight: 400;
+  }
+  /* Celdas con botones o vacías de etiqueta: a lo ancho, botones a la derecha */
+  .main table:is(.tbl, .tbl-movil) td:has(.btn),
+  .main table:is(.tbl, .tbl-movil) td:has(.row-actions),
+  .main table:is(.tbl, .tbl-movil) td[data-label=""] {
+    grid-column: 1 / -1;
+  }
+  .main table:is(.tbl, .tbl-movil) td .row-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .main table:is(.tbl, .tbl-movil) td:has(> .btn:only-child) {
+    text-align: right;
+  }
+  .main table:is(.tbl, .tbl-movil) td .btn {
+    min-height: 34px;
+  }
+  /* Fila de «sin datos» o de una sola celda */
+  .main table:is(.tbl, .tbl-movil) td[colspan] {
+    text-align: center;
+    border: 0;
+    padding: 6px 0;
+    font-weight: 400;
+  }
+
+  /* ---------- Configuración ---------- */
+  .fecha-acciones .input,
+  .carga-rango-fila .input {
+    flex: 1 1 150px;
+  }
+  .fecha-acciones .btn {
+    flex: 1 1 auto;
+  }
+  .carga-archivo {
+    flex-wrap: wrap;
+  }
+  .carga-info {
+    flex: 1 1 100%;
+  }
+  .carga-acc {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  .carga-acc label.btn {
+    flex: 1;
+    height: 36px;
+  }
+  .tramos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+  .tramos button {
+    height: 34px;
+  }
+  .tramos button + button {
+    border-left: 0;
+  }
+  .tramos button:nth-child(even) {
+    border-left: 1px solid var(--border-strong);
+  }
+  .tramos button:nth-child(n + 3) {
+    border-top: 1px solid var(--border-strong);
+  }
+  .carga-acciones .btn {
+    flex: 1 1 auto;
+  }
+
+  /* ---------- Calendario: en celdas chicas los eventos se ven como puntos de color ---------- */
+  .cal .cell {
+    min-height: 52px;
+  }
+  .cal .cell .ev {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    margin: 4px 2px 0 0;
+    border-radius: 50%;
+    font-size: 0;
+    background: currentColor;
+  }
+
+  /* ---------- Controles del gráfico de predicción ---------- */
+  .serie-ctrl {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .serie-ctrl > .serie-producto {
+    grid-column: 1 / -1;
+  }
+  .serie-ctrl select {
+    width: 100% !important;
+    max-width: none !important;
+    height: 36px !important;
+  }
+
+  /* ---------- Modales: a pantalla casi completa y con scroll propio ---------- */
+  .modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .serie-campo {
+    display: grid;
+    gap: 4px;
+  }
+  /* Nombre del modelo en la tarjeta de precisión: sin cortes a mitad de palabra */
+  .stat .val.modelo-nombre {
+    font-size: 15px !important;
+    line-height: 1.3;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Botones de la fila: sin la etiqueta «Acciones» */
+  .main table:is(.tbl, .tbl-movil) td:has(.btn)::before {
+    display: none;
+  }
+  /* Tarjetas que contienen una tabla: menos relleno, así las filas-tarjeta aprovechan el ancho */
+  .card:has(> table:is(.tbl, .tbl-movil)),
+  .card:has(> .scrollx > table:is(.tbl, .tbl-movil)) {
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Tablas de 4 columnas (título + 3 valores, p. ej. permisos por rol): los tres valores en una sola fila */
+  .main table:is(.tbl, .tbl-movil) tr:has(> td:nth-child(4):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Selector de tema dentro de la barra lateral (computador): estático, junto a «Cerrar sesión» */
+.biz-acc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.theme-toggle.en-linea {
+  position: static;
+  width: 32px;
+  height: 32px;
+  box-shadow: none;
+}
+/* Computador con la barra lateral visible: el botón flotante sobra (está en la barra lateral) */
+@media (min-width: 901px) {
+  body:has(.app:not(.menu-oculto)) .theme-toggle:not(.en-linea) {
+    display: none;
+  }
+}
+/* Teléfono: el de la barra superior basta; el del panel lateral se oculta para no duplicar */
+@media (max-width: 900px) {
+  .theme-toggle.en-linea {
+    display: none;
+  }
+}
+
+/* Tableta y computador (formato de tabla): las cifras y los botones de cada fila no se parten en dos líneas;
+   si la tabla no cabe, se desplaza dentro de su contenedor (.scrollx) en vez de apretar las columnas. */
+@media (min-width: 641px) {
+  table.tbl td.mono {
+    white-space: nowrap;
+  }
+  table.tbl td .row-actions {
+    flex-wrap: nowrap;
+  }
+}

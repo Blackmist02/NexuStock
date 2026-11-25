@@ -14,8 +14,12 @@ function subscribe(onChange: () => void) {
 const leerTema = (): Theme => (document.documentElement.dataset.theme === "crema" ? "crema" : "oscuro");
 const temaServidor = (): Theme => "oscuro";
 
-/** Botón único (sol / luna) que alterna entre el tema oscuro y el crema y recuerda la elección. */
-export function ThemeToggle() {
+/**
+ * Botón único (sol / luna) que alterna entre el tema oscuro y el crema y recuerda la elección.
+ * Por defecto flota en una esquina (pantallas de acceso y teléfono); `enLinea` lo deja dentro de otro bloque (pie de la
+ * barra lateral en computador), donde no tapa contenido.
+ */
+export function ThemeToggle({ enLinea = false }: { enLinea?: boolean } = {}) {
   const theme = useSyncExternalStore(subscribe, leerTema, temaServidor);
 
   function aplicar(next: Theme) {
@@ -51,7 +55,7 @@ export function ThemeToggle() {
   const etiqueta = siguiente === "crema" ? "Cambiar a tema crema" : "Cambiar a tema oscuro";
 
   return (
-    <button type="button" className="theme-toggle" data-theme-toggle aria-label={etiqueta} title={etiqueta} onClick={() => choose(siguiente)}>
+    <button type="button" className={enLinea ? "theme-toggle en-linea" : "theme-toggle"} data-theme-toggle aria-label={etiqueta} title={etiqueta} onClick={() => choose(siguiente)}>
       {/* En tema oscuro se muestra el sol (lleva a crema); en tema crema, la luna (lleva a oscuro). */}
       <svg className="ico ico-sol" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
         <circle cx="12" cy="12" r="4" />

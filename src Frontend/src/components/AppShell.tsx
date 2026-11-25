@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar, type NavKey } from "./Sidebar";
 import { useAuth } from "@/lib/auth";
 import { ConexionAviso } from "./ConexionAviso";
 import { Loading } from "./ui/States";
+import { Logo } from "./Logo";
+import { useEtiquetasTabla } from "@/lib/etiquetasTabla";
 
 type AppShellProps = {
   active: NavKey;
@@ -36,6 +38,9 @@ export function AppShell({ active, children, mainClassName }: AppShellProps) {
   const router = useRouter();
   const [oculto, setOculto] = useState(leerMenuOculto);
   const [abierto, setAbierto] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  // Teléfono: las tablas se muestran como tarjetas con el nombre de cada columna (movil.css)
+  useEtiquetasTabla(mainRef, !loading && !!user);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -88,9 +93,13 @@ export function AppShell({ active, children, mainClassName }: AppShellProps) {
         <span />
         <span />
       </button>
+      {/* Teléfono: barra superior fija con el menú (izquierda), el logo y el selector de tema (derecha, ver movil.css) */}
+      <div className="movil-bar" aria-hidden="true">
+        <Logo width={110} height={40} />
+      </div>
       <Sidebar active={active} onNavegar={() => setAbierto(false)} />
       {abierto ? <div className="side-scrim" onClick={() => setAbierto(false)} aria-hidden="true" /> : null}
-      <main className={["main", mainClassName].filter(Boolean).join(" ")}>
+      <main ref={mainRef} className={["main", mainClassName].filter(Boolean).join(" ")}>
         <ConexionAviso />
         {children}
       </main>

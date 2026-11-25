@@ -45,6 +45,9 @@ interface Precision {
   }[];
 }
 
+/** «RandomForestRegressor» → «Random Forest Regressor»: el nombre largo corta entre palabras y no a la mitad. */
+const separarPalabras = (s: string) => s.replace(/([a-z])([A-Z])/g, "$1 $2");
+
 export function ModeloView() {
   const { user } = useAuth();
   const toast = useToast();
@@ -96,7 +99,7 @@ export function ModeloView() {
           <div className="grid4">
             <div className="card stat">
               <div className="lbl">Modelo activo</div>
-              <div className="val" style={{ fontSize: 18 }}>{d.activo ? `${d.activo.algoritmo} ${d.activo.version}` : "Ninguno"}</div>
+              <div className="val modelo-nombre" style={{ fontSize: 18 }}>{d.activo ? `${separarPalabras(d.activo.algoritmo)} ${d.activo.version}` : "Ninguno"}</div>
               <div className="sub">{d.activo ? `Entrenado hasta ${fmtFecha(d.activo.entrenado_hasta)}` : "Se usa el promedio histórico"}</div>
             </div>
             <div className="card stat">

@@ -68,13 +68,12 @@ export function FechaSistemaCard({ fecha, onCambio }: { fecha: ConfigFecha; onCa
           {u.merma ? fmtFecha(u.merma) : "—"}
         </div>
       </div>
-      <div className="row-actions" style={{ flexWrap: "wrap", alignItems: "center", marginTop: 12 }}>
+      <div className="row-actions fecha-acciones">
         <label className="sr-only" htmlFor="fecha-sistema">Nueva fecha del sistema</label>
         <input
           id="fecha-sistema"
           className="input surface"
           type="date"
-          style={{ height: 32, width: "auto" }}
           value={elegido}
           max={fecha.real}
           onChange={(e) => setValor(e.target.value)}
@@ -244,44 +243,80 @@ export function CargaDatosCard({ fecha, onCambio }: { fecha: ConfigFecha; onCamb
         Sube ventas, compras y mermas con las plantillas. Se importa solo lo posterior a lo ya cargado y hasta la fecha límite, así que puedes subir el
         archivo completo y cargarlo por tramos (solo se envía el tramo elegido). Se acepta el CSV de Excel (separador «;» y coma decimal) o con comas.
       </p>
-      <div className="carga-grid">
-        {TIPOS.map(({ t, nombre, ayuda }) => (
-          <div key={t} className="carga-item">
-            <div className="carga-cab">
-              <label htmlFor={`csv-${t}`}><b>{nombre}</b></label>
-              <button type="button" className="linkbtn" onClick={() => void api.download(`/import/plantilla/${t}`, undefined, `plantilla-${t}.csv`).catch((e) => toast.error(errorMessage(e)))}>
-                Descargar plantilla
-              </button>
+      {/* Un archivo por fila: nombre y formato a la izquierda; elegir archivo y plantilla a la derecha (en teléfono, debajo) */}
+      <div className="carga-archivos">
+        {TIPOS.map(({ t, nombre, ayuda }) => {
+          const archivo = archivos[t];
+          return (
+            <div key={t} className={archivo ? "carga-archivo listo" : "carga-archivo"}>
+              <div className="carga-info">
+                <div className="carga-nombre">{nombre}</div>
+                {archivo ? (
+                  <div className="carga-elegido">
+                    <span aria-hidden="true">✓</span> {archivo.name} · {fmtNum(archivo.size / 1024, 0)} KB
+                  </div>
+                ) : (
+                  <div className="mini">{ayuda}</div>
+                )}
+              </div>
+              <div className="carga-acc">
+                <input
+                  id={`csv-${t}`}
+                  className="carga-input"
+                  type="file"
+                  accept=".csv,text/csv"
+                  aria-label={`Archivo de ${nombre.toLowerCase()} (CSV)`}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    setArchivos((a) => ({ ...a, [t]: f }));
+                    invalidar();
+                  }}
+                />
+                <label htmlFor={`csv-${t}`} className={archivo ? "btn ghost sm" : "btn ghost sm carga-elegir"}>
+                  {archivo ? "Cambiar" : "Elegir archivo"}
+                </label>
+                {archivo ? (
+                  <button
+                    type="button"
+                    className="linkbtn"
+                    onClick={() => {
+                      const input = document.getElementById(`csv-${t}`) as HTMLInputElement | null;
+                      if (input) input.value = "";
+                      setArchivos((a) => ({ ...a, [t]: undefined }));
+                      invalidar();
+                    }}
+                  >
+                    Quitar
+                  </button>
+                ) : (
+                  <button type="button" className="linkbtn" onClick={() => void api.download(`/import/plantilla/${t}`, undefined, `plantilla-${t}.csv`).catch((e) => toast.error(errorMessage(e)))}>
+                    Plantilla
+                  </button>
+                )}
+              </div>
             </div>
-            <input
-              id={`csv-${t}`}
-              type="file"
-              accept=".csv,text/csv"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                setArchivos((a) => ({ ...a, [t]: f }));
-                invalidar();
-              }}
-            />
-            <div className="mini">{archivos[t] ? `${archivos[t]!.name} · ${fmtNum(archivos[t]!.size / 1024, 0)} KB` : ayuda}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      <div className="row-actions" style={{ flexWrap: "wrap", alignItems: "center", marginTop: 12 }}>
-        <label className="hint" htmlFor="csv-hasta">Cargar hasta (incluido)</label>
-        <input id="csv-hasta" className="input surface" type="date" style={{ height: 32, width: "auto" }} value={hasta} max={fecha.real} onChange={(e) => { setHasta(e.target.value); invalidar(); }} />
-        <span className="mini">{hasta ? "" : "Vacío: hasta la última fecha de los archivos"}</span>
-        {TRAMOS.map((x) => (
-          <Button key={x.nombre} size="sm" disabled={!!ocupado} onClick={() => { setHasta(x.hasta); invalidar(); }}>
-            {x.nombre}
-          </Button>
-        ))}
-        <label className="checkrow" style={{ marginLeft: 8 }}>
+      <div className="carga-rango">
+        <label className="lbl" htmlFor="csv-hasta">Cargar hasta (incluido)</label>
+        <div className="carga-rango-fila">
+          <input id="csv-hasta" className="input surface" type="date" value={hasta} max={fecha.real} onChange={(e) => { setHasta(e.target.value); invalidar(); }} />
+          <div className="tramos" role="group" aria-label="Atajos de tramo desde el último día cargado">
+            {TRAMOS.map((x) => (
+              <button key={x.nombre} type="button" className={hasta === x.hasta ? "on" : undefined} disabled={!!ocupado} onClick={() => { setHasta(x.hasta); invalidar(); }}>
+                {x.nombre}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="mini">{hasta ? `Se importa hasta el ${fmtFecha(hasta)}, incluido.` : "Vacío: hasta la última fecha de los archivos."}</div>
+        <label className="checkrow">
           <input type="checkbox" checked={avanzar} onChange={(e) => { setAvanzar(e.target.checked); invalidar(); }} />
           <span>Mover la fecha del sistema al día siguiente de la carga</span>
         </label>
       </div>
-      <div className="row-actions" style={{ marginTop: 12 }}>
+      <div className="row-actions carga-acciones">
         <Button size="sm" disabled={!hayArchivos || !!ocupado} loading={ocupado === "revisar"} onClick={() => void revisar()}>Revisar archivos</Button>
         <Button size="sm" variant="primary" disabled={!revision?.valido || !!ocupado} loading={ocupado === "importar"} onClick={() => void importar()}>
           {revision?.valido ? `Importar ${revision.total_a_importar} movimientos` : "Importar"}

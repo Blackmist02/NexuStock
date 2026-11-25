@@ -13,6 +13,9 @@ COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
  && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+# Ruta del motor dentro de la imagen. Fuera de Docker, config.js usa «../../src ML»; aquí el motor vive en /ml-engine,
+# así que la imagen la define sola y no depende de que el servicio (Render, compose) declare ML_ENGINE_DIR.
+ENV ML_ENGINE_DIR=/ml-engine
 # Dependencias del motor ML. scikit-learn va fijo: debe ser la versión con la que se serializó el modelo.
 COPY ["src ML/requirements.txt", "/ml-engine/requirements.txt"]
 RUN pip install -r /ml-engine/requirements.txt

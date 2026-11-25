@@ -115,7 +115,7 @@ export function AlertasView() {
         {data && visibles.length === 0 ? <div className={c("vacio")}>No hay alertas con estos filtros.</div> : null}
         {data && visibles.length > 0 ? (
           <div className={c("scroll")}>
-            <table className={c("tbl")}>
+            <table className={`${c("tbl")} tbl-movil`}>
               <thead>
                 <tr>
                   <th scope="col">Fecha</th>

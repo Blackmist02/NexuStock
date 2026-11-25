@@ -185,8 +185,8 @@ En **Configuración → Fecha del sistema**, elegir `23-09-2024` y presionar *Gu
 
 En **Configuración → Carga de datos (CSV)**:
 
-1. Seleccionar los tres archivos (ventas, compras y mermas).
-2. En *Cargar hasta (incluido)* elegir `29-09-2024` y marcar **Mover la fecha del sistema al día siguiente de la carga**.
+1. Presionar **Elegir archivo** en cada fila (ventas, compras y mermas) y seleccionar el CSV correspondiente. Cada fila muestra el nombre y tamaño del archivo elegido; *Plantilla* descarga el formato vacío.
+2. En *Cargar hasta (incluido)* elegir `29-09-2024`, o presionar el atajo **1 semana** (cuenta desde el día siguiente al último cargado), y dejar marcado **Mover la fecha del sistema al día siguiente de la carga**.
 3. Presionar **Revisar archivos**. La plataforma valida los archivos sin guardar nada y muestra qué va a importar:
 
 ![Revisión de la carga de CSV](docs/capturas/04-carga-csv.png)
@@ -258,6 +258,14 @@ Otras pruebas útiles en la demo:
 ## Recorrido por las vistas
 
 Capturas tomadas en un entorno local recién levantado con los pasos de este README (fecha del sistema 30-09-2024, después de la carga de prueba).
+
+### En el celular
+
+La interfaz se adapta al teléfono: barra superior con el menú, el logo y el cambio de tema; encabezados con la búsqueda a todo el ancho y los botones en grilla; y las tablas pasan a ser **tarjetas** (una por fila, con el nombre de cada dato sobre su valor), para leer todo sin desplazarse hacia los lados. En tableta y computador se mantiene el formato de tabla.
+
+![NexuStock en el celular: dashboard, inventario en tarjetas, predicción y carga de datos](docs/capturas/20-movil.png)
+
+### En el computador
 
 | Vista | Captura |
 | --- | --- |
