@@ -96,4 +96,16 @@ docker run -p 3000:3000 -e API_URL=http://host.docker.internal:4000 nexustock-fr
 ```
 
 En Render, el servicio `nexustock-api` usa *Dockerfile Path* `./Maquinas virtuales/backend/Dockerfile` y
-*Docker Build Context Directory* `.` (raíz). En Vercel, el *Root Directory* del proyecto es `src Frontend`.
+*Docker Build Context Directory* `.` (raíz).
+
+En Vercel el *Root Directory* queda **vacío** y el frontend se publica ejecutando la CLI **desde la carpeta
+`src Frontend`** (Vercel no acepta espacios en la ruta de sus funciones, así que `src Frontend` no puede ser el
+*Root Directory*):
+
+```bash
+cd "src Frontend"
+npx vercel@65 deploy --prod --yes      # en PowerShell: npx.cmd vercel@65 deploy --prod --yes
+```
+
+El workflow CD hace lo mismo al fusionar en `main` si el repositorio tiene los secretos `VERCEL_TOKEN`,
+`VERCEL_ORG_ID` y `VERCEL_PROJECT_ID`; sin ellos, ese paso se omite con un aviso y hay que publicar a mano.
