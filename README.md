@@ -309,7 +309,7 @@ Las pruebas de sistema contra la demo (seguridad, rendimiento, fallas del motor)
 | Workflow | Cuándo corre | Qué hace |
 | --- | --- | --- |
 | **CI** ([ci.yml](.github/workflows/ci.yml)) | Cada push a `main` o `Features/*` y cada pull request a `main` | Backend: ESLint y pruebas unitarias y de API contra un PostgreSQL 16 descartable. Motor ML: `validar_predict.py`. Frontend: `tsc`, ESLint y `next build`. Luego construye las imágenes Docker de producción del backend y del frontend. |
-| **CD** ([cd.yml](.github/workflows/cd.yml)) | Cuando CI termina en verde sobre `main`, o a mano | Redespliega la demo: backend en Render (deploy hook) y frontend en Vercel, y prueba `/api/health` en la URL pública. |
+| **CD** ([cd.yml](.github/workflows/cd.yml)) | Cuando CI termina en verde sobre `main`, o a mano | Redespliega la demo: backend en Render (deploy hook) y frontend en Vercel (CLI desde `src Frontend`, con los secretos `VERCEL_*`; sin ellos se publica a mano, ver [Maquinas virtuales](Maquinas%20virtuales/README.md#imágenes-de-producción)), y prueba `/api/health` en la URL pública. |
 | **Calentar demo** ([demo-calentar.yml](.github/workflows/demo-calentar.yml)) | A mano, antes de presentar | Despierta el backend de Render Free. |
 
 **Alcance del despliegue** (acta del 16-11-2026): el proyecto llega hasta la etapa demo en servicios gratuitos. La implementación con un proveedor cloud (Azure Chile Central según la evaluación TCO, con publicación de imágenes en GHCR) requiere inversión y queda como fase futura; esa versión de `cd.yml` está en el historial (commit `48b15f6`).
