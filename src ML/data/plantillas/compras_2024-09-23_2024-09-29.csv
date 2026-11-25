@@ -1,0 +1,58 @@
+﻿fecha;hora;producto;cantidad;costo_unitario_clp;proveedor
+2024-09-24;08:00;Huachalomo;8,0;7677;Lo Valledor Foodservice (Holding AASA)
+2024-09-24;08:00;Posta Rosada;11,3;8791;Lo Valledor Foodservice (Holding AASA)
+2024-09-24;08:00;Punta Paleta;3,9;5261;Frigorífico Carnes Premium Chile
+2024-09-24;08:00;Pollo Entero;10,0;2264;Ariztía
+2024-09-25;08:00;Choritos (Mejillones);5,9;656;Friosur Distribuidora
+2024-09-25;08:00;Merluza Fresca;5,9;1514;Friosur Distribuidora
+2024-09-25;08:00;Pollo Entero;10,3;2213;Ariztía
+2024-09-25;08:00;Panceta de Cerdo;15,3;3429;Frigocer Ltda.
+2024-09-25;08:00;Pierna de Cerdo;10,3;3331;Frigocer Ltda.
+2024-09-25;08:00;Chuleta de Cerdo;9,9;3738;Frigocer Ltda.
+2024-09-25;08:00;Reineta Entera;7,0;6966;Friosur Distribuidora
+2024-09-25;08:00;Prietas;2,0;2670;Agrosuper Comercial
+2024-09-25;08:00;Longaniza;11,8;3740;Agrosuper Comercial
+2024-09-25;08:00;Huachalomo;6,2;7471;Lo Valledor Foodservice (Holding AASA)
+2024-09-26;08:00;Punta Paleta;9,6;5352;Frigorífico Carnes Premium Chile
+2024-09-26;08:00;Trutro Entero;35,3;2128;Ariztía
+2024-09-26;08:00;Posta Rosada;10,2;8426;Lo Valledor Foodservice (Holding AASA)
+2024-09-26;08:00;Plateada;4,0;4863;Lo Valledor Foodservice (Holding AASA)
+2024-09-26;08:00;Malaya;16,2;4568;Frigorífico Carnes Premium Chile
+2024-09-27;08:00;Pierna de Cerdo;10,1;3217;Frigocer Ltda.
+2024-09-27;08:00;Panceta de Cerdo;9,6;3366;Frigocer Ltda.
+2024-09-27;08:00;Pollo Entero;70,6;2196;Ariztía
+2024-09-27;08:00;Merluza Fresca;4,9;1491;Friosur Distribuidora
+2024-09-27;08:00;Reineta Entera;7,2;7448;Friosur Distribuidora
+2024-09-27;08:00;Chuleta de Cerdo;20,1;3691;Frigocer Ltda.
+2024-09-27;08:00;Choritos (Mejillones);2,0;695;Friosur Distribuidora
+2024-09-27;08:00;Congrio Negro;2,9;2650;Friosur Distribuidora
+2024-09-27;08:00;Trutro Entero;19,8;2197;Ariztía
+2024-09-27;08:00;Costillar de Cerdo;41,2;3658;Frigocer Ltda.
+2024-09-27;08:00;Plateada;8,0;4941;Lo Valledor Foodservice (Holding AASA)
+2024-09-27;08:00;Huachalomo;9,8;7150;Lo Valledor Foodservice (Holding AASA)
+2024-09-27;08:00;Prietas;5,0;2712;Agrosuper Comercial
+2024-09-27;08:00;Chorizo Parrillero;14,4;3991;Agrosuper Comercial
+2024-09-27;08:00;Longaniza;16,1;3680;Agrosuper Comercial
+2024-09-27;08:00;Alitas de Pollo;25,2;1893;Agrosuper Comercial
+2024-09-27;08:00;Pechuga de Pollo;15,2;3301;Agrosuper Comercial
+2024-09-28;08:00;Malaya;8,0;4615;Frigorífico Carnes Premium Chile
+2024-09-28;08:00;Punta Paleta;12,3;5467;Frigorífico Carnes Premium Chile
+2024-09-28;08:00;Plateada;2,0;5237;Lo Valledor Foodservice (Holding AASA)
+2024-09-28;08:00;Huachalomo;5,9;7565;Lo Valledor Foodservice (Holding AASA)
+2024-09-28;08:00;Lomo Liso;14,5;12778;Compañía Bernal S.A.
+2024-09-28;08:00;Lomo Vetado;35,5;9445;Compañía Bernal S.A.
+2024-09-28;08:00;Filete de Res;10,2;12156;Compañía Bernal S.A.
+2024-09-28;08:00;Trutro Entero;4,7;2221;Ariztía
+2024-09-29;08:00;Merluza Fresca;11,1;1494;Friosur Distribuidora
+2024-09-29;08:00;Trutro Entero;40,2;2303;Ariztía
+2024-09-29;08:00;Pierna de Cerdo;10,0;3380;Frigocer Ltda.
+2024-09-29;08:00;Chuleta de Cerdo;36,1;3870;Frigocer Ltda.
+2024-09-29;08:00;Plateada;10,0;5135;Lo Valledor Foodservice (Holding AASA)
+2024-09-29;08:00;Pechuga de Pollo;45,0;3458;Agrosuper Comercial
+2024-09-29;08:00;Huachalomo;16,2;7223;Lo Valledor Foodservice (Holding AASA)
+2024-09-29;08:00;Prietas;5,2;2608;Agrosuper Comercial
+2024-09-29;08:00;Longaniza;36,3;3799;Agrosuper Comercial
+2024-09-29;08:00;Alitas de Pollo;15,0;1934;Agrosuper Comercial
+2024-09-29;08:00;Congrio Negro;5,1;2752;Friosur Distribuidora
+2024-09-29;08:00;Posta Rosada;25,5;8380;Lo Valledor Foodservice (Holding AASA)
+2024-09-29;08:00;Choritos (Mejillones);4,1;659;Friosur Distribuidora
