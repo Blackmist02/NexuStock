@@ -55,7 +55,7 @@ Entrenado con 2022–2023 y evaluado con las 52 semanas de 2024 (error medio abs
 
 La versión 1.1.0 incorpora el 18 y 19 de septiembre como días de atención: en los datos originales aparecían sin ventas y el cliente confirmó que el local sí abre esos días, por lo que se reconstruyeron.
 
-En una simulación sobre el periodo de prueba 2024 (hecha con la versión 1.0.0), usar las sugerencias de compra reduce la merma de 6,2 % a 1,1 % y la venta perdida de 3,0 % a 2,6 %, con un ahorro anual estimado de $8.318.026 CLP. Es una simulación sobre los datos reales de El Buen Pastor, no una medición con NexuStock operando en el negocio (ver [`src ML/notebooks/04_evaluacion_impacto.ipynb`](src%20ML/notebooks/04_evaluacion_impacto.ipynb)).
+En una simulación día a día sobre el periodo de prueba 2024 (predicciones del modelo 1.1.0 y margen de seguridad de 20 %), usar las sugerencias de compra reduce la merma de 6,2 % a 1,0 % de lo comprado y la venta perdida de 3,3 % a 2,7 % de la demanda. El costo anual de merma y venta perdida baja de $12,78 M a $4,16 M, un ahorro estimado de $8.627.638 CLP. Es una simulación sobre los datos reales de El Buen Pastor, no una medición con NexuStock operando en el negocio (ver [`src ML/notebooks/04_evaluacion_impacto.ipynb`](src%20ML/notebooks/04_evaluacion_impacto.ipynb)).
 
 ---
 

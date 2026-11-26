@@ -99,11 +99,11 @@ export default function ConocePage() {
               <span>de lo comprado se perdió por vencimiento</span>
             </div>
             <div className={s.card}>
-              <span className={s.cifraSm}>3,0 %</span>
+              <span className={s.cifraSm}>3,3 %</span>
               <span>de la demanda no se pudo atender por falta de stock</span>
             </div>
             <div className={`${s.card} ${s.cardDark}`}>
-              <span className={s.cifraSm}>$12,6 M</span>
+              <span className={s.cifraSm}>$12,8 M</span>
               <span>perdidos en un año entre merma y ventas que no se concretaron</span>
             </div>
           </div>
